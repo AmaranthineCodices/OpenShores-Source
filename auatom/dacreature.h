@@ -81,15 +81,15 @@ private:
 
 public:
 	// Avatar
-	DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			quint32 idEmpire, GROWTHSTAGE stage);
 	// Citizen
-	DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			GROWTHSTAGE stage);
-	DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			GROWTHSTAGE stage);
 	// Animal
-	DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, GROWTHSTAGE stage);
+	DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, GROWTHSTAGE stage);
 	DaCreature();
 	virtual ~DaCreature();
 
@@ -383,7 +383,7 @@ public:
 		return m_Haircut;
 	}
 
-	HANDEDNESS Handedness() const;
+	AuDef::HANDEDNESS Handedness() const;
 
 	// Returns true if this creature is using a generation 3 DpBody/DhDNA body.
 	inline bool HasDNA3() const

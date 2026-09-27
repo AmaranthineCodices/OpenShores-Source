@@ -31,7 +31,7 @@
 #include <qsqlquery.h>
 #include <typeinfo>			// for bad_cast
 
-DaAnimal::DaAnimal(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, GROWTHSTAGE stage) :
+DaAnimal::DaAnimal(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, GROWTHSTAGE stage) :
 	DaCreature(species, chroma, hand, stage), m_AttackWeapon(WM_Not)
 {
 	m_Activity = Waiting;

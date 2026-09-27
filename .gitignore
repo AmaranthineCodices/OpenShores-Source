@@ -357,3 +357,11 @@ auviewer/Makefile
 auviewer/auviewer.pro
 debug/
 release/
+
+# Generated Windows qmake makefiles
+Makefile.Debug
+Makefile.Release
+Makefile.Debug.*
+Makefile.Release.*
+hashpack/Makefile*
+hashpack/Makefile

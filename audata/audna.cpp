@@ -4111,7 +4111,7 @@ bool AuChromoHead::SightTargetDetails(const AuPoint& eyeLoc, AuPoint& sightedLoc
 }
 
 void AuChromoHead::AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-		const AuPose& mouthPose, float currentHeadTilt, float currentHeadTurn, HANDEDNESS hand,
+		const AuPose& mouthPose, float currentHeadTilt, float currentHeadTurn, AuDef::HANDEDNESS hand,
 		float& headX, float& headY, float& headZ, float& eyeLeftX, float& eyeLeftZ, float& eyeRightX,
 		float& eyeRightZ, float& jawX, float& jawLeftY, float& jawRightY)
 {
@@ -6032,7 +6032,7 @@ bool AuChromoTorso::SightTargetDetails(const AuPoint& eyeLoc, AuPoint& sightedLo
 }
 
 void AuChromoTorso::AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-		float currentHeadTilt, float currentHeadTurn, HANDEDNESS hand, bool hasMaleGenitals,
+		float currentHeadTilt, float currentHeadTurn, AuDef::HANDEDNESS hand, bool hasMaleGenitals,
 		float& buttX, float& buttY, float& buttZ, float& chestX, float& chestY, float& chestZ, float& neckX, float& neckY,
 		float& neckZ, float& tailX, float& tailY)
 {
@@ -7765,7 +7765,7 @@ void AuChromoArm::CalcStandAngles(const AuPose& pose, float strength, float& sho
 }
 
 void AuChromoArm::AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-		float currentHeadTilt, HANDEDNESS hand, bool bendToHoldObject,
+		float currentHeadTilt, AuDef::HANDEDNESS hand, bool bendToHoldObject,
 		float& shoulderX, float& shoulderY, float& shoulderZ, float& elbowX, float& elbowZ, float& wristX, float& wristY,
 		float& wristZ, float& fingerY, float& fingerTipY) const
 {
@@ -9689,7 +9689,7 @@ float AuChromoLeg::HipAltitudePosed(const AuChromatid& ctd) const
 }
 
 void AuChromoLeg::AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-		HANDEDNESS hand, bool hasMaleGenitals, float torsoThickness,
+		AuDef::HANDEDNESS hand, bool hasMaleGenitals, float torsoThickness,
 		float& hipX, float& hipY, float& hipZ, float& kneeX, float& ankleX, float& toeX) const
 {
 	hipX = 0;

@@ -3092,7 +3092,7 @@ protected:
 	bool								m_DNADead;				// True if the DNA is dead.
 	AuDNABase::CHROMATID				m_DNAChromatid;
 	AuHairStyle::STYLE					m_DNAHair;
-	HANDEDNESS							m_DNAHand;
+	AuDef::HANDEDNESS							m_DNAHand;
 	AuHairStyle::SHAVE					m_DNAShave;
 	GROWTHSTAGE							m_DNAStage;
 	bool								m_Sentient;				// True if the DNA is from a sentient creature.
@@ -3102,7 +3102,7 @@ private:
 	mutable DpBody*						m_HeadBody;				// When I am a head.
 
 public:
-	AuItemDNA(const AuDNABase* dna, AuDNABase::CHROMATID chromatid, bool dnaViable, bool sentient, HANDEDNESS hand,
+	AuItemDNA(const AuDNABase* dna, AuDNABase::CHROMATID chromatid, bool dnaViable, bool sentient, AuDef::HANDEDNESS hand,
 			GROWTHSTAGE stage, AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, COMMODITYID cid, quint8 quality,
 			quint32 empireOfOrigin, quint32 count=1);
 	AuItemDNA(COMMODITYID cid, quint8 quality, quint32 empireOfOrigin, quint32 count=1);
@@ -3163,7 +3163,7 @@ public:
 		return m_DNAHair;
 	}
 
-	inline HANDEDNESS DNAHandedness() const
+	inline AuDef::HANDEDNESS DNAHandedness() const
 	{
 		return m_DNAHand;
 	}

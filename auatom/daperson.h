@@ -430,7 +430,7 @@ private:
 	PsEntity*							m_PSEntity;
 
 public:
-	DaPerson(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaPerson(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			GROWTHSTAGE stage, quint32 idEmpire);
 	DaPerson();
 	virtual ~DaPerson();

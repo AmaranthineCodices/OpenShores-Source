@@ -29,7 +29,7 @@ AuSoloDesignerDlg::AuSoloDesignerDlg(QWidget* parent) : AuDialog(parent)
 
 	QString lastName = g_Au.Settings().readEntry("Widget/SoloDesigner/Name", tr("Human"));
 	GENDER lastGender = (GENDER)g_Au.Settings().readNumEntry("Widget/SoloDesigner/Gender", Male);
-	HANDEDNESS lastHand = (HANDEDNESS)g_Au.Settings().readNumEntry("Widget/SoloDesigner/Handedness", RightHanded);
+	AuDef::HANDEDNESS lastHand = (AuDef::HANDEDNESS)g_Au.Settings().readNumEntry("Widget/SoloDesigner/Handedness", RightHanded);
 
 	m_DNA.InitDefaultHuman();
 	QByteArray ba;
@@ -164,9 +164,9 @@ GENDER AuSoloDesignerDlg::Gender() const
 	return (GENDER)m_Gender->currentData().toInt();
 }
 
-HANDEDNESS AuSoloDesignerDlg::Handedness() const
+AuDef::HANDEDNESS AuSoloDesignerDlg::Handedness() const
 {
-	return (HANDEDNESS)m_Hand->currentData().toInt();
+	return (AuDef::HANDEDNESS)m_Hand->currentData().toInt();
 }
 
 AuDNA AuSoloDesignerDlg::DNA() const

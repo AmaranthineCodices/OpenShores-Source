@@ -62,8 +62,8 @@ private:
 
 public:
 	// Construction
-	DaNpc(NPC_ROLE role, const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name);
-	DaNpc(NPC_ROLE role, const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name);
+	DaNpc(NPC_ROLE role, const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name);
+	DaNpc(NPC_ROLE role, const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name);
 	DaNpc();
 	virtual ~DaNpc();
 

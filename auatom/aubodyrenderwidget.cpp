@@ -677,7 +677,7 @@ void AuBodyRenderWidget::setVisible(bool visible)
 		//update();
 }
 
-void AuBodyRenderWidget::SetBody(const DhDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, COMMODITYID clothing,
+void AuBodyRenderWidget::SetBody(const DhDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, COMMODITYID clothing,
 		COMMODITYID helmet, quint8 visorState)
 {
 	if(m_pBodyDel)
@@ -714,7 +714,7 @@ bool AuBodyRenderWidget::IsChange(const AuDNA& dna, AuDNABase::CHROMATID chroma,
 	return false;
 }
 
-void AuBodyRenderWidget::SetAnimalia(const AuDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, COMMODITYID clothing,
+void AuBodyRenderWidget::SetAnimalia(const AuDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, COMMODITYID clothing,
 		COMMODITYID armor, COMMODITYID helmet, quint8 visorState, AuHairStyle::STYLE haircut, AuHairStyle::SHAVE shave)
 {
 	if(m_Animalia)
@@ -762,7 +762,7 @@ void AuBodyRenderWidget::SetId(const AuId& id)
 	m_Id = id;
 }
 
-void AuBodyRenderWidget::SetHandedness(HANDEDNESS hand)
+void AuBodyRenderWidget::SetHandedness(AuDef::HANDEDNESS hand)
 {
 	if(m_pBody)
 		m_pBody->SetLeftHanded(hand == LeftHanded);

@@ -11,7 +11,7 @@
 #include "auelapsedtimer.h"
 #include "austation.h"
 
-AuAnimalia::AuAnimalia(const AuDNA& dna, AuDNA::CHROMATID chain, HANDEDNESS handedness, GROWTHSTAGE stage)
+AuAnimalia::AuAnimalia(const AuDNA& dna, AuDNA::CHROMATID chain, AuDef::HANDEDNESS handedness, GROWTHSTAGE stage)
 {
 	m_BendDominantArm = false;
 	m_Chain = chain;
@@ -167,7 +167,7 @@ void AuAnimalia::CopyVAOs(const AuAnimalia& c)
 	m_HeadHairTopVAO = c.m_HeadHairTopVAO;
 }
 
-bool AuAnimalia::Is(const AuDNA& dna, AuDNA::CHROMATID chain, HANDEDNESS handedness) const
+bool AuAnimalia::Is(const AuDNA& dna, AuDNA::CHROMATID chain, AuDef::HANDEDNESS handedness) const
 {
 	if(chain != m_Chain)
 		return false;

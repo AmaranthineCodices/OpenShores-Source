@@ -49,7 +49,7 @@ private:
 	bool								m_UseSpecWpn;
 
 public:
-	DaAnimal(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, GROWTHSTAGE stage);
+	DaAnimal(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, GROWTHSTAGE stage);
 	DaAnimal();
 	virtual ~DaAnimal();
 

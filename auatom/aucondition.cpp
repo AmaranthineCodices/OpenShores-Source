@@ -877,7 +877,7 @@ bool AuConImplantDNA::Tick(DaUnit* hostUnit) const
 
 		// Happy birthday little implant.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		HANDEDNESS isLefty = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS isLefty = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		DaAnimal* animal = new DaAnimal(m_DNA->Species(), chroma, isLefty, Juvenile);
 		animal->ConnectSignals();
 		animal->Create();
@@ -1042,7 +1042,7 @@ bool AuConImplantSpecies::Tick(DaUnit* hostUnit) const
 
 		// Happy birthday little implant.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		HANDEDNESS isLefty = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS isLefty = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		DaAnimal* animal = new DaAnimal(m_Species, chroma, isLefty, Juvenile);
 		animal->ConnectSignals();
 		animal->Create();
@@ -1660,7 +1660,7 @@ bool AuConPregnant::Tick(DaUnit* hostUnit) const
 	if(now >= DueDate() || m_Father == AuId::Haxus())
 	{
 		// Happy birthday little baby.
-		HANDEDNESS isLefty = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS isLefty = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		QString name;
 		if(m_Name.isEmpty())
 			name = g_Au.Dice().RandomPersonName();

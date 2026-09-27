@@ -828,7 +828,7 @@ quint64 AuMemClaim::MemoryUsage() const
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
 AuMemCharacterDNA4::AuMemCharacterDNA4(const QString& name, const AuDNABase& dna, quint8 chromatid, quint32 scriptId,
-		AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId,
+		AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, AuDef::HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId,
 		const AuGear* gear, GALAXY homeGalaxy, const AuId& homeSectorId, const QString& homeSectorName, const AuId& homeSystemId,
 		const QString& homeSystemName, const AuId& homeWorldId, const QString& homeWorldName, BODY_TYPE homeWorldBodyType)
 {
@@ -857,7 +857,7 @@ AuMemCharacterDNA4::AuMemCharacterDNA4(const QString& name, const AuDNABase& dna
 }
 
 AuMemCharacterDNA4::AuMemCharacterDNA4(const QString& name, const AuDNABase& dna, quint8 chromatid, quint32 scriptId,
-		AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId,
+		AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, AuDef::HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId,
 		const AuGear* gear, const DaWorld* homeWorld)
 {
 	m_Chromatid = chromatid;
@@ -1057,7 +1057,7 @@ void AuMemCharacterDNA4::operator<<(QDataStream& in)
 		in >> ui8;
 		m_Shave = (AuHairStyle::SHAVE)ui8;
 		in >> ui8;
-		m_Hand = (HANDEDNESS)ui8;
+		m_Hand = (AuDef::HANDEDNESS)ui8;
 		in >> ui8;
 		m_Stage = (GROWTHSTAGE)ui8;
 	}

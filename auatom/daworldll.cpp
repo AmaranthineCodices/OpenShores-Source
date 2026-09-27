@@ -2396,7 +2396,7 @@ DaNpc* DaWorldLL::SpawnCitizenWorker(DaBd* bd, const AuGlobeLLF& spawnLL)
 
 	// Create a citizen atom using the worker DNA at the city location.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* worker = new DaNpc(ROLE_Worker, bd->ResidentSpecies(), chroma, hand, g_Au.Dice().RandomPersonName());
 	worker->SetHomeWorld(this);
 	worker->ConnectSignals();
@@ -2805,7 +2805,7 @@ int DaWorldLL::AnimalEncounter(const AuGlobeLLF& nearLL, int mode)
 
 		// Create the animal so we can get physical dimensions.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		GROWTHSTAGE stage = g_Au.Dice().Roll(1,100) < 20 ? Juvenile : Mature;
 		DaAnimal* pan = new DaAnimal(DhDNA(enc.DNA()).Species(), chroma, hand, stage);	//DHH animalia
 		pan->ConnectSignals();
@@ -4649,7 +4649,7 @@ void DaWorldLL::RatEncounter(const AuPoint& loc, const AuSpecies& ratSpecies)
 
 	// Create the animal so we can get physical dimensions.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaAnimal* rat = new DaAnimal(ratSpecies, chroma, hand, Mature);
 	rat->ConnectSignals();
 	rat->Create();
@@ -6845,7 +6845,7 @@ DaNpc* DaWorldLL::CreateIndigenous(NPC_ROLE role, GROWTHSTAGE stage, const AuSpe
 		return 0;
 	// Create an indigenous native citizen.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* ind = new DaNpc(role, species, chroma, hand, g_Au.Dice().RandomPersonName());
 	ind->SetHomeWorld(this);
 	if(stage == Juvenile)

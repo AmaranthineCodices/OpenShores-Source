@@ -54,7 +54,7 @@ public:
 	GENDER								m_UnitGender[6];		// valid if result is LoggedIn. This is actually the literal content
 																// of the a_Person.sex field, which is now the converse of their
 																// chromatid, for backward compatibility with Male/Female data.
-	HANDEDNESS							m_UnitHand[6];			// valid if result is LoggedIn.
+	AuDef::HANDEDNESS							m_UnitHand[6];			// valid if result is LoggedIn.
 	quint8								m_UnitHair[6];			// valid if result is LoggedIn.
 	COMMODITYID							m_UnitHat[6];			// valid if result is LoggedIn.
 	AuId								m_UnitId[6];			// Valid if result is LoggedIn.
@@ -134,7 +134,7 @@ public:
 	GENDER								m_UnitGender[6];		// valid if result is LoggedIn. This is actually the literal content
 																// of the a_Person.sex field, which is now the converse of their
 																// chromatid, for backward compatibility with Male/Female data.
-	HANDEDNESS							m_UnitHand[6];			// valid if result is LoggedIn.
+	AuDef::HANDEDNESS							m_UnitHand[6];			// valid if result is LoggedIn.
 	quint8								m_UnitHair[6];			// valid if result is LoggedIn.
 	COMMODITYID							m_UnitHat[6];			// valid if result is LoggedIn.
 	AuId								m_UnitId[6];			// Valid if result is LoggedIn.

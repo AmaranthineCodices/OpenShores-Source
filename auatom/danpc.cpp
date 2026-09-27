@@ -34,7 +34,7 @@
 
 #define d_HomeSickDeath					7
 
-DaNpc::DaNpc(NPC_ROLE role, const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name) :
+DaNpc::DaNpc(NPC_ROLE role, const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name) :
 	DaCitizen(dna, chroma, hand, name, Mature)
 {
 	m_Con = false;
@@ -55,7 +55,7 @@ DaNpc::DaNpc(NPC_ROLE role, const AuDNABase& dna, AuDNABase::CHROMATID chroma, H
 	m_AudioSource = 0;
 }
 
-DaNpc::DaNpc(NPC_ROLE role, const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name) :
+DaNpc::DaNpc(NPC_ROLE role, const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name) :
 	DaCitizen(species, chroma, hand, name, Mature)
 {
 	m_Con = false;

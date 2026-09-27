@@ -1431,12 +1431,12 @@ protected:
 
 public:
 	// Person
-	DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			quint32 empire, GROWTHSTAGE stage);
 	// Citizen
-	DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			GROWTHSTAGE stage);
-	DaSentient(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+	DaSentient(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 			GROWTHSTAGE stage);
 	DaSentient();
 	virtual ~DaSentient();

@@ -1129,7 +1129,7 @@ void DtSceneServer::ReadPacket(const QByteArray& ba, QTcpSocket& tcpSocket)
 
 			if(dna)
 			{
-				result = CreateAvatar(charname, dna, (AuDNABase::CHROMATID)chroma, (HANDEDNESS)hand, idHomeWorld,
+				result = CreateAvatar(charname, dna, (AuDNABase::CHROMATID)chroma, (AuDef::HANDEDNESS)hand, idHomeWorld,
 						(SCENARIO)scenario, asteroidImpact, joinEmpire, joinPassCrypt);
 				delete dna;
 			}
@@ -2187,7 +2187,7 @@ unsigned char DtSceneServer::EstablishHomeWorld(const AuId& idSector)
 //  19 = dna is invalid for player avatar
 //  21 = invalid overlord
 //  22 = joinPassCrypt password incorrect
-quint8 DtSceneServer::CreateAvatar(const QString& charname, const AuDNABase* dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand,
+quint8 DtSceneServer::CreateAvatar(const QString& charname, const AuDNABase* dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand,
 		const AuId& idHomeWorld, SCENARIO scenario, const AuTime& asteroidImpact, quint32 joinEmpire,
 		const QByteArray& joinPassCrypt)
 {

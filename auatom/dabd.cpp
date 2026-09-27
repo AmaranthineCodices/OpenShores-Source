@@ -21611,7 +21611,7 @@ int DaBd::SpawnFarmAnimal(int maxAnimals, AuSpecies& animalSpecies)
 		nuChroma = curChroma == AuDNABase::Alpha ? AuDNABase::Beta : AuDNABase::Alpha;	// Opposite chromatid of existing animal.
 	}
 
-	HANDEDNESS isLefty = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	AuDef::HANDEDNESS isLefty = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 
 	// Create the animal so we can get physical dimensions.
 	DaAnimal* pan = new DaAnimal(animalSpecies, nuChroma, isLefty, Mature);
@@ -21760,7 +21760,7 @@ int DaBd::SpawnWorker(const DaWorldLL* llworld, DaAtomList& existingWorkers)
 	{
 		// Create a new citizen worker.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		DaNpc* worker = new DaNpc(ROLE_Worker, ResidentSpecies(), chroma, hand, g_Au.Dice().RandomPersonName());
 		worker->ConnectSignals();
 		worker->Create();
@@ -21937,7 +21937,7 @@ int DaBd::SpawnTroop()
 
 	// Create a new troop.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	int resourceZone = llworld->ResourceZone(GlobeLL().Longitude());
 	quint8 bodyQ = llworld->NaturalResourceQuality(CID_Animal, resourceZone);
 	DaNpc* troop = new DaNpc(ROLE_Troop, ResidentSpecies(), chroma, hand, g_Au.Dice().RandomPersonName());
@@ -38211,7 +38211,7 @@ DaNpc* DaBd::CreateWorkerAtStation(quint16 stationId, AuStation& station, DaAtom
 	{
 		// Create a new citizen worker.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		m_BdLock.lockForRead();
 		worker = new DaNpc(ROLE_Worker, m_ResidentSpecies, chroma, hand, g_Au.Dice().RandomPersonName());
 		m_BdLock.unlock();

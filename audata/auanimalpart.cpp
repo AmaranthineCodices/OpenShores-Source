@@ -91,7 +91,7 @@ void AuAnimalArm::AnglesForPose(const AuId& id, const AuElapsedTimer& when, cons
 	{
 		// Am I the dominant arm?
 		AuChromosome::LATERALITY laterality = m_Chromosome->Laterality();
-		HANDEDNESS handed = body.Handedness();
+		AuDef::HANDEDNESS handed = body.Handedness();
 		bendDominant = (laterality == AuChromosome::Left && handed == LeftHanded) ||
 			(laterality == AuChromosome::Right && handed == RightHanded);
 		if(bendDominant)

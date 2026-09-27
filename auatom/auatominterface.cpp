@@ -9329,7 +9329,7 @@ void AuAtomInterface::SetDNA(const AuDNA& dna)
 		// Check DNA for validity.
 		// The validity check was already performed on the client. If it fails now, they don't get an error message.
 		AuDNA::CHROMATID chroma = person->Chromatid();
-		HANDEDNESS hand = person->Handedness();
+		AuDef::HANDEDNESS hand = person->Handedness();
 		GROWTHSTAGE stage = person->GrowthStage();
 		AuAnimalia animalia(dna, chroma, hand, stage);
 		int dnaCheck = animalia.AvatarCheck();

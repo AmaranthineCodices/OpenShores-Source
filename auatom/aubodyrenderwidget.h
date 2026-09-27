@@ -168,13 +168,13 @@ public:	// Methods
 
 	void ResetView();
 
-	void SetAnimalia(const AuDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, COMMODITYID clothing, COMMODITYID armor,
+	void SetAnimalia(const AuDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, COMMODITYID clothing, COMMODITYID armor,
 			COMMODITYID hat, quint8 visorState, AuHairStyle::STYLE haircut, AuHairStyle::SHAVE shave);
 
-	void SetBody(const DhDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, COMMODITYID clothing, COMMODITYID helmet,
+	void SetBody(const DhDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, COMMODITYID clothing, COMMODITYID helmet,
 			quint8 visorState);
 
-	void SetHandedness(HANDEDNESS hand);
+	void SetHandedness(AuDef::HANDEDNESS hand);
 
 	void SetId(const AuId& id);
 

@@ -3256,7 +3256,7 @@ void DgData::SetClientAvatars(const AuId unitIds[6], const QString unitNames[6])
 }
 
 void DgData::SetClientInfo(int confirmNum, unsigned int idPlayer, const AuId idUnits[6], const QString names[6],
-		const AuDNABase* dna[6], const AuDNABase::CHROMATID chroma[6], const HANDEDNESS hand[6], COMMODITYID clothes[6],
+		const AuDNABase* dna[6], const AuDNABase::CHROMATID chroma[6], const AuDef::HANDEDNESS hand[6], COMMODITYID clothes[6],
 		COMMODITYID armor[6], COMMODITYID hat[6], quint8 visor[6], const AuHairStyle::STYLE hair[6],
 		const AuHairStyle::SHAVE shave[6], ACCOUNT acctType, const AuTime& acctExpiry)
 {
@@ -3755,7 +3755,7 @@ bool DgData::AddClientUnit(const AuId& idUnit,
 		const QString& name,
 		const AuDNABase* dna,
 		AuDNABase::CHROMATID chroma,
-		HANDEDNESS hand,
+		AuDef::HANDEDNESS hand,
 		COMMODITYID clothes,
 		COMMODITYID armor,
 		COMMODITYID hat,

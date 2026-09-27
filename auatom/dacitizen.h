@@ -65,8 +65,8 @@ private:
 
 public:
 	// Constructors
-	DaCitizen(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage);
-	DaCitizen(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage);
+	DaCitizen(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage);
+	DaCitizen(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage);
 	DaCitizen();
 	virtual ~DaCitizen();
 

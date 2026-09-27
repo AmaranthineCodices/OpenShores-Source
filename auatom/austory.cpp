@@ -5696,7 +5696,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			int placement = m_Parms[pidx++].toInt();
 			QString name(m_Parms[pidx++].toString());						// Character Name
 			GENDER gender = (GENDER)m_Parms[pidx++].toInt();
-			HANDEDNESS handedness = (HANDEDNESS)m_Parms[pidx++].toInt();
+			AuDef::HANDEDNESS handedness = (AuDef::HANDEDNESS)m_Parms[pidx++].toInt();
 			qint32 empireSpec = m_Parms[pidx++].toInt();
 			AuDNABase* dna = DNAParameterNew(m_Parms[pidx++], person);
 			if(!dna)
@@ -6018,7 +6018,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			AuGlobeLLF ll = VariableLL(u1, vars);
 			QString name(m_Parms[pidx++].toString());						// Character Name
 			GENDER gender = (GENDER)m_Parms[pidx++].toInt();
-			HANDEDNESS handedness = (HANDEDNESS)m_Parms[pidx++].toInt();
+			AuDef::HANDEDNESS handedness = (AuDef::HANDEDNESS)m_Parms[pidx++].toInt();
 			qint32 empireSpec = m_Parms[pidx++].toInt();
 			int dnaparm = pidx++;
 			GROWTHSTAGE stage = (GROWTHSTAGE)m_Parms[pidx++].toInt();
@@ -7405,7 +7405,7 @@ QVariant AuScriptLine::AtomCreateCharacter(DaPerson& person, const QMap<QString,
 	double distance = m_Parms[pidx++].toDouble() * FeetPerMeter();				// Distance from atom.
 	QString name(m_Parms[pidx++].toString());									// Character Name
 	GENDER gender = (GENDER)m_Parms[pidx++].toInt();
-	HANDEDNESS handedness = (HANDEDNESS)m_Parms[pidx++].toInt();
+	AuDef::HANDEDNESS handedness = (AuDef::HANDEDNESS)m_Parms[pidx++].toInt();
 	qint32 empireSpec = m_Parms[pidx++].toInt();
 	AuDNABase* dna = DNAParameterNew(m_Parms[pidx++], person);
 	if(!dna)

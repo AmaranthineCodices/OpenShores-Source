@@ -60,7 +60,7 @@ AuCitizenSound::AuCitizenSound(const AuCitizenSound& c)
 
 //-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-DaCitizen::DaCitizen(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
+DaCitizen::DaCitizen(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
 	DaSentient(dna, chroma, hand, name, stage)
 {
 	m_Culled = 0;
@@ -70,7 +70,7 @@ DaCitizen::DaCitizen(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNE
 	m_WeightCarried = 0;
 }
 
-DaCitizen::DaCitizen(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
+DaCitizen::DaCitizen(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
 		GROWTHSTAGE stage) : DaSentient(species, chroma, hand, name, stage)
 {
 	m_Culled = 0;
