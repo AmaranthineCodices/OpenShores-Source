@@ -1974,7 +1974,7 @@ int DaVessel::MonsterEncounterNow()
 	{
 		// Create the animal so we can get physical dimensions.
 		AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-		AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+		HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 		DaAnimal* pan = new DaAnimal(monsterDNA.Species(), chroma, hand, Mature);
 		pan->ConnectSignals();
 		pan->Create();
@@ -2662,7 +2662,7 @@ DaNpc* DaVessel::LoadPirateOfficer(quint32 pirateEmpire, const AuSpecies& specie
 
 	// Create an officer.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* officer = new DaNpc(ROLE_Officer, species, chroma, hand, g_Au.Dice().RandomPersonName());
 	officer->ConnectSignals();
 	officer->Create();
@@ -2706,7 +2706,7 @@ DaNpc* DaVessel::LoadPirateCrew(quint32 pirateEmpire, const AuSpecies& species)
 		return 0;
 	// Create a crewman.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* crew = new DaNpc(ROLE_Crew, species, chroma, hand, g_Au.Dice().RandomPersonName());
 	crew->ConnectSignals();
 	crew->Create();
@@ -2750,7 +2750,7 @@ DaNpc* DaVessel::LoadPirateTroop(quint32 pirateEmpire, const AuSpecies& species)
 		return 0;
 	// Create a troop.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* troop = new DaNpc(ROLE_Troop, species, chroma, hand, g_Au.Dice().RandomPersonName());
 	troop->ConnectSignals();
 	troop->Create();
@@ -2794,7 +2794,7 @@ DaNpc* DaVessel::LoadPiratePassenger(quint32 pirateEmpire, const AuSpecies& spec
 		return 0;
 	// Create a passenger.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* passenger = new DaNpc(ROLE_Passenger, species, chroma, hand, g_Au.Dice().RandomPersonName());
 	passenger->ConnectSignals();
 	passenger->Create();
@@ -3327,7 +3327,7 @@ void DaVessel::RatEncounter(const AuPoint& loc)
 
 	// Create the animal so we can get physical dimensions.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaAnimal* rat = new DaAnimal(RatSpecies(), chroma, hand, Mature);
 	rat->ConnectSignals();
 	rat->Create();
@@ -5450,7 +5450,7 @@ bool DaVessel::SpawnTroop(DaBd* bd)
 	// Create a citizen atom using the worker DNA at the city location. We can't use the DNA from this terrain's region because
 	// it might be invalid. NOTE: The city's location is its longitude and latitude, as returned by DaWorld::GetRealLongLat.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	int resourceZone = llworld->ResourceZone(bd->GlobeLL().Longitude());
 	quint8 bodyQ = llworld->NaturalResourceQuality(CID_Animal, resourceZone);
 	DaNpc* troop = new DaNpc(ROLE_Troop, bd->ResidentSpecies(), chroma, hand, g_Au.Dice().RandomPersonName());
@@ -6104,7 +6104,7 @@ DaNpc* DaVessel::BoardTroop(quint32 empireId, const QList<AuSpecies>& species, A
 
 	// Create a citizen atom using the city's worker DNA.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	int di = g_Au.Dice().Roll(1, species.size(), -1);
 	DaNpc* troop = new DaNpc(ROLE_Troop, species[di], chroma, hand, g_Au.Dice().RandomPersonName());
 	troop->ConnectSignals();
@@ -6411,7 +6411,7 @@ DaNpc* DaVessel::BoardOfficer(const DaWorldLL& llworld, quint32 empireId, const 
 	if(name.isEmpty())
 		name = g_Au.Dice().RandomPersonName();
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	DaNpc* officer = new DaNpc(ROLE_Officer, species, chroma, hand, name);
 	officer->SetHomeWorld(&llworld);
 	officer->ConnectSignals();
@@ -6471,7 +6471,7 @@ DaNpc* DaVessel::BoardCrew(quint32 empireId, const QList<AuSpecies>& species, Au
 
 	// Create a citizen atom using the city's worker DNA.
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	int di = g_Au.Dice().Roll(1, species.size(), -1);
 	DaNpc* crew = new DaNpc(ROLE_Crew, species[di], chroma, hand, g_Au.Dice().RandomPersonName());
 	crew->ConnectSignals();
@@ -6534,7 +6534,7 @@ DaNpc* DaVessel::BoardColonist(const AuId& fromAirport, const DaWorld* fromWorld
 		return 0;
 
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 	int di = g_Au.Dice().Roll(1, species.size(), -1);
 	DaNpc* colonist = new DaNpc(ROLE_Passenger, species[di], chroma, hand, g_Au.Dice().RandomPersonName());
 	colonist->ConnectSignals();
@@ -18543,7 +18543,7 @@ DaNpc* DaVessel::ReviveCryoBerthOccupant(const AuMatrix4x4& where, const AuSpeci
 
 	QString name = g_Au.Dice().RandomPersonName();
 	AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-	AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+	HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 
 	DaNpc* npc;
 	switch(role)

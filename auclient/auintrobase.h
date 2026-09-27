@@ -87,7 +87,7 @@ class AuIntroAvatarWidget : public QWidget
 	AuDNABase*							m_UnitDNA;
 	AuId								m_UnitId;
 	int									m_UnitIndex;
-	AuDef::HANDEDNESS							m_UnitHand;
+	HANDEDNESS							m_UnitHand;
 
 	// Widgets
 	QToolButton*						m_Enter;
@@ -115,7 +115,7 @@ public:
 		return m_UnitChromatid;
 	}
 
-	inline AuDef::HANDEDNESS Handedness() const
+	inline HANDEDNESS Handedness() const
 	{
 		return m_UnitHand;
 	}
@@ -125,7 +125,7 @@ public:
 		return m_UnitId;
 	}
 
-	void SetAvatar(const AuId& id, const QString& name, const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand);
+	void SetAvatar(const AuId& id, const QString& name, const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand);
 
 	void SetCurrent(bool isCurrent);
 
@@ -259,7 +259,7 @@ class AuIntroCreateAvatar : public QWidget
 	int									m_AvatarIndex;			// Index of slot for which we are creating an avatar.
 	int									m_AvatarSampleRendered;	// Number of frames of sample rendered.
 	AuDNABase::CHROMATID				m_Chromatid;
-	AuDef::HANDEDNESS							m_Hand;
+	HANDEDNESS							m_Hand;
 	bool								m_Solo;
 
 	// Widgets
@@ -307,7 +307,7 @@ public slots:
 	void UpdateGL();
 
 protected:
-	void SetAvatar(const DhDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand);
+	void SetAvatar(const DhDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand);
 
 protected slots:
 	void DNAChanged();
@@ -334,7 +334,7 @@ class AuIntroCreateAvatar4 : public QWidget
 	int									m_AvatarIndex;			// Index of slot for which we are creating an avatar.
 	int									m_AvatarSampleRendered;	// Number of frames of sample rendered.
 	AuDNABase::CHROMATID				m_Chromatid;
-	AuDef::HANDEDNESS							m_Hand;
+	HANDEDNESS							m_Hand;
 	bool								m_Solo;
 
 	// Widgets
@@ -372,7 +372,7 @@ public slots:
 	void UpdateGL();
 
 protected:
-	void SetAvatar(const AuDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand);
+	void SetAvatar(const AuDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand);
 
 protected slots:
 	void CreateDNA();
@@ -405,13 +405,13 @@ public:
 
 	AuDNABase::CHROMATID Chromatid() const;
 
-	AuDef::HANDEDNESS Handedness() const;
+	HANDEDNESS Handedness() const;
 
 	QString Name() const;
 
 	void SetChromatid(AuDNABase::CHROMATID chroma);
 
-	void SetHandedness(AuDef::HANDEDNESS hand);
+	void SetHandedness(HANDEDNESS hand);
 
 	void SetSolo(bool solo);
 
@@ -439,7 +439,7 @@ public:
 
 	AuDNABase::CHROMATID Chromatid() const;
 
-	AuDef::HANDEDNESS Handedness() const;
+	HANDEDNESS Handedness() const;
 
 	QString Name() const;
 
@@ -447,7 +447,7 @@ public:
 
 	void SetDNA(const AuDNA& dna);
 
-	void SetHandedness(AuDef::HANDEDNESS hand);
+	void SetHandedness(HANDEDNESS hand);
 
 	void SetSolo(bool solo);
 

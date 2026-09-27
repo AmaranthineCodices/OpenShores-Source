@@ -3444,7 +3444,7 @@ AuItem* AuItem::FixItem() const
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuItemDNA::AuItemDNA(const AuDNABase* dna, AuDNABase::CHROMATID chromatid, bool dnaViable, bool sentient, AuDef::HANDEDNESS hand,
+AuItemDNA::AuItemDNA(const AuDNABase* dna, AuDNABase::CHROMATID chromatid, bool dnaViable, bool sentient, HANDEDNESS hand,
 		GROWTHSTAGE stage, AuHairStyle::STYLE hair, AuHairStyle::SHAVE shave, COMMODITYID cid, quint8 quality,
 		quint32 empireOfOrigin, quint32 count) :
 	AuItem(cid, quality, empireOfOrigin, count)
@@ -3713,7 +3713,7 @@ void AuItemDNA::operator<<(QDataStream& in)
 		in >> ui8dna;
 		quint8 gc = ui8dna >> 4;											// top nibble used to be gender
 		m_DNAChromatid = (gc == AuDNA::Alpha) ? AuDNA::Beta : AuDNA::Alpha;	// unswap the chromatids or change gender to chromatid
-		m_DNAHand = (AuDef::HANDEDNESS)(ui8dna & 0x0f);							// bottom nibble is handedness
+		m_DNAHand = (HANDEDNESS)(ui8dna & 0x0f);							// bottom nibble is handedness
 		in >> ui8dna;
 		m_DNAHair = (AuHairStyle::STYLE)ui8dna;
 		in >> ui8dna;

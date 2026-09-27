@@ -6301,7 +6301,7 @@ void DaDesigner::PreviewPeople(const AuSpecies& species)
 
 						// Create a worker.
 						AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-						AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+						HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 						DaNpc* worker = new DaNpc(ROLE_Worker, species, chroma, hand, g_Au.Dice().RandomPersonName());
 						worker->ConnectSignals();
 						worker->Create();
@@ -6338,7 +6338,7 @@ void DaDesigner::PreviewPeople(const AuSpecies& species)
 
 						// Create a troop.
 						AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-						AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+						HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 						DaNpc* troop = new DaNpc(ROLE_Troop, species, chroma, hand, g_Au.Dice().RandomPersonName());
 						troop->ConnectSignals();
 						troop->Create();
@@ -6376,7 +6376,7 @@ void DaDesigner::PreviewPeople(const AuSpecies& species)
 
 						// Create an animal.
 						AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-						AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+						HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 						DaAnimal* animal = new DaAnimal(animalDNA.Species(), chroma, hand, Mature);
 						animal->ConnectSignals();
 						animal->Create();
@@ -6453,7 +6453,7 @@ void DaDesigner::PreviewPeople(const AuSpecies& species)
 
 					// Create an animal.
 					AuDNABase::CHROMATID chroma = (AuDNABase::CHROMATID)g_Au.Dice().Roll(1,2,-1);
-					AuDef::HANDEDNESS hand = (AuDef::HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
+					HANDEDNESS hand = (HANDEDNESS)g_Au.Dice().Roll(1,2,-1);
 					DaAnimal* animal = new DaAnimal(animalDNA.Species(), chroma, hand, Mature);
 					animal->ConnectSignals();
 					animal->Create();

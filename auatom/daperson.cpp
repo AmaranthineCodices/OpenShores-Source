@@ -378,7 +378,7 @@ public:
 
 //-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-DaPerson::DaPerson(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage,
+DaPerson::DaPerson(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage,
 		quint32 empireId) : DaSentient(dna, chroma, hand, name, empireId, stage)
 {
 	Q_ASSERT(CI_LASTITEM <= 256);	// Control input values have exceeded the usable range of 0-255.
@@ -13621,7 +13621,7 @@ DaItem* DaPerson::DropItemButchered(COMMODITYID cid, quint8 quality, quint32 emp
 		return 0;
 	if(!dna)
 		return DropItemDisassembled(cid, quality, empireOfOrigin, itemParent, t);
-	AuDef::HANDEDNESS hand = RightHanded;
+	HANDEDNESS hand = RightHanded;
 	AuHairStyle::STYLE hair = AuHairStyle::Unkempt;
 	AuHairStyle::SHAVE shave = AuHairStyle::Unshaven;
 	AuItemDNA* item = new AuItemDNA(dna, dnaChroma, dnaIsViable, dnaIsSentient, hand, dnaGrowthStage, hair, shave, cid, quality,

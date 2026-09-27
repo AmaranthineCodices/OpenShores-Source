@@ -155,7 +155,7 @@ public:
 
 	void SetupLights(const AuMatrix4x4& model);
 
-	void ViewAnimal(const AuDNA& dna, GENDER gender, AuDef::HANDEDNESS handedness);
+	void ViewAnimal(const AuDNA& dna, GENDER gender, HANDEDNESS handedness);
 
 	void ViewBody(int gender, bool isLefty, const DhDNA& dna);
 

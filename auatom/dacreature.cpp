@@ -58,7 +58,7 @@
 #define c_GunMinZ	-1.3777			// 3ds model min extent of the CID_HeavyWeapon model.
 
 // Avatar
-DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, quint32 idEmpire,
+DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, quint32 idEmpire,
 		GROWTHSTAGE stage) : DaUnit(name, idEmpire)
 {
 	try
@@ -109,7 +109,7 @@ DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef:
 }
 
 // Citizen
-DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
+DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
 	DaUnit(name, 0)
 {
 	try
@@ -159,7 +159,7 @@ DaCreature::DaCreature(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef:
 	}
 }
 
-DaCreature::DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
+DaCreature::DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
 		GROWTHSTAGE stage) : DaUnit(name, 0)
 {
 	AuDNABase* dna = species.CreateDNA();
@@ -218,7 +218,7 @@ DaCreature::DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, Au
 	}
 }
 
-DaCreature::DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, GROWTHSTAGE stage)
+DaCreature::DaCreature(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, GROWTHSTAGE stage)
 {
 	AuDNABase* dna = species.CreateDNA();
 	if(dna)
@@ -4252,7 +4252,7 @@ void DaCreature::CombatArmorEffectiveness(WEAPONMODE mode, WEAPONEFFECT effect, 
 	else if(m_Body)
 	{
 		float skinAbsorb, skinBlock;
-		AuDef::HANDEDNESS hand = m_Body->IsLeftHanded() ? LeftHanded : RightHanded;
+		HANDEDNESS hand = m_Body->IsLeftHanded() ? LeftHanded : RightHanded;
 		AuItemDNA mySkin(&m_Body->DNA(), m_Body->Chromatid(), true, false, hand, GrowthStage(), Haircut(), Shave(),
 				CID_LeatherClothes, QualityBaseline(), 0, 1);
 		mySkin.CombatArmorEffectiveness(mode, effect, skinAbsorb, skinBlock);
@@ -6425,7 +6425,7 @@ void DaCreature::operator<<(QDataStream& in)
 		AuDNA dna;
 		in >> dna;
 		in >> ui8;
-		AuDef::HANDEDNESS handedness = (AuDef::HANDEDNESS)ui8;
+		HANDEDNESS handedness = (HANDEDNESS)ui8;
 		in >> ui8;
 		m_Haircut = (AuHairStyle::STYLE)ui8;
 		in >> ui8;
@@ -9213,7 +9213,7 @@ void DaCreature::SetDNA(const AuDNABase& dna)
 {
 	// Get settings from current body if possible.
 	AuDNABase::CHROMATID chroma;
-	AuDef::HANDEDNESS hand;
+	HANDEDNESS hand;
 	short int hp;
 	m_BodyLock.lockForRead();
 	if(m_Animalia)
@@ -10370,9 +10370,9 @@ AuPose DaCreature::CurrentMouthPose() const
 	return pose;
 }
 
-AuDef::HANDEDNESS DaCreature::Handedness() const
+HANDEDNESS DaCreature::Handedness() const
 {
-	AuDef::HANDEDNESS hand;
+	HANDEDNESS hand;
 	m_BodyLock.lockForRead();
 	if(m_Body)
 		hand = m_Body->IsLeftHanded() ? LeftHanded : RightHanded;

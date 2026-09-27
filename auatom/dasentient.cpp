@@ -1811,7 +1811,7 @@ void AuSDShipLootShip::Execute(DaSentient* sent, int msElapsed)
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, quint32 empire,
+DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, quint32 empire,
 		GROWTHSTAGE stage) :
 	DaCreature(dna, chroma, hand, name, empire, stage)
 {
@@ -1829,7 +1829,7 @@ DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef:
 	m_TurnZ = 0;
 }
 
-DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
+DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name, GROWTHSTAGE stage) :
 	DaCreature(dna, chroma, hand, name, stage)
 {
 	m_AIIsAlert = false;
@@ -1846,7 +1846,7 @@ DaSentient::DaSentient(const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef:
 	m_TurnZ = 0;
 }
 
-DaSentient::DaSentient(const AuSpecies& species, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, const QString& name,
+DaSentient::DaSentient(const AuSpecies& species, AuDNABase::CHROMATID chroma, HANDEDNESS hand, const QString& name,
 		GROWTHSTAGE stage) : DaCreature(species, chroma, hand, name, stage)
 {
 	m_AIIsAlert = false;

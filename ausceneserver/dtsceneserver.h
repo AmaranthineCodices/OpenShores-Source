@@ -292,7 +292,7 @@ private:
 			quint16 stationId, quint8 seatIndex, AuPoint& vec, bool parentAlso, bool parentAtRest, AuAtomPos& parentPos,
 			AuPose parentPose[DpBody::PS_Count], quint16 parentWhichConsole, quint16 parentStationId, AuPoint& parentVec);
 
-	quint8 CreateAvatar(const QString& charname, const AuDNABase* dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand,
+	quint8 CreateAvatar(const QString& charname, const AuDNABase* dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand,
 			const AuId& idHomeWorld, SCENARIO scenario, const AuTime& asteroidImpact, quint32 joinEmpire,
 			const QByteArray& joinPassCrypt);
 

@@ -35,7 +35,7 @@ public:
 
 	GENDER Gender() const;
 
-	AuDef::HANDEDNESS Handedness() const;
+	HANDEDNESS Handedness() const;
 
 	QString Name() const;
 

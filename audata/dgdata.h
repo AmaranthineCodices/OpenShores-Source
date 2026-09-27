@@ -925,7 +925,7 @@ public:
 		return AuHairStyle::Bald;
 	}
 
-	inline AuDef::HANDEDNESS ClientUnitHand(const AuId& unitId) const
+	inline HANDEDNESS ClientUnitHand(const AuId& unitId) const
 	{
 		for(int iu=0; iu<6; iu++)
 			if(m_UnitId[iu] == unitId)
@@ -1042,7 +1042,7 @@ public:
 			const QString names[6],
 			const AuDNABase* dna[6],
 			const AuDNABase::CHROMATID chroma[6],
-			const AuDef::HANDEDNESS hand[6],
+			const HANDEDNESS hand[6],
 			COMMODITYID clothes[6],
 			COMMODITYID armor[6],
 			COMMODITYID hat[6],
@@ -1061,7 +1061,7 @@ public:
 			const QString& name,
 			const AuDNABase* dna,
 			AuDNABase::CHROMATID chroma,
-			AuDef::HANDEDNESS hand,
+			HANDEDNESS hand,
 			COMMODITYID clothes,
 			COMMODITYID armor,
 			COMMODITYID hat,
@@ -1183,7 +1183,7 @@ private:
 	COMMODITYID							m_UnitClothes[6];
 	AuDNABase*							m_UnitDNA[6];			// dna of all units controlled by the player, or 0.
 	AuHairStyle::STYLE					m_UnitHair[6];
-	AuDef::HANDEDNESS							m_UnitHand[6];			// handedness of all units controlled by the player
+	HANDEDNESS							m_UnitHand[6];			// handedness of all units controlled by the player
 	COMMODITYID							m_UnitHat[6];
 	AuId								m_UnitId[6];			// ids of all units controlled by the player.
 	QString								m_UnitName[6];			// names of all units controlled by the player.

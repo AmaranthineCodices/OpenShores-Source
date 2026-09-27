@@ -22,7 +22,7 @@ private:
 	AuDNA::CHROMATID					m_Chain;
 	AuDNA								m_DNA;
 	GROWTHSTAGE							m_GrowthStage;
-	AuDef::HANDEDNESS							m_Handedness;
+	HANDEDNESS							m_Handedness;
 	qint16								m_HitPoints;
 	AuTime								m_LastSpecUse;			// Time special attack was last used.
 
@@ -54,7 +54,7 @@ private:
 	AuGLVAO								m_HeadHairTopVAO;		// Hair is always blended.
 
 public:	// Constructors/Destructors
-	AuAnimalia(const AuDNA& dna, AuDNA::CHROMATID chain, AuDef::HANDEDNESS handedness, GROWTHSTAGE stage);
+	AuAnimalia(const AuDNA& dna, AuDNA::CHROMATID chain, HANDEDNESS handedness, GROWTHSTAGE stage);
 	AuAnimalia();
 	~AuAnimalia();
 	AuAnimalia(const AuAnimalia& c);
@@ -242,7 +242,7 @@ public:	// Methods
 		return m_Haircut;
 	}
 
-	inline AuDef::HANDEDNESS Handedness() const
+	inline HANDEDNESS Handedness() const
 	{
 		return m_Handedness;
 	}
@@ -275,7 +275,7 @@ public:	// Methods
 
 	static void InitPoses(const AuPose& pose, AuPose poses[AuAnimalPart::PS_Count]);
 
-	bool Is(const AuDNA& dna, AuDNA::CHROMATID chain, AuDef::HANDEDNESS handedness) const;
+	bool Is(const AuDNA& dna, AuDNA::CHROMATID chain, HANDEDNESS handedness) const;
 
 	bool IsAbilityPointsValidForPerson() const;
 
@@ -620,7 +620,7 @@ public:	// Methods
 		return true;
 	}
 
-	inline bool SetHandedness(AuDef::HANDEDNESS hand)
+	inline bool SetHandedness(HANDEDNESS hand)
 	{
 		if(m_Handedness == hand)
 			return false;

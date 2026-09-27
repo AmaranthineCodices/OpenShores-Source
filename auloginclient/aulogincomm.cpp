@@ -220,7 +220,7 @@ void AuLoginComm::ReadPacket(const QByteArray& ba)
 			QString name[6];
 			const AuDNABase* dna[6];
 			AuDNABase::CHROMATID chroma[6];
-			AuDef::HANDEDNESS hand[6];
+			HANDEDNESS hand[6];
 			COMMODITYID clothes[6];
 			COMMODITYID armor[6];
 			COMMODITYID hat[6];
@@ -239,7 +239,7 @@ void AuLoginComm::ReadPacket(const QByteArray& ba)
 				chroma[iu] = ui8 == Male ? AuDNABase::Alpha : AuDNABase::Beta;	// Server sends gender Male|Female. Convert to
 																				// chromatid.
 				block >> ui8;
-				hand[iu] = (AuDef::HANDEDNESS)ui8;
+				hand[iu] = (HANDEDNESS)ui8;
 				block >> ui8;
 				hair[iu] = (AuHairStyle::STYLE)ui8;
 				block >> ui8;

@@ -368,7 +368,7 @@ void AuIntroAvatarWidget::Clear()
 }
 
 void AuIntroAvatarWidget::SetAvatar(const AuId& id, const QString& name, const AuDNABase& dna, AuDNABase::CHROMATID chroma,
-		AuDef::HANDEDNESS hand)
+		HANDEDNESS hand)
 {
 	m_UnitChromatid = chroma;
 	m_UnitDNA = dna.Clone();
@@ -1116,7 +1116,7 @@ void AuIntroSoloAvatar::SetAccountInfo()
 			QString names[6];
 			const AuDNABase* dna[6];
 			AuDNABase::CHROMATID chroma[6];
-			AuDef::HANDEDNESS hand[6];
+			HANDEDNESS hand[6];
 			COMMODITYID clothes[6];
 			COMMODITYID armor[6];
 			COMMODITYID hat[6];
@@ -1936,7 +1936,7 @@ void AuIntroCreateAvatar::Load()
 	}
 }
 
-void AuIntroCreateAvatar::SetAvatar(const DhDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand)
+void AuIntroCreateAvatar::SetAvatar(const DhDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand)
 {
 	m_Chromatid = chroma;
 	m_Hand = hand;
@@ -2266,7 +2266,7 @@ void AuIntroCreateAvatar::EnterNewAvatar()
 
 	QString name = m_Individual->Name();
 	AuDNABase::CHROMATID chroma = m_Individual->Chromatid();
-	AuDef::HANDEDNESS hand = m_Individual->Handedness();
+	HANDEDNESS hand = m_Individual->Handedness();
 	GALAXY galaxy = m_Scenarios->Galaxy();
 	DhDNA dna(m_AvatarSample->DNA3());
 	SCENARIO scenario = m_Scenarios->Scenario();
@@ -2605,7 +2605,7 @@ void AuIntroCreateAvatar4::Load()
 }
 */
 
-void AuIntroCreateAvatar4::SetAvatar(const AuDNA& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand)
+void AuIntroCreateAvatar4::SetAvatar(const AuDNA& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand)
 {
 	m_Chromatid = chroma;
 	m_Hand = hand;
@@ -2932,7 +2932,7 @@ void AuIntroCreateAvatar4::EnterNewAvatar()
 
 	QString name = m_Individual->Name();
 	AuDNABase::CHROMATID chroma = m_Individual->Chromatid();
-	AuDef::HANDEDNESS hand = m_Individual->Handedness();
+	HANDEDNESS hand = m_Individual->Handedness();
 	GALAXY galaxy = m_Scenarios->Galaxy();
 	AuDNA dna(m_AvatarSample->DNA4());
 	SCENARIO scenario = m_Scenarios->Scenario();
@@ -3045,14 +3045,14 @@ AuDNABase::CHROMATID AuIntroCreateIndividual::Chromatid() const
 	return (AuDNABase::CHROMATID)m_Chromatid->itemData(m_Chromatid->currentIndex()).toUInt();
 }
 
-void AuIntroCreateIndividual::SetHandedness(AuDef::HANDEDNESS hand)
+void AuIntroCreateIndividual::SetHandedness(HANDEDNESS hand)
 {
 	m_Hand->setCurrentIndex(m_Hand->findData(hand));
 }
 
-AuDef::HANDEDNESS AuIntroCreateIndividual::Handedness() const
+HANDEDNESS AuIntroCreateIndividual::Handedness() const
 {
-	return (AuDef::HANDEDNESS)m_Hand->itemData(m_Hand->currentIndex()).toUInt();
+	return (HANDEDNESS)m_Hand->itemData(m_Hand->currentIndex()).toUInt();
 }
 
 void AuIntroCreateIndividual::SetSolo(bool solo)
@@ -3135,14 +3135,14 @@ AuDNABase::CHROMATID AuIntroCreateIndividual4::Chromatid() const
 	return (AuDNABase::CHROMATID)m_Chromatid->itemData(m_Chromatid->currentIndex()).toUInt();
 }
 
-void AuIntroCreateIndividual4::SetHandedness(AuDef::HANDEDNESS hand)
+void AuIntroCreateIndividual4::SetHandedness(HANDEDNESS hand)
 {
 	m_Hand->setCurrentIndex(m_Hand->findData(hand));
 }
 
-AuDef::HANDEDNESS AuIntroCreateIndividual4::Handedness() const
+HANDEDNESS AuIntroCreateIndividual4::Handedness() const
 {
-	return (AuDef::HANDEDNESS)m_Hand->itemData(m_Hand->currentIndex()).toUInt();
+	return (HANDEDNESS)m_Hand->itemData(m_Hand->currentIndex()).toUInt();
 }
 
 void AuIntroCreateIndividual4::SetDNA(const AuDNA& dna)

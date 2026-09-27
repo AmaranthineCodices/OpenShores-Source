@@ -1045,7 +1045,7 @@ void AuView::DeleteViewObjects()
 	m_3dsModelFile = "";
 }
 
-void AuView::ViewAnimal(const AuDNA& dna, GENDER gender, AuDef::HANDEDNESS handedness)
+void AuView::ViewAnimal(const AuDNA& dna, GENDER gender, HANDEDNESS handedness)
 {
 	if(gender == Male)
 	{
@@ -1630,7 +1630,7 @@ void AuView::ViewSave()
 void AuView::SetDNAPair(const AuDNA& dna)
 {
 	// Male
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 	if(m_AnimalMale && !m_AnimalMale->Is(dna, AuDNA::Alpha, handedness))
 	{
 		m_AnimalMaleDelete = m_AnimalMale;
@@ -1685,7 +1685,7 @@ void AuView::SetDNAPair(const AuDNA& dna)
 void AuView::SetDNAPair(const AuDNA& dna, int modelchg)
 {
 	// Male
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 	if(m_AnimalMale && (modelchg & 0x01))
 	{
 		m_AnimalMaleDelete = m_AnimalMale;
@@ -1751,7 +1751,7 @@ void AuView::SetMaleHair(AuHairStyle::STYLE cut, AuHairStyle::SHAVE shave)
 		m_AnimalMale = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 
 	m_AnimalMale = new AuAnimalia(m_DNA, AuDNA::Alpha, handedness, Mature);
 	m_AnimalMale->Pose(AuId(Male), m_AnimalMalePose, true, 1);
@@ -1780,7 +1780,7 @@ void AuView::SetFemaleHair(AuHairStyle::STYLE cut, AuHairStyle::SHAVE shave)
 		m_AnimalFemale = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = LeftHanded;
+	HANDEDNESS handedness = LeftHanded;
 
 	m_AnimalFemale = new AuAnimalia(m_DNA, AuDNA::Beta, handedness, Mature);
 	m_AnimalFemale->Pose(AuId(Female), m_AnimalFemalePose, true, 1);
@@ -1812,7 +1812,7 @@ void AuView::SetMaleClothing(COMMODITYID hat, COMMODITYID armor, COMMODITYID clo
 		m_AnimalMale = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 
 	m_AnimalMale = new AuAnimalia(m_DNA, AuDNA::Alpha, handedness, Mature);
 	m_AnimalMale->Pose(AuId(Male), m_AnimalMalePose, true, 1);
@@ -1844,7 +1844,7 @@ void AuView::SetFemaleClothing(COMMODITYID hat, COMMODITYID armor, COMMODITYID c
 		m_AnimalFemale = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = LeftHanded;
+	HANDEDNESS handedness = LeftHanded;
 
 	m_AnimalFemale = new AuAnimalia(m_DNA, AuDNA::Beta, handedness, Mature);
 	m_AnimalFemale->Pose(AuId(Female), m_AnimalFemalePose, true, 1);

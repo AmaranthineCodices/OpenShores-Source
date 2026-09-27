@@ -124,7 +124,7 @@ private:
 private:
 	AuDNA								m_HumanDNA;				// Default human for primeval world and solo designer.
 	GENDER								m_HumanGender;			// Default human for primeval world and solo designer.
-	AuDef::HANDEDNESS							m_HumanHand;			// Default human for primeval world and solo designer.
+	HANDEDNESS							m_HumanHand;			// Default human for primeval world and solo designer.
 	QString								m_HumanName;			// Default human for primeval world and solo designer.
 
 public:
@@ -884,7 +884,7 @@ public:
 
 	void SetAvatarId(const AuId& personId);
 
-	void SetDefaultHuman(const QString& name, AuDef::HANDEDNESS hand, GENDER gender, const AuDNA& dna);
+	void SetDefaultHuman(const QString& name, HANDEDNESS hand, GENDER gender, const AuDNA& dna);
 
 	void SetFrame(AuFrame* frame);
 
@@ -961,13 +961,13 @@ public:
 
 	// Sends StartNewAvatar request to server.
 	// Server eventually responds.
-	void StartNewAvatar(const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand,
+	void StartNewAvatar(const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand,
 			quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
 			const QByteArray& joinPassCrypt, const AuId& joinSectorId);
 
 	// 'avatarIndex' must be 0 to 5.
 	void StartNewAvatarSolo(int avatarIndex, const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma,
-			AuDef::HANDEDNESS hand, quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
+			HANDEDNESS hand, quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
 			const AuId& joinSectorId, const QString& newEmpireName, const QImage& newEmpireFlag);
 
 	// Called when player wants to sell stuff to the building they are in.
@@ -1721,7 +1721,7 @@ private:
 	// 'avatarIndex' must be 0 to 5. Should index an empty avatar slot.
 	// Inits a new universe for solitaire game play, if needed. Returns the id of the nu avatar.
 	AuId CreateSoloAvatar(int avatarIndex, unsigned char proximity, GALAXY galaxy, const QString& avatarName, const AuDNABase* dna,
-			AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, SCENARIO scenario, const AuTime& asteroidImpact, quint32 joinEmpire,
+			AuDNABase::CHROMATID chroma, HANDEDNESS hand, SCENARIO scenario, const AuTime& asteroidImpact, quint32 joinEmpire,
 			const AuId& joinSectorId, const QString& newEmpireName, const QImage& newEmpireFlag);
 
 	void ForgetEmpireRequests();

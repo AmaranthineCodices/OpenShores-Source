@@ -323,7 +323,7 @@ void AuBioBiology::UpgradeDNA()
 		return;
 	}
 	AuDNA::CHROMATID chroma = person->Chromatid();
-	AuDef::HANDEDNESS hand = person->Handedness();
+	HANDEDNESS hand = person->Handedness();
 	view->UnlockSceneAtom();
 
 	AuAnimalia animalia(dna, chroma, hand, Mature);

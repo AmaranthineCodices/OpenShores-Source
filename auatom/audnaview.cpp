@@ -524,7 +524,7 @@ void AuDNAView::ViewSave()
 void AuDNAView::SetDNAPair(const AuDNA& dna)
 {
 	// Male
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 	if(m_Male && !m_Male->Is(dna, AuDNA::Alpha, handedness))
 	{
 		m_MaleDelete = m_Male;
@@ -575,7 +575,7 @@ void AuDNAView::SetDNAPair(const AuDNA& dna)
 void AuDNAView::SetDNAPair(const AuDNA& dna, int modelchg)
 {
 	// Male
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 	if(m_Male && (modelchg & 0x01))
 	{
 		m_MaleDelete = m_Male;
@@ -637,7 +637,7 @@ void AuDNAView::SetMaleHair(AuHairStyle::STYLE cut, AuHairStyle::SHAVE shave)
 		m_Male = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 
 	m_Male = new AuAnimalia(m_DNA, AuDNA::Alpha, handedness, Mature);
 	m_Male->Pose(AuId(Male), m_MalePose, m_MaleArmBent, 1);
@@ -666,7 +666,7 @@ void AuDNAView::SetFemaleHair(AuHairStyle::STYLE cut, AuHairStyle::SHAVE shave)
 		m_Female = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = LeftHanded;
+	HANDEDNESS handedness = LeftHanded;
 
 	m_Female = new AuAnimalia(m_DNA, AuDNA::Beta, handedness, Mature);
 	m_Female->Pose(AuId(Female), m_FemalePose, m_FemaleArmBent, 1);
@@ -701,7 +701,7 @@ void AuDNAView::SetMaleClothing(COMMODITYID hat, COMMODITYID armor, COMMODITYID 
 		m_Male = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = RightHanded;
+	HANDEDNESS handedness = RightHanded;
 
 	m_Male = new AuAnimalia(m_DNA, AuDNA::Alpha, handedness, Mature);
 	m_Male->Pose(AuId(Male), m_MalePose, m_MaleArmBent, 1);
@@ -736,7 +736,7 @@ void AuDNAView::SetFemaleClothing(COMMODITYID hat, COMMODITYID armor, COMMODITYI
 		m_Female = 0;
 	}
 
-	AuDef::HANDEDNESS handedness = LeftHanded;
+	HANDEDNESS handedness = LeftHanded;
 
 	m_Female = new AuAnimalia(m_DNA, AuDNA::Beta, handedness, Mature);
 	m_Female->Pose(AuId(Female), m_FemalePose, m_FemaleArmBent, 1);

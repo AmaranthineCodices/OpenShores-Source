@@ -673,7 +673,7 @@ void AuApp::SetRunState(RUNSTATE state)
 	}
 }
 
-void AuApp::SetDefaultHuman(const QString& name, AuDef::HANDEDNESS hand, GENDER gender, const AuDNA& dna)
+void AuApp::SetDefaultHuman(const QString& name, HANDEDNESS hand, GENDER gender, const AuDNA& dna)
 {
 	m_HumanDNA = dna;
 	m_HumanGender = gender;
@@ -805,7 +805,7 @@ void AuApp::StartSceneCommunications(AuId personId)
 }
 
 void AuApp::StartNewAvatarSolo(int avatarIndex, const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma,
-		AuDef::HANDEDNESS hand, quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
+		HANDEDNESS hand, quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
 		const AuId& joinSectorId, const QString& newEmpireName, const QImage& newEmpireFlag)
 {
 	// Create a new solitaire universe.
@@ -951,7 +951,7 @@ void AuApp::InitDesignerMode()
 	QString names[6];
 	const AuDNABase* dna[6] = {0,0,0,0,0,0};
 	AuDNABase::CHROMATID chroma[6];
-	AuDef::HANDEDNESS hand[6];
+	HANDEDNESS hand[6];
 	COMMODITYID clothes[6];
 	COMMODITYID armor[6];
 	COMMODITYID hat[6];
@@ -995,7 +995,7 @@ void AuApp::InitDesignerMode()
 }
 
 AuId AuApp::CreateSoloAvatar(int avatarIndex, unsigned char proximity, GALAXY galaxy, const QString& avatarName,
-		const AuDNABase* dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand, SCENARIO scenario, const AuTime& asteroidImpact,
+		const AuDNABase* dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand, SCENARIO scenario, const AuTime& asteroidImpact,
 		quint32 joinEmpire, const AuId& joinSectorId, const QString& newEmpireName, const QImage& newEmpireFlag)
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
@@ -1095,7 +1095,7 @@ AuId AuApp::CreateSoloAvatar(int avatarIndex, unsigned char proximity, GALAXY ga
 		QString names[6];
 		AuDNABase* dnas[6];
 		AuDNABase::CHROMATID chromas[6];
-		AuDef::HANDEDNESS hands[6];
+		HANDEDNESS hands[6];
 		COMMODITYID clothes[6];
 		COMMODITYID armor[6];
 		COMMODITYID hat[6];
@@ -1470,7 +1470,7 @@ void AuApp::SceneLogout()
 	SetRunState(NotLoggedIn);
 }
 
-void AuApp::StartNewAvatar(const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma, AuDef::HANDEDNESS hand,
+void AuApp::StartNewAvatar(const QString& charname, const AuDNABase& dna, AuDNABase::CHROMATID chroma, HANDEDNESS hand,
 		quint8 proximity, GALAXY galaxy, SCENARIO scenario, AuTime asteroidImpact, quint32 joinEmpire,
 		const QByteArray& joinPassCrypt, const AuId& joinSectorId)
 {
@@ -1537,7 +1537,7 @@ void AuApp::RestartNewAvatar()
 
 	qDebug() << "AuApp::RestartNewAvatar" << charname << "dna" << (dna?true:false);
 	if(dna)
-		StartNewAvatar(charname, *dna, (AuDNABase::CHROMATID)chroma, (AuDef::HANDEDNESS)hand, m_NewProximity, m_NewGalaxy,
+		StartNewAvatar(charname, *dna, (AuDNABase::CHROMATID)chroma, (HANDEDNESS)hand, m_NewProximity, m_NewGalaxy,
 				(SCENARIO)scenario, asteroidImpact, joinEmpire, joinPassCrypt, joinSectorId);
 }
 

@@ -660,7 +660,7 @@ private:
 	quint32								m_EmpireId;
 	AuGear*								m_Gear;
 	AuHairStyle::STYLE					m_Hair;
-	AuDef::HANDEDNESS							m_Hand;
+	HANDEDNESS							m_Hand;
 	QString								m_Name;
 	quint32								m_ScriptId;				// Script they were in.
 	AuHairStyle::SHAVE					m_Shave;
@@ -679,12 +679,12 @@ private:
 public:	// Construction/destruction
 	// 'gear' can be 0
 	AuMemCharacterDNA4(const QString& name, const AuDNABase& dna, quint8 chromatid, quint32 scriptId, AuHairStyle::STYLE hair,
-			AuHairStyle::SHAVE shave, AuDef::HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId, const AuGear* gear,
+			AuHairStyle::SHAVE shave, HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId, const AuGear* gear,
 			GALAXY homeGalaxy, const AuId& homeSectorId, const QString& homeSectorName, const AuId& homeSystemId,
 			const QString& homeSystemName, const AuId& homeWorldId, const QString& homeWorldName, BODY_TYPE homeWorldBody);
 	// 'homeWorld' can be 0.
 	AuMemCharacterDNA4(const QString& name, const AuDNABase& dna, quint8 chromatid, quint32 scriptId, AuHairStyle::STYLE hair,
-			AuHairStyle::SHAVE shave, AuDef::HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId, const AuGear* gear,
+			AuHairStyle::SHAVE shave, HANDEDNESS hand, GROWTHSTAGE stage, quint32 empireId, const AuGear* gear,
 			const DaWorld* homeWorld);
 	AuMemCharacterDNA4();
 	AuMemCharacterDNA4(const AuMemCharacterDNA4& c);
@@ -734,7 +734,7 @@ public:
 		return m_Hair;
 	}
 
-	inline AuDef::HANDEDNESS Hand() const
+	inline HANDEDNESS Hand() const
 	{
 		return m_Hand;
 	}

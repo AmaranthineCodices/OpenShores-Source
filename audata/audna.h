@@ -2203,7 +2203,7 @@ public:	// Operators
 
 public:
 	void AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose, const AuPose& mouthPose,
-			float currentHeadTilt, float currentHeadTurn, AuDef::HANDEDNESS hand,
+			float currentHeadTilt, float currentHeadTurn, HANDEDNESS hand,
 			float& headX, float& headY, float& headZ, float& eyeLeftX, float& eyeLeftZ, float& eyeRightX,
 			float& eyeRightZ, float& jawX, float& jawLeftY, float& jawRightY);
 
@@ -2503,7 +2503,7 @@ public:	// Operators
 
 public:
 	void AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-			float currentHeadTilt, float currentHeadTurn, AuDef::HANDEDNESS hand, bool hasMaleGenitals,
+			float currentHeadTilt, float currentHeadTurn, HANDEDNESS hand, bool hasMaleGenitals,
 			float& buttX, float& buttY, float& buttZ, float& chestX, float& chestY, float& chestZ, float& neckX, float& neckY,
 			float& neckZ, float& tailX, float& tailY);
 
@@ -2803,7 +2803,7 @@ public:	// Operators
 
 public:
 	void AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-			float currentHeadTilt, AuDef::HANDEDNESS hand, bool bendToHoldObject,
+			float currentHeadTilt, HANDEDNESS hand, bool bendToHoldObject,
 			float& shoulderX, float& shoulderY, float& shoulderZ, float& elbowX, float& elbowZ, float& wristX, float& wristY,
 			float& wristZ, float& fingerY, float& fingerTipY) const;
 
@@ -3122,7 +3122,7 @@ public:
 	// 'pose' is the current pose
 	// 'bodyHz' is body cycles per second
 	void AnglesForPose(const AuId& id, const AuElapsedTimer& when, float bodyHz, const AuPose& pose,
-			AuDef::HANDEDNESS hand, bool hasMaleGenitals, float torsoThickness,
+			HANDEDNESS hand, bool hasMaleGenitals, float torsoThickness,
 			float& hipX, float& hipY, float& hipZ, float& kneeX, float& ankleX, float& toeX) const;
 
 	// Height of the ankle bone above the ground.
