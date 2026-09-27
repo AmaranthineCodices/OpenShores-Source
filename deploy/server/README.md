@@ -19,6 +19,8 @@ scene-worker-1 ... scene-worker-N
 
 Containers use Docker service names for private traffic. Native clients use the configured public host and published ports. PostgreSQL is never published.
 
+Server compilation reuses the repository's existing named Docker volumes (`hazeron-linux-<config>-cache`). The build exports `build/linux-<config>/bin` and `lib`; the deployment then packages those artifacts into the runtime image. There is no second CMake cache inside the image build.
+
 ## Local development
 
 Start one Debug scene worker:

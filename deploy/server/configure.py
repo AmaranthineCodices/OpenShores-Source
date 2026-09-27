@@ -133,12 +133,7 @@ def main() -> None:
     create_local_player = boolean(settings, "CREATE_LOCAL_PLAYER")
 
     config = settings["SERVER_BUILD_CONFIG"].lower()
-    build_types = {
-        "debug": "Debug",
-        "release": "Release",
-        "relwithdebinfo": "RelWithDebInfo",
-    }
-    if config not in build_types:
+    if config not in {"debug", "release", "relwithdebinfo"}:
         raise SystemExit("SERVER_BUILD_CONFIG must be debug, release, or relwithdebinfo")
 
     try:
@@ -181,7 +176,6 @@ def main() -> None:
         {
             "DEPLOY_ENVIRONMENT": environment,
             "SERVER_BUILD_CONFIG": config,
-            "SERVER_BUILD_TYPE": build_types[config],
             "SERVER_IMAGE_TARGET": "server-debug" if debug_enabled else "server-runtime",
             "SERVER_IMAGE": f"openshores-server:{environment}-{config}",
             "POSTGRES_IMAGE": f"openshores-postgres:{environment}",
@@ -262,7 +256,6 @@ def main() -> None:
 
     generated_names = [
         "DEPLOY_ENVIRONMENT",
-        "SERVER_BUILD_TYPE",
         "SERVER_IMAGE_TARGET",
         "SERVER_IMAGE",
         "POSTGRES_IMAGE",

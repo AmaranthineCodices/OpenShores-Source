@@ -57,12 +57,6 @@ services:
 
   login-master:
     <<: *server
-    build:
-      context: ../..
-      dockerfile: docker/linux/Dockerfile
-      target: ${SERVER_IMAGE_TARGET}
-      args:
-        SERVER_BUILD_TYPE: ${SERVER_BUILD_TYPE}
     command: ["/opt/openshores/bin/AuLoginServer", "-master"]
     ports:
       - "${BIND_ADDRESS}:16757:16757/tcp"

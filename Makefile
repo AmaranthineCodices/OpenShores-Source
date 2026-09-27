@@ -61,9 +61,9 @@ endif
         native-servers native-cgi native-tools \
         native-ausceneclient native-auloginserver \
         native-aumailserver native-ausceneserver \
-        server-config server-ensure-config server-up server-down \
+        server-config server-ensure-config server-image server-up server-down \
         server-logs server-status server-reset \
-        server-prod-config server-prod-ensure-config server-prod-up \
+        server-prod-config server-prod-ensure-config server-prod-image server-prod-up \
         server-prod-down server-prod-logs server-prod-status \
         run-client clean rebuild help
 
@@ -177,7 +177,13 @@ server-ensure-config:
 		python3 deploy/server/configure.py --environment local; \
 	fi
 
-server-up: server-config
+server-image: server-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	image=$$(awk -F= '$$1 == "SERVER_IMAGE" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	target=$$(awk -F= '$$1 == "SERVER_IMAGE_TARGET" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	bash docker/server/build.sh "$$config" "$$image" "$$target" "$(LINUX_IMAGE)"
+
+server-up: server-image
 	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-down: server-ensure-config
@@ -189,7 +195,7 @@ server-logs: server-ensure-config
 server-status: server-ensure-config
 	$(LOCAL_COMPOSE) ps
 
-server-reset: server-ensure-config
+server-reset: server-image
 	@if [ "$(CONFIRM)" != "yes" ]; then \
 		printf 'Delete the local universe database and restart? [y/N] '; \
 		read answer; \
@@ -210,7 +216,13 @@ server-prod-ensure-config:
 			--env-file "$(SERVER_PRODUCTION_ENV)"; \
 	fi
 
-server-prod-up: server-prod-config
+server-prod-image: server-prod-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	image=$$(awk -F= '$$1 == "SERVER_IMAGE" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	target=$$(awk -F= '$$1 == "SERVER_IMAGE_TARGET" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	bash docker/server/build.sh "$$config" "$$image" "$$target" "$(LINUX_IMAGE)"
+
+server-prod-up: server-prod-image
 	$(PRODUCTION_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-prod-down: server-prod-ensure-config
