@@ -31,15 +31,23 @@ fi
 cache_volume=${HAZERON_LINUX_CACHE_VOLUME:-hazeron-linux-${config}-cache}
 local_output_dir="$repo_root/build/linux-${config}"
 daemon_output_dir="$daemon_repo_root/build/linux-${config}"
-mkdir -p "$local_output_dir"
+local_editor_root="$repo_root/build/editor"
+daemon_editor_root="$daemon_repo_root/build/editor"
+editor_workspace_root=$repo_root
+if [[ -x /usr/bin/wslpath ]] && grep -qi microsoft /proc/sys/kernel/osrelease; then
+    editor_workspace_root=$(wslpath -m "$repo_root")
+fi
+mkdir -p "$local_output_dir" "$local_editor_root"
 
 cd "$repo_root"
 
 docker build \
     --tag "$image" \
+    --target toolchain \
     --file docker/linux/Dockerfile \
     docker/linux
 
+image_id=$(docker image inspect "$image" --format '{{.Id}}')
 docker volume create "$cache_volume" >/dev/null
 docker run --rm \
     --mount "type=volume,source=$cache_volume,target=/build" \
@@ -48,21 +56,35 @@ docker run --rm \
 docker run --rm \
     --user "$(id -u):$(id -g)" \
     --env HOME=/tmp \
+    --env "AU_CMAKE_BUILD_TYPE=$cmake_build_type" \
+    --env "AU_IMAGE_ID=$image_id" \
+    --env "AU_TARGET=$target" \
+    --env "AU_WORKSPACE_ROOT=$editor_workspace_root" \
     --mount "type=bind,source=$daemon_repo_root,target=/src,readonly" \
     --mount "type=volume,source=$cache_volume,target=/build" \
     --mount "type=bind,source=$daemon_output_dir,target=/output" \
+    --mount "type=bind,source=$daemon_editor_root,target=/editor" \
     "$image" \
-    /bin/bash -ec "
+    /bin/bash -ec '
         cmake \
             -S /src \
             -B /build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=${cmake_build_type} \
+            -DCMAKE_BUILD_TYPE="$AU_CMAKE_BUILD_TYPE" \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DAU_OUTPUT_ROOT=/output
         cmake --build /build \
-            --target ${target} \
-            --parallel \"\$(nproc)\"
-    "
+            --target "$AU_TARGET" \
+            --parallel "$(nproc)"
+        python3 /src/docker/export-intellisense.py \
+            --compile-commands /build/compile_commands.json \
+            --compiler c++ \
+            --source-root /src \
+            --build-root /build \
+            --output-root /editor/linux \
+            --workspace-root "$AU_WORKSPACE_ROOT" \
+            --image-id "$AU_IMAGE_ID"
+    '
 
 printf 'Linux artifacts: %s/build/linux-%s\n' "$repo_root" "$config"
 printf 'Linux cache volume: %s\n' "$cache_volume"

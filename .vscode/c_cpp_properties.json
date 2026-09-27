@@ -1,0 +1,79 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Linux",
+      "compilerPath": "",
+      "intelliSenseMode": "linux-gcc-x64",
+      "cppStandard": "c++11",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/build/editor/linux/generated",
+        "${workspaceFolder}/build/editor/linux/include/00",
+        "${workspaceFolder}/build/editor/linux/include/01",
+        "${workspaceFolder}/build/editor/linux/include/02",
+        "${workspaceFolder}/build/editor/linux/include/03",
+        "${workspaceFolder}/build/editor/linux/include/04",
+        "${workspaceFolder}/build/editor/linux/include/05",
+        "${workspaceFolder}/build/editor/linux/include/06",
+        "${workspaceFolder}/build/editor/linux/include/07",
+        "${workspaceFolder}/build/editor/linux/include/08",
+        "${workspaceFolder}/build/editor/linux/include/09",
+        "${workspaceFolder}/build/editor/linux/include/10",
+        "${workspaceFolder}/build/editor/linux/include/11",
+        "${workspaceFolder}/build/editor/linux/include/12",
+        "${workspaceFolder}/build/editor/linux/include/13",
+        "${workspaceFolder}/build/editor/linux/include/14",
+        "${workspaceFolder}/build/editor/linux/include/15",
+        "${workspaceFolder}/build/editor/linux/include/16",
+        "${workspaceFolder}/build/editor/linux/include/17",
+        "${workspaceFolder}/build/editor/linux/include/18",
+        "${workspaceFolder}/build/editor/linux/include/19",
+        "${workspaceFolder}/build/editor/linux/include/20",
+        "${workspaceFolder}/build/editor/linux/include/21",
+        "${workspaceFolder}/build/editor/linux/include/22",
+        "${workspaceFolder}/build/editor/linux/include/23"
+      ],
+      "forcedInclude": [
+        "${workspaceFolder}/build/editor/linux/defines.h"
+      ]
+    },
+    {
+      "name": "Win32",
+      "compilerPath": "",
+      "intelliSenseMode": "windows-gcc-x64",
+      "cppStandard": "c++11",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/build/editor/windows/generated",
+        "${workspaceFolder}/build/editor/windows/include/00",
+        "${workspaceFolder}/build/editor/windows/include/01",
+        "${workspaceFolder}/build/editor/windows/include/02",
+        "${workspaceFolder}/build/editor/windows/include/03",
+        "${workspaceFolder}/build/editor/windows/include/04",
+        "${workspaceFolder}/build/editor/windows/include/05",
+        "${workspaceFolder}/build/editor/windows/include/06",
+        "${workspaceFolder}/build/editor/windows/include/07",
+        "${workspaceFolder}/build/editor/windows/include/08",
+        "${workspaceFolder}/build/editor/windows/include/09",
+        "${workspaceFolder}/build/editor/windows/include/10",
+        "${workspaceFolder}/build/editor/windows/include/11",
+        "${workspaceFolder}/build/editor/windows/include/12",
+        "${workspaceFolder}/build/editor/windows/include/13",
+        "${workspaceFolder}/build/editor/windows/include/14",
+        "${workspaceFolder}/build/editor/windows/include/15",
+        "${workspaceFolder}/build/editor/windows/include/16",
+        "${workspaceFolder}/build/editor/windows/include/17",
+        "${workspaceFolder}/build/editor/windows/include/18",
+        "${workspaceFolder}/build/editor/windows/include/19",
+        "${workspaceFolder}/build/editor/windows/include/20",
+        "${workspaceFolder}/build/editor/windows/include/21",
+        "${workspaceFolder}/build/editor/windows/include/22",
+        "${workspaceFolder}/build/editor/windows/include/23"
+      ],
+      "forcedInclude": [
+        "${workspaceFolder}/build/editor/windows/defines.h"
+      ]
+    }
+  ]
+}

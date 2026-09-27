@@ -1,4 +1,4 @@
-# Reproducible Docker builds are the default. Native builds are opt-in.
+# Docker builds are the default. Native builds are opt-in.
 #
 # Examples:
 #   make client
@@ -16,14 +16,16 @@ PARALLEL ?= $(shell nproc 2>/dev/null || echo 4)
 LINUX_IMAGE ?= hazeron-linux-qt5
 WINDOWS_IMAGE ?= hazeron-mingw-qt5
 LINUX_CACHE_VOLUME ?= hazeron-linux-$(CONFIG)-cache
-WINDOWS_CACHE_VOLUME ?= hazeron-windows-release-cache
+WINDOWS_CACHE_VOLUME ?= hazeron-windows-$(CONFIG)-cache
 NATIVE_BUILD_DIR ?= build/native-linux-$(CONFIG)
 
 DEFAULT_CACHE_VOLUMES := \
 	hazeron-linux-debug-cache \
 	hazeron-linux-release-cache \
 	hazeron-linux-relwithdebinfo-cache \
-	hazeron-windows-release-cache
+	hazeron-windows-debug-cache \
+	hazeron-windows-release-cache \
+	hazeron-windows-relwithdebinfo-cache
 
 ifeq ($(CONFIG),debug)
 CMAKE_BUILD_TYPE := Debug
@@ -97,6 +99,7 @@ windows-toolchain:
 windows-client:
 	HAZERON_MINGW_IMAGE="$(WINDOWS_IMAGE)" \
 	HAZERON_WINDOWS_CACHE_VOLUME="$(WINDOWS_CACHE_VOLUME)" \
+	HAZERON_BUILD_CONFIG="$(CONFIG)" \
 		bash docker/windows/build-client.sh
 
 # Opt-in native Linux build for faster local iteration.
@@ -143,7 +146,7 @@ native-ausceneserver: native-configure
 run-client: client
 	"build/linux-$(CONFIG)/bin/AuSceneClient"
 
-# Docker caches live in named volumes; build/ contains exported bin/lib files
+# Docker caches live in named volumes. build/ contains exported bin/lib files
 # and any opt-in native build trees.
 clean:
 	$(CMAKE) -E remove_directory build
@@ -154,34 +157,59 @@ clean:
 rebuild: clean all
 
 help:
-	@printf '%s\n' \
-		'make [all]                  Docker-build the Linux client and servers' \
-		'make client                 Docker-build AuSceneClient' \
-		'make clients                Docker-build all client programs' \
-		'make servers                Docker-build all multiplayer servers' \
-		'make cgi                    Docker-build account/status programs' \
-		'make tools                  Docker-build admin/content tools' \
-		'make ausceneclient          Alias for client' \
-		'make auloginserver          Docker-build AuLoginServer' \
-		'make aumailserver           Docker-build AuMailServer' \
-		'make ausceneserver          Docker-build AuSceneServer' \
-		'make windows-client         Build a runnable Windows x64 client bundle' \
-		'make linux-image            Build only the Linux toolchain image' \
-		'make windows-toolchain      Build only the MinGW/Qt 5 image' \
-		'make native-client          Build the client with host tools' \
-		'make native-clients         Build all clients with host tools' \
-		'make native-servers         Build the servers with host tools' \
-		'make native-cgi             Build account/status programs natively' \
-		'make native-tools           Build admin/content tools natively' \
-		'make native-build           Build every configured CMake target natively' \
-		'make run-client             Build in Linux Docker, then run the client' \
-		'make clean                  Remove all build artifacts and caches' \
-		'make rebuild                Clean and rebuild all Linux programs' \
+	@if [ -t 1 ] && [ -z "$${NO_COLOR:-}" ]; then \
+		heading='\033[1;36m'; reset='\033[0m'; \
+	else \
+		heading=; reset=; \
+	fi; \
+	printf '%b\n' \
+		"$${heading}Common builds$${reset}" \
+		'  make                      Build all Linux programs' \
+		'  make client               Build the Linux client' \
+		'  make servers              Build all Linux servers' \
+		'  make windows-client       Build the Windows client' \
 		'' \
-		'Variables:' \
+		"$${heading}Linux target groups$${reset}" \
+		'  make clients              Build all clients' \
+		'  make cgi                  Build account and status programs' \
+		'  make tools                Build admin and content tools' \
+		'' \
+		"$${heading}Individual servers$${reset}" \
+		'  make auloginserver        Build AuLoginServer' \
+		'  make aumailserver         Build AuMailServer' \
+		'  make ausceneserver        Build AuSceneServer' \
+		'' \
+		"$${heading}Native Linux builds$${reset}" \
+		'  make native-client        Build the client' \
+		'  make native-clients       Build all clients' \
+		'  make native-servers       Build all servers' \
+		'  make native-cgi           Build account and status programs' \
+		'  make native-tools         Build admin and content tools' \
+		'  make native-build         Build every configured target' \
+		'' \
+		"$${heading}Toolchains and maintenance$${reset}" \
+		'  make run-client           Build and run the Linux client' \
+		'  make linux-image          Build the Linux toolchain image' \
+		'  make windows-toolchain    Build the Windows toolchain image' \
+		'  make clean                Remove artifacts and build caches' \
+		'  make rebuild              Clean and rebuild Linux programs' \
+		'' \
+		"$${heading}Aliases$${reset}" \
+		'  make all | build                 Build all Linux programs' \
+		'  make ausceneclient               Same as client' \
+		'  make native-ausceneclient        Same as native-client' \
+		'  make native-auloginserver        Build AuLoginServer natively' \
+		'  make native-aumailserver         Build AuMailServer natively' \
+		'  make native-ausceneserver        Build AuSceneServer natively' \
+		'' \
+		"$${heading}Options$${reset}" \
 		'  CONFIG=release|debug|relwithdebinfo  (default: release)' \
 		'  PARALLEL=N                           (native builds only)' \
 		'  LINUX_IMAGE=name                     (default: hazeron-linux-qt5)' \
 		'  WINDOWS_IMAGE=name                   (default: hazeron-mingw-qt5)' \
 		'  LINUX_CACHE_VOLUME=name              (default depends on CONFIG)' \
-		'  WINDOWS_CACHE_VOLUME=name            (default: hazeron-windows-release-cache)'
+		'  WINDOWS_CACHE_VOLUME=name            (default depends on CONFIG)' \
+		'' \
+		"$${heading}Examples$${reset}" \
+		'  make CONFIG=debug client' \
+		'  make CONFIG=relwithdebinfo windows-client'

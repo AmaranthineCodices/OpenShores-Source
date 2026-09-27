@@ -14,6 +14,7 @@ RUN apt-get update \
         libqt5sql5-psql \
         libsdl2-dev \
         ninja-build \
+        python3 \
         qtbase5-dev \
         qtbase5-dev-tools \
     && rm -rf /var/lib/apt/lists/*

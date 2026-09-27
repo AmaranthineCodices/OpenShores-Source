@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AuSceneClient (Docker Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/linux-debug/bin/AuSceneClient",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "windows": {
+        "program": "${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
+        "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe"
+      },
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      },
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty-printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Docker: build client (Debug)"
+    },
+    {
+      "name": "AuSceneClient (Docker RelWithDebInfo)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/linux-relwithdebinfo/bin/AuSceneClient",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+      "windows": {
+        "program": "${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
+        "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe"
+      },
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      },
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty-printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Docker: build client (RelWithDebInfo)"
+    }
+  ]
+}

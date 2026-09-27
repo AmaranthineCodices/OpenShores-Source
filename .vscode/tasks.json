@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Docker: build client (Debug)",
+      "type": "process",
+      "command": "make",
+      "args": ["CONFIG=debug", "client"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "wsl.exe",
+        "args": [
+          "--cd", "${workspaceFolder}",
+          "--exec", "make", "CONFIG=debug", "windows-client"
+        ]
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Docker: build client (RelWithDebInfo)",
+      "type": "process",
+      "command": "make",
+      "args": ["CONFIG=relwithdebinfo", "client"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "wsl.exe",
+        "args": [
+          "--cd", "${workspaceFolder}",
+          "--exec", "make", "CONFIG=relwithdebinfo", "windows-client"
+        ]
+      },
+      "problemMatcher": []
+    }
+  ]
+}

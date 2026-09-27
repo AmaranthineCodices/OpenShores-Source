@@ -30,7 +30,7 @@ sudo apt install git make
 docker run --rm hello-world
 ```
 
-Keep the repository in the WSL filesystem, such as `~/src/OpenShores`, for better build performance than `/mnt/c`.
+For Linux development, keep the repository under `~/src/OpenShores` in WSL for better filesystem performance. For native Windows F5 debugging, open a Windows checkout such as `C:\src\OpenShores` in Windows VS Code.
 
 ## Build
 
@@ -42,7 +42,7 @@ make windows-client  # Windows x64 client
 
 Use `make help` to list the other targets.
 
-Linux builds support three configurations:
+Linux and Windows builds support three configurations:
 
 ```bash
 make CONFIG=release client
@@ -50,7 +50,7 @@ make CONFIG=debug client
 make CONFIG=relwithdebinfo client
 ```
 
-`release` is the default. The Windows client currently builds in release mode only.
+`release` is the default. Use `make CONFIG=debug windows-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
 
 ## Output
 
@@ -66,17 +66,6 @@ build/
 
 The Windows `bin/` directory contains `AuSceneClient.exe`, its DLLs, and its Qt plugins. Keep the whole directory together.
 
-## Build Cache
-
-Source files are bind-mounted read-only into the build containers. CMake objects and metadata are stored in separate Docker volumes:
-
-```text
-hazeron-linux-release-cache
-hazeron-windows-release-cache
-```
-
-Only final `bin/` and `lib/` files are written under `build/`.
-
 ## Native Linux Build
 
 ```bash
@@ -86,6 +75,54 @@ make native-build
 ```
 
 Native builds require CMake, Ninja, Qt 5, OpenGL, OpenAL, and SDL2 development packages.
+
+## F5 Debugging in VS Code
+
+Install the recommended C/C++ extension. Select `AuSceneClient (Docker Debug)` in Run and Debug, then press `F5`.
+
+Docker builds the client. GDB runs it on your machine. You do not need a local compiler or CMake.
+
+The first build also exports the Qt and compiler headers to `build/editor/`. The C/C++ extension uses them for IntelliSense. The cache refreshes when the Docker toolchain changes. CMake Tools is not required. If it is already installed, disable it for this workspace.
+
+Use `AuSceneClient (Docker RelWithDebInfo)` for better game performance. Some variables may be unavailable in the debugger because of optimization.
+
+### Windows
+
+Set up WSL and Docker as described above. Make sure Docker works without `sudo` in Ubuntu. Set Ubuntu as the default in PowerShell:
+
+```powershell
+wsl --set-default Ubuntu
+```
+
+Install [MSYS2](https://www.msys2.org/) at `C:\msys64`. Open its UCRT64 terminal and run:
+
+```bash
+pacman -Syu
+pacman -S --needed mingw-w64-ucrt-x86_64-gdb
+```
+
+If the update asks you to restart the terminal, do that and finish updating before installing GDB.
+
+Open the repository in Windows VS Code, not Remote WSL, and press `F5`. The build runs through WSL. The game and debugger run on Windows. No Windows Qt SDK is needed.
+
+If you installed MSYS2 elsewhere, change `miDebuggerPath` in `.vscode/launch.json`.
+
+### Linux
+
+Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/) and follow the [post-install steps](https://docs.docker.com/engine/install/linux-postinstall/) to run it without `sudo`.
+
+On Ubuntu 22.04, install GDB and the runtime libraries:
+
+```bash
+sudo apt update
+sudo apt install make git gdb libqt5opengl5 libqt5network5 \
+    libqt5sql5-psql libopenal1 libsdl2-2.0-0 libglu1-mesa
+docker run --rm hello-world
+```
+
+Open the repository in VS Code and press `F5`. Other distributions need libraries compatible with the Ubuntu 22.04 build.
+
+To debug the Linux client in WSL, use `WSL: Reopen Folder in WSL`. The game needs WSLg and a working OpenGL driver.
 
 ## Clean
 

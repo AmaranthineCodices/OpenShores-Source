@@ -1,0 +1,57 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "native-linux-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    },
+    {
+      "name": "native-linux-debug",
+      "displayName": "Native Linux Debug",
+      "inherits": "native-linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "native-linux-release",
+      "displayName": "Native Linux Release",
+      "inherits": "native-linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "native-linux-relwithdebinfo",
+      "displayName": "Native Linux RelWithDebInfo",
+      "inherits": "native-linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "native-linux-debug",
+      "configurePreset": "native-linux-debug"
+    },
+    {
+      "name": "native-linux-release",
+      "configurePreset": "native-linux-release"
+    },
+    {
+      "name": "native-linux-relwithdebinfo",
+      "configurePreset": "native-linux-relwithdebinfo"
+    }
+  ]
+}
