@@ -337,6 +337,7 @@ Files and Folders
 		servers, and the web site. Runs as master or worker.
 		Launch options:
 		-nNetNameOrIPAddr - DNS resolvable name or ip address of this computer.
+		-pPort - Public port advertised by a worker; it still listens on 16757.
 		-master - Says this computer is the login master.
 
 	aumail - Library of classes for handling Hazeron mail.
@@ -347,6 +348,7 @@ Files and Folders
 		or worker.
 		Launch options:
 			-nNetNameOrIPAddr - DNS resolvable name or ip address of this computer.
+			-pPort - Public port advertised by a worker; it still listens on 16758.
 			-master - Says this computer is the mail master.
 
 	aumath - Library of classes for math and geometry.

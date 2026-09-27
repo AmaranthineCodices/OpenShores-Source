@@ -18,6 +18,23 @@ WINDOWS_IMAGE ?= hazeron-mingw-qt5
 LINUX_CACHE_VOLUME ?= hazeron-linux-$(CONFIG)-cache
 WINDOWS_CACHE_VOLUME ?= hazeron-windows-$(CONFIG)-cache
 NATIVE_BUILD_DIR ?= build/native-linux-$(CONFIG)
+SERVER_CONFIG ?=
+SCENE_WORKERS ?=
+SERVER_LOG_TAIL ?= 200
+SERVER_PRODUCTION_ENV ?= deploy/server/production.env
+
+LOCAL_SERVER_DIR := build/server/local
+LOCAL_SERVER_ENV := $(LOCAL_SERVER_DIR)/compose.env
+LOCAL_SERVER_WORKERS := $(LOCAL_SERVER_DIR)/workers.compose.json
+PRODUCTION_SERVER_DIR := build/server/production
+PRODUCTION_SERVER_ENV := $(PRODUCTION_SERVER_DIR)/compose.env
+PRODUCTION_SERVER_WORKERS := $(PRODUCTION_SERVER_DIR)/workers.compose.json
+LOCAL_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
+	--env-file "$(LOCAL_SERVER_ENV)" \
+	-f deploy/server/compose.yaml -f "$(LOCAL_SERVER_WORKERS)"
+PRODUCTION_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
+	--env-file "$(PRODUCTION_SERVER_ENV)" \
+	-f deploy/server/compose.yaml -f "$(PRODUCTION_SERVER_WORKERS)"
 
 DEFAULT_CACHE_VOLUMES := \
 	hazeron-linux-debug-cache \
@@ -44,6 +61,10 @@ endif
         native-servers native-cgi native-tools \
         native-ausceneclient native-auloginserver \
         native-aumailserver native-ausceneserver \
+        server-config server-ensure-config server-up server-down \
+        server-logs server-status server-reset \
+        server-prod-config server-prod-ensure-config server-prod-up \
+        server-prod-down server-prod-logs server-prod-status \
         run-client clean rebuild help
 
 define run_linux_build
@@ -146,6 +167,61 @@ native-ausceneserver: native-configure
 run-client: client
 	"build/linux-$(CONFIG)/bin/AuSceneClient"
 
+server-config:
+	python3 deploy/server/configure.py --environment local \
+		$(if $(strip $(SERVER_CONFIG)),--config "$(SERVER_CONFIG)") \
+		$(if $(strip $(SCENE_WORKERS)),--scene-workers "$(SCENE_WORKERS)")
+
+server-ensure-config:
+	@if [ ! -f "$(LOCAL_SERVER_ENV)" ] || [ ! -f "$(LOCAL_SERVER_WORKERS)" ]; then \
+		python3 deploy/server/configure.py --environment local; \
+	fi
+
+server-up: server-config
+	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-down: server-ensure-config
+	$(LOCAL_COMPOSE) down --remove-orphans
+
+server-logs: server-ensure-config
+	$(LOCAL_COMPOSE) logs --follow --tail="$(SERVER_LOG_TAIL)" $(SERVICE)
+
+server-status: server-ensure-config
+	$(LOCAL_COMPOSE) ps
+
+server-reset: server-ensure-config
+	@if [ "$(CONFIRM)" != "yes" ]; then \
+		printf 'Delete the local universe database and restart? [y/N] '; \
+		read answer; \
+		case "$$answer" in y|Y|yes|YES) ;; *) echo 'Cancelled.'; exit 1;; esac; \
+	fi
+	$(LOCAL_COMPOSE) down --volumes --remove-orphans
+	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-prod-config:
+	python3 deploy/server/configure.py --environment production \
+		--env-file "$(SERVER_PRODUCTION_ENV)" \
+		$(if $(strip $(SERVER_CONFIG)),--config "$(SERVER_CONFIG)") \
+		$(if $(strip $(SCENE_WORKERS)),--scene-workers "$(SCENE_WORKERS)")
+
+server-prod-ensure-config:
+	@if [ ! -f "$(PRODUCTION_SERVER_ENV)" ] || [ ! -f "$(PRODUCTION_SERVER_WORKERS)" ]; then \
+		python3 deploy/server/configure.py --environment production \
+			--env-file "$(SERVER_PRODUCTION_ENV)"; \
+	fi
+
+server-prod-up: server-prod-config
+	$(PRODUCTION_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-prod-down: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) down --remove-orphans
+
+server-prod-logs: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) logs --follow --tail="$(SERVER_LOG_TAIL)" $(SERVICE)
+
+server-prod-status: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) ps
+
 # Docker caches live in named volumes. build/ contains exported bin/lib files
 # and any opt-in native build trees.
 clean:
@@ -187,6 +263,17 @@ help:
 		'  make native-tools         Build admin and content tools' \
 		'  make native-build         Build every configured target' \
 		'' \
+		"$${heading}Local multiplayer servers$${reset}" \
+		'  make server-up            Build and start the local stack' \
+		'  make server-down          Stop it without deleting data' \
+		'  make server-logs          Follow all server logs' \
+		'  make server-status        Show container and health status' \
+		'  make server-reset         Delete local data and restart' \
+		'  make server-prod-up       Build and start production' \
+		'  make server-prod-down     Stop production, preserving data' \
+		'  make server-prod-logs     Follow production logs' \
+		'  make server-prod-status   Show production status' \
+		'' \
 		"$${heading}Toolchains and maintenance$${reset}" \
 		'  make run-client           Build and run the Linux client' \
 		'  make linux-image          Build the Linux toolchain image' \
@@ -209,7 +296,13 @@ help:
 		'  WINDOWS_IMAGE=name                   (default: hazeron-mingw-qt5)' \
 		'  LINUX_CACHE_VOLUME=name              (default depends on CONFIG)' \
 		'  WINDOWS_CACHE_VOLUME=name            (default depends on CONFIG)' \
+		'  SERVER_CONFIG=debug|release|relwithdebinfo' \
+		'  SCENE_WORKERS=N                       (default: 1)' \
+		'  SERVICE=name                          (filter log targets)' \
+		'  SERVER_PRODUCTION_ENV=path            (production settings)' \
 		'' \
 		"$${heading}Examples$${reset}" \
 		'  make CONFIG=debug client' \
-		'  make CONFIG=relwithdebinfo windows-client'
+		'  make CONFIG=relwithdebinfo windows-client' \
+		'  make server-up SCENE_WORKERS=3' \
+		'  make server-logs SERVICE=scene-worker-1'

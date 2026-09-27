@@ -26,6 +26,40 @@
       "problemMatcher": []
     },
     {
+      "label": "Docker: local servers up (Debug)",
+      "type": "process",
+      "command": "make",
+      "args": ["SERVER_CONFIG=debug", "server-up"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "wsl.exe",
+        "args": [
+          "--cd", "${workspaceFolder}",
+          "--exec", "make", "SERVER_CONFIG=debug", "server-up"
+        ]
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: local servers down",
+      "type": "process",
+      "command": "make",
+      "args": ["server-down"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "wsl.exe",
+        "args": [
+          "--cd", "${workspaceFolder}",
+          "--exec", "make", "server-down"
+        ]
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Docker: build Windows client (Debug)",
       "type": "process",
       "command": "make",

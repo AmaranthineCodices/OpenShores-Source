@@ -322,6 +322,15 @@ AuSceneServerApp::AuSceneServerApp(int& argc, char** argv) : QCoreApplication(ar
 				g_Au.Error("Chat server port not set. -cPORTNUMBER option needed.");
 		}
 
+		// Server processes can use private service endpoints while advertising
+		// separate public endpoints to game clients.
+		QString loginServer = qEnvironmentVariable("AU_LOGIN_SERVER");
+		if(!loginServer.isEmpty())
+			g_Au.SetLoginMaster(loginServer);
+		QString mailServer = qEnvironmentVariable("AU_MAIL_SERVER");
+		if(!mailServer.isEmpty())
+			g_Au.SetMailMaster(mailServer);
+
 		// Warn if server manager port not set.
 		if(mgrPort)
 			g_Au.SetManagerPort(mgrPort);

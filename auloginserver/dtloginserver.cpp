@@ -1639,10 +1639,10 @@ void DtLoginServer::Defer(QTcpSocket& tcpSocket)
 		unsigned int server = key % serverMap.size();
 		it += server;
 		QString toServer;
-		if(m_LocalClient)
+		if(m_LocalClient && !qEnvironmentVariableIsSet("AU_PUBLIC_ENDPOINTS"))
 			toServer = (*it).m_PeerAddr;	// use peer address on LAN
 		else
-			toServer = (*it).m_NetName;		// use net name on internet
+			toServer = (*it).m_NetName;		// use configured public endpoint
 		quint16 toPort = (*it).m_NetPort;
 		auLoginServerApp->UnlockServerMap();
 
@@ -1694,7 +1694,7 @@ void DtLoginServer::CheckIn()
 	{
 		// The connection attempt succeeded.
 		QString netName = g_Au.InternetName();
-		quint16 netPort = AuUtil::LoginMasterPort();
+		quint16 netPort = auLoginServerApp->AdvertisedPort();
 
 		// Transmit the probe to the server and wait for a reply.
 		QByteArray ba;

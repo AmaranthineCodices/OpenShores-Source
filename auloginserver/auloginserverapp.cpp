@@ -113,6 +113,7 @@ AuLoginServerApp::AuLoginServerApp(int& argc, char** argv) : QCoreApplication(ar
 	// Get default values that may be overridden by command line options.
 	bool isMaster = false;
 	QString netName;
+	quint16 advertisedPort = AuUtil::LoginMasterPort();
 
 	// Parse command line.
 	QStringList args = arguments();
@@ -123,6 +124,10 @@ AuLoginServerApp::AuLoginServerApp(int& argc, char** argv) : QCoreApplication(ar
 			// -n parm enables worker server supplies it's network resolvable name.
 			// e.g. -nu2.Hazeron.net
 			netName = (*it).mid(2);
+		}
+		else if((*it).left(2) == "-p")
+		{
+			advertisedPort = QVariant((*it).mid(2)).toUInt();
 		}
 		else if((*it) == "-master")
 		{
@@ -144,6 +149,10 @@ AuLoginServerApp::AuLoginServerApp(int& argc, char** argv) : QCoreApplication(ar
 		gp_AuGlobal = new AuGlobal("Hazeron Login Worker", "Hazeron Freehold", AuGlobal::LoginWorker);
 		g_Au.Log("Login Worker Started");
 	}
+
+	// Workers can advertise a host-published port while continuing to listen
+	// on the protocol's fixed port inside their own network namespace.
+	m_AdvertisedPort = isMaster ? AuUtil::LoginMasterPort() : advertisedPort;
 
 	// Configure internet name.
 	if(!netName.isEmpty())

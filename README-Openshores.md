@@ -124,6 +124,27 @@ Open the repository in VS Code, select a Linux launch option, and press `F5`. Ot
 
 To debug the Linux client in WSL, use `WSL: Reopen Folder in WSL`. The game needs WSLg and a working OpenGL driver.
 
+## Local and production servers
+
+The multiplayer stack runs PostgreSQL plus separate login, mail, scene-master, scene-manager, and scene-worker containers.
+
+```bash
+make server-up                         # Local Debug stack
+make server-up SCENE_WORKERS=3         # Scale local scene workers
+make server-logs
+make server-down
+```
+
+Start a matching client with `-alocalhost -log`. Production uses the same images and topology with a separate environment file:
+
+```bash
+cp deploy/server/production.env.example deploy/server/production.env
+make server-prod-config
+make server-prod-up
+```
+
+See `deploy/server/README.md` for configuration, ports, persistence, scaling, logs, client launches, and Linux GDB attachment.
+
 ## Clean
 
 ```bash

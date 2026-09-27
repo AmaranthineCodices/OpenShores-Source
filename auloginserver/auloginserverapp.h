@@ -761,6 +761,11 @@ public:
 		return m_ServerMap;
 	}
 
+	inline quint16 AdvertisedPort() const
+	{
+		return m_AdvertisedPort;
+	}
+
 	inline const QDateTime& TimeUp() const
 	{
 		return m_tmUp;
@@ -784,6 +789,7 @@ private:
 	QMutex								m_muServerMap;
 	QMap<QString, DhLoginServer>		m_ServerMap;			// Used by LoginMaster.
 	AuLoginServer						m_TcpServer;
+	quint16								m_AdvertisedPort;
 	QTimer*								m_timer;
 	DtLoginDb*							m_tLoginDb;
 	QDateTime							m_tmCheckIn;			// Last time checked in with Master.

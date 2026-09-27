@@ -1,0 +1,202 @@
+name: ${COMPOSE_PROJECT_NAME}
+
+x-server-environment: &server-environment
+  AU_LOGIN_SERVER: login-worker
+  AU_MAIL_SERVER: mail-worker
+  AU_LOGIN_DB_HOST: postgres
+  AU_MAIL_DB_HOST: postgres
+  AU_UNIVERSE_DB_HOST: postgres
+  AU_DB_PASSWORD: ${AU_DB_PASSWORD}
+  AU_PUBLIC_ENDPOINTS: "1"
+
+x-server: &server
+  image: ${SERVER_IMAGE}
+  pull_policy: never
+  restart: unless-stopped
+  stop_grace_period: 60s
+  working_dir: /var/lib/openshores
+  environment: *server-environment
+  networks:
+    - server
+  logging:
+    driver: local
+    options:
+      max-size: 20m
+      max-file: "3"
+
+services:
+  postgres:
+    image: ${POSTGRES_IMAGE}
+    pull_policy: never
+    build:
+      context: ../..
+      dockerfile: deploy/server/postgres/Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AU_DB_OWNER_PASSWORD: ${AU_DB_OWNER_PASSWORD}
+      AU_DB_PASSWORD: ${AU_DB_PASSWORD}
+      SERVER_LOGIN_PASSWORD: ${SERVER_LOGIN_PASSWORD}
+      CREATE_LOCAL_PLAYER: ${CREATE_LOCAL_PLAYER}
+      LOCAL_PLAYER_NAME: ${LOCAL_PLAYER_NAME}
+      LOCAL_PLAYER_PASSWORD: ${LOCAL_PLAYER_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - server
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username postgres --dbname auLogin"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  login-master:
+    <<: *server
+    build:
+      context: ../..
+      dockerfile: docker/linux/Dockerfile
+      target: ${SERVER_IMAGE_TARGET}
+      args:
+        SERVER_BUILD_TYPE: ${SERVER_BUILD_TYPE}
+    command: ["/opt/openshores/bin/AuLoginServer", "-master"]
+    ports:
+      - "${BIND_ADDRESS}:16757:16757/tcp"
+    networks:
+      server:
+        aliases:
+          - Login.Hazeron.net
+    healthcheck:
+      test: ["CMD-SHELL", "grep -qx 'Server Map' aulogin.txt"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  login-worker:
+    <<: *server
+    command:
+      - /opt/openshores/bin/AuLoginServer
+      - -n${PUBLIC_HOST}
+      - -p${LOGIN_WORKER_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      login-master:
+        condition: service_started
+    ports:
+      - "${BIND_ADDRESS}:${LOGIN_WORKER_PORT}:16757/tcp"
+    healthcheck:
+      test: ["CMD", "/opt/openshores/bin/health-port", "16757"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mail-master:
+    <<: *server
+    command: ["/opt/openshores/bin/AuMailServer", "-master"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      login-master:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS}:16758:16758/tcp"
+    networks:
+      server:
+        aliases:
+          - Mail.Hazeron.net
+    healthcheck:
+      test: ["CMD-SHELL", "grep -qx 'Server Map' aumail.txt"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+
+  mail-worker:
+    <<: *server
+    command:
+      - /opt/openshores/bin/AuMailServer
+      - -n${PUBLIC_HOST}
+      - -p${MAIL_WORKER_PORT}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      login-master:
+        condition: service_healthy
+      mail-master:
+        condition: service_started
+    ports:
+      - "${BIND_ADDRESS}:${MAIL_WORKER_PORT}:16758/tcp"
+    healthcheck:
+      test: ["CMD", "/opt/openshores/bin/health-port", "16758"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  scene-master:
+    <<: *server
+    command:
+      - /opt/openshores/bin/AuSceneServer
+      - -master
+      - -m16762
+      - -lu1s0
+      - -w${SERVER_LOGIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      login-worker:
+        condition: service_healthy
+      mail-worker:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS}:16759:16759/tcp"
+    networks:
+      server:
+        aliases:
+          - Scene.Hazeron.net
+    healthcheck:
+      test: ["CMD", "/opt/openshores/bin/health-port", "16756", "16759"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  scene-manager:
+    <<: *server
+    command:
+      - /opt/openshores/bin/AuSceneServer
+      - -manager
+      - -n${PUBLIC_HOST}
+      - -p${SCENE_MANAGER_PORT}
+      - -m16762
+      - -sscene-master
+      - -lu1s1
+      - -w${SERVER_LOGIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      login-worker:
+        condition: service_healthy
+      scene-master:
+        condition: service_healthy
+    ports:
+      - "${BIND_ADDRESS}:${SCENE_MANAGER_PORT}:${SCENE_MANAGER_PORT}/tcp"
+    healthcheck:
+      test: ["CMD", "/opt/openshores/bin/health-port", "16756", "${SCENE_MANAGER_PORT}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+networks:
+  server:
+    name: ${COMPOSE_PROJECT_NAME}-network
+
+volumes:
+  postgres-data:
+    name: ${POSTGRES_VOLUME}

@@ -3,6 +3,8 @@ build
 debug
 release
 old-editor
+deploy/server/local.env
+deploy/server/production.env
 
 **/.d
 **/.r
