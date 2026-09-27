@@ -91,8 +91,8 @@
         "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
         "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
         "pipeTransport": {
-          "pipeProgram": "/usr/bin/env",
-          "pipeArgs": [],
+          "pipeProgram": "/bin/sh",
+          "pipeArgs": ["-c"],
           "debuggerPath": "/mnt/c/msys64/ucrt64/bin/gdb.exe",
           "pipeCwd": "${workspaceFolder}"
         }
@@ -130,8 +130,8 @@
         "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
         "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
         "pipeTransport": {
-          "pipeProgram": "/usr/bin/env",
-          "pipeArgs": [],
+          "pipeProgram": "/bin/sh",
+          "pipeArgs": ["-c"],
           "debuggerPath": "/mnt/c/msys64/ucrt64/bin/gdb.exe",
           "pipeCwd": "${workspaceFolder}"
         }
