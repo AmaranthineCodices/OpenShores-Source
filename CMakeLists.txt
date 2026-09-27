@@ -11,14 +11,17 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(AU_OUTPUT_ROOT "${CMAKE_BINARY_DIR}" CACHE PATH
+    "Directory that receives the bin and lib build artifacts"
+)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/lib")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/lib")
 foreach(configuration Debug Release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${configuration}" configuration_upper)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/bin")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/lib")
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/lib")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/bin")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
 endforeach()
 
 if(UNIX AND NOT APPLE)

@@ -2,18 +2,12 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+daemon_repo_root=$(bash "$repo_root/docker/resolve-project-mount.sh" "$repo_root")
 image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
-build_volume=${HAZERON_WINDOWS_BUILD_VOLUME:-hazeron-windows-release-build}
-artifact_dir="$repo_root/build/windows-release"
-temporary_dir=$(mktemp -d)
-container_id=
-cleanup() {
-    if [[ -n "$container_id" ]]; then
-        docker rm -f "$container_id" >/dev/null 2>&1 || true
-    fi
-    rm -rf "$temporary_dir"
-}
-trap cleanup EXIT
+cache_volume=${HAZERON_WINDOWS_CACHE_VOLUME:-hazeron-windows-release-cache}
+local_output_dir="$repo_root/build/windows-release"
+daemon_output_dir="$daemon_repo_root/build/windows-release"
+mkdir -p "$local_output_dir"
 
 cd "$repo_root"
 
@@ -24,69 +18,60 @@ if ! docker image inspect "$image" >/dev/null 2>&1; then
         docker/windows
 fi
 
-container_id=$(docker create \
-    --mount "type=volume,source=$build_volume,target=/build" \
-    "$image" sleep infinity)
-docker start "$container_id" >/dev/null
+docker volume create "$cache_volume" >/dev/null
+docker run --rm \
+    --mount "type=volume,source=$cache_volume,target=/build" \
+    "$image" chown "$(id -u):$(id -g)" /build
 
-tar \
-    --exclude=.git \
-    --exclude=build \
-    --exclude=debug \
-    --exclude=release \
-    --exclude=old-editor \
-    --exclude=docs \
-    --exclude='*/.d' \
-    --exclude='*/.r' \
-    --exclude='*/.qmake.stash' \
-    --exclude='*/Makefile' \
-    --exclude='*/*.pro' \
-    -cf - . | docker exec -i "$container_id" tar -xf - -C /src
+docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    --env HOME=/tmp \
+    --mount "type=bind,source=$daemon_repo_root,target=/src,readonly" \
+    --mount "type=volume,source=$cache_volume,target=/build" \
+    --mount "type=bind,source=$daemon_output_dir,target=/output" \
+    "$image" \
+    /bin/bash -ec '
+        package_dir=/output/bin
+        qt_plugins="/opt/mxe/usr/${MXE_TARGET}/qt5/plugins"
+        target_prefix="/opt/mxe/usr/${MXE_TARGET}"
 
-docker exec "$container_id" /bin/bash -ec '
-    "${MXE_TARGET}-cmake" \
-        -S /src \
-        -B /build \
-        -G Ninja \
-        -DCMAKE_BUILD_TYPE=Release
-    cmake --build /build \
-        --target client \
-        --parallel "$(nproc)"
+        "${MXE_TARGET}-cmake" \
+            -S /src \
+            -B /build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DAU_OUTPUT_ROOT=/output
+        cmake --build /build \
+            --target client \
+            --parallel "$(nproc)"
 
-    package_dir=/artifacts/bin
-    qt_plugins="/opt/mxe/usr/${MXE_TARGET}/qt5/plugins"
-    target_prefix="/opt/mxe/usr/${MXE_TARGET}"
+        find "$package_dir" -maxdepth 1 -type f \
+            -iname "*.dll" ! -iname "libAu*.dll" -delete
+        rm -rf \
+            "$package_dir/platforms" \
+            "$package_dir/imageformats" \
+            "$package_dir/styles" \
+            "$package_dir/bearer"
+        mkdir -p \
+            "$package_dir/platforms" \
+            "$package_dir/imageformats" \
+            "$package_dir/styles" \
+            "$package_dir/bearer"
+        cp "$qt_plugins/platforms/qwindows.dll" "$package_dir/platforms/"
+        cp "$qt_plugins/imageformats/"*.dll "$package_dir/imageformats/"
+        cp "$qt_plugins/styles/"*.dll "$package_dir/styles/"
+        cp "$qt_plugins/bearer/"*.dll "$package_dir/bearer/"
 
-    rm -rf /artifacts
-    mkdir -p "$package_dir" /artifacts/lib
-    cp -a /build/bin/. "$package_dir/"
-    cp -a /build/lib/. /artifacts/lib/
+        python3 /opt/mxe/tools/copydlldeps.py \
+            "$package_dir" \
+            -C "$package_dir" \
+               "$package_dir/platforms" \
+               "$package_dir/imageformats" \
+               "$package_dir/styles" \
+               "$package_dir/bearer" \
+            -L "$target_prefix/bin" \
+               "$target_prefix/qt5/bin"
+    '
 
-    mkdir -p \
-        "$package_dir/platforms" \
-        "$package_dir/imageformats" \
-        "$package_dir/styles" \
-        "$package_dir/bearer"
-    cp "$qt_plugins/platforms/qwindows.dll" "$package_dir/platforms/"
-    cp "$qt_plugins/imageformats/"*.dll "$package_dir/imageformats/"
-    cp "$qt_plugins/styles/"*.dll "$package_dir/styles/"
-    cp "$qt_plugins/bearer/"*.dll "$package_dir/bearer/"
-
-    python3 /opt/mxe/tools/copydlldeps.py \
-        "$package_dir" \
-        -C "$package_dir" \
-           "$package_dir/platforms" \
-           "$package_dir/imageformats" \
-           "$package_dir/styles" \
-           "$package_dir/bearer" \
-        -L "$target_prefix/bin" \
-           "$target_prefix/qt5/bin"
-'
-
-docker cp "$container_id:/artifacts/." "$temporary_dir"
-rm -rf "$artifact_dir"
-mkdir -p "$artifact_dir"
-cp -a "$temporary_dir/." "$artifact_dir/"
-
-printf 'Windows artifacts: %s\n' "$artifact_dir"
-printf 'Windows build cache volume: %s\n' "$build_volume"
+printf 'Windows artifacts: %s/build/windows-release\n' "$repo_root"
+printf 'Windows cache volume: %s\n' "$cache_volume"

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+daemon_repo_root=$(bash "$repo_root/docker/resolve-project-mount.sh" "$repo_root")
 image=${HAZERON_LINUX_IMAGE:-hazeron-linux-qt5}
 config=${HAZERON_BUILD_CONFIG:-release}
 target=${1:-all}
@@ -27,17 +28,10 @@ if [[ ! "$target" =~ ^[A-Za-z0-9_.-]+$ ]]; then
     exit 2
 fi
 
-build_volume=${HAZERON_LINUX_BUILD_VOLUME:-hazeron-linux-${config}-build}
-artifact_dir="$repo_root/build/linux-${config}"
-temporary_dir=$(mktemp -d)
-container_id=
-cleanup() {
-    if [[ -n "$container_id" ]]; then
-        docker rm -f "$container_id" >/dev/null 2>&1 || true
-    fi
-    rm -rf "$temporary_dir"
-}
-trap cleanup EXIT
+cache_volume=${HAZERON_LINUX_CACHE_VOLUME:-hazeron-linux-${config}-cache}
+local_output_dir="$repo_root/build/linux-${config}"
+daemon_output_dir="$daemon_repo_root/build/linux-${config}"
+mkdir -p "$local_output_dir"
 
 cd "$repo_root"
 
@@ -46,43 +40,29 @@ docker build \
     --file docker/linux/Dockerfile \
     docker/linux
 
-container_id=$(docker create \
-    --mount "type=volume,source=$build_volume,target=/build" \
-    "$image" sleep infinity)
-docker start "$container_id" >/dev/null
+docker volume create "$cache_volume" >/dev/null
+docker run --rm \
+    --mount "type=volume,source=$cache_volume,target=/build" \
+    "$image" chown "$(id -u):$(id -g)" /build
 
-tar \
-    --exclude=.git \
-    --exclude=build \
-    --exclude=debug \
-    --exclude=release \
-    --exclude=old-editor \
-    --exclude=docs \
-    --exclude='*/.d' \
-    --exclude='*/.r' \
-    --exclude='*/.qmake.stash' \
-    --exclude='*/Makefile' \
-    --exclude='*/*.pro' \
-    -cf - . | docker exec -i "$container_id" tar -xf - -C /src
+docker run --rm \
+    --user "$(id -u):$(id -g)" \
+    --env HOME=/tmp \
+    --mount "type=bind,source=$daemon_repo_root,target=/src,readonly" \
+    --mount "type=volume,source=$cache_volume,target=/build" \
+    --mount "type=bind,source=$daemon_output_dir,target=/output" \
+    "$image" \
+    /bin/bash -ec "
+        cmake \
+            -S /src \
+            -B /build \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${cmake_build_type} \
+            -DAU_OUTPUT_ROOT=/output
+        cmake --build /build \
+            --target ${target} \
+            --parallel \"\$(nproc)\"
+    "
 
-docker exec "$container_id" /bin/bash -lc "
-    cmake \
-        -S /src \
-        -B /build \
-        -G Ninja \
-        -DCMAKE_BUILD_TYPE=${cmake_build_type}
-    cmake --build /build \
-        --target ${target} \
-        --parallel \"\$(nproc)\"
-    rm -rf /artifacts
-    mkdir -p /artifacts
-    cp -a /build/bin /artifacts/bin
-    cp -a /build/lib /artifacts/lib
-"
-
-docker cp "$container_id:/artifacts/." "$temporary_dir"
-mkdir -p "$artifact_dir"
-cp -a "$temporary_dir/." "$artifact_dir/"
-
-printf 'Linux artifacts: %s\n' "$artifact_dir"
-printf 'Linux build cache volume: %s\n' "$build_volume"
+printf 'Linux artifacts: %s/build/linux-%s\n' "$repo_root" "$config"
+printf 'Linux cache volume: %s\n' "$cache_volume"

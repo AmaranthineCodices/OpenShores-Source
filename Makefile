@@ -15,9 +15,15 @@ PARALLEL ?= $(shell nproc 2>/dev/null || echo 4)
 
 LINUX_IMAGE ?= hazeron-linux-qt5
 WINDOWS_IMAGE ?= hazeron-mingw-qt5
-LINUX_BUILD_VOLUME ?= hazeron-linux-$(CONFIG)-build
-WINDOWS_BUILD_VOLUME ?= hazeron-windows-release-build
+LINUX_CACHE_VOLUME ?= hazeron-linux-$(CONFIG)-cache
+WINDOWS_CACHE_VOLUME ?= hazeron-windows-release-cache
 NATIVE_BUILD_DIR ?= build/native-linux-$(CONFIG)
+
+DEFAULT_CACHE_VOLUMES := \
+	hazeron-linux-debug-cache \
+	hazeron-linux-release-cache \
+	hazeron-linux-relwithdebinfo-cache \
+	hazeron-windows-release-cache
 
 ifeq ($(CONFIG),debug)
 CMAKE_BUILD_TYPE := Debug
@@ -36,13 +42,17 @@ endif
         native-servers native-cgi native-tools \
         native-ausceneclient native-auloginserver \
         native-aumailserver native-ausceneserver \
-        run-client clean clean-cache rebuild help
+        run-client clean rebuild help
+
+define run_linux_build
+HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
+HAZERON_LINUX_CACHE_VOLUME="$(LINUX_CACHE_VOLUME)" \
+HAZERON_BUILD_CONFIG="$(CONFIG)" \
+	bash docker/linux/build.sh $(1)
+endef
 
 all:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh programs
+	$(call run_linux_build,programs)
 
 build: all
 
@@ -53,54 +63,30 @@ linux-image:
 		--file docker/linux/Dockerfile docker/linux
 
 client:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh client
+	$(call run_linux_build,client)
 
 clients:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh clients
+	$(call run_linux_build,clients)
 
 servers:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh servers
+	$(call run_linux_build,servers)
 
 cgi:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh cgi
+	$(call run_linux_build,cgi)
 
 tools:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh tools
+	$(call run_linux_build,tools)
 
 ausceneclient: client
 
 auloginserver:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh AuLoginServer
+	$(call run_linux_build,AuLoginServer)
 
 aumailserver:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh AuMailServer
+	$(call run_linux_build,AuMailServer)
 
 ausceneserver:
-	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
-	HAZERON_LINUX_BUILD_VOLUME="$(LINUX_BUILD_VOLUME)" \
-	HAZERON_BUILD_CONFIG="$(CONFIG)" \
-		bash docker/linux/build.sh AuSceneServer
+	$(call run_linux_build,AuSceneServer)
 
 # Dockerized MinGW/Qt 5 cross-build.
 windows-toolchain:
@@ -110,7 +96,7 @@ windows-toolchain:
 
 windows-client:
 	HAZERON_MINGW_IMAGE="$(WINDOWS_IMAGE)" \
-	HAZERON_WINDOWS_BUILD_VOLUME="$(WINDOWS_BUILD_VOLUME)" \
+	HAZERON_WINDOWS_CACHE_VOLUME="$(WINDOWS_CACHE_VOLUME)" \
 		bash docker/windows/build-client.sh
 
 # Opt-in native Linux build for faster local iteration.
@@ -157,16 +143,15 @@ native-ausceneserver: native-configure
 run-client: client
 	"build/linux-$(CONFIG)/bin/AuSceneClient"
 
-# Exported build directories are disposable. Named volumes retain compiler output.
+# Docker caches live in named volumes; build/ contains exported bin/lib files
+# and any opt-in native build trees.
 clean:
 	$(CMAKE) -E remove_directory build
+	@for volume in $(sort $(DEFAULT_CACHE_VOLUMES) $(LINUX_CACHE_VOLUME) $(WINDOWS_CACHE_VOLUME)); do \
+		docker volume rm "$$volume" >/dev/null 2>&1 || true; \
+	done
 
-# Explicitly discard the persistent Docker compiler caches.
-clean-cache:
-	-docker volume rm "$(LINUX_BUILD_VOLUME)"
-	-docker volume rm "$(WINDOWS_BUILD_VOLUME)"
-
-rebuild: clean clean-cache all
+rebuild: clean all
 
 help:
 	@printf '%s\n' \
@@ -190,14 +175,13 @@ help:
 		'make native-tools           Build admin/content tools natively' \
 		'make native-build           Build every configured CMake target natively' \
 		'make run-client             Build in Linux Docker, then run the client' \
-		'make clean                  Remove exported artifacts under build/' \
-		'make clean-cache            Remove persistent Docker compiler caches' \
-		'make rebuild                Delete artifacts/caches and rebuild all' \
+		'make clean                  Remove all build artifacts and caches' \
+		'make rebuild                Clean and rebuild all Linux programs' \
 		'' \
 		'Variables:' \
 		'  CONFIG=release|debug|relwithdebinfo  (default: release)' \
 		'  PARALLEL=N                           (native builds only)' \
 		'  LINUX_IMAGE=name                     (default: hazeron-linux-qt5)' \
 		'  WINDOWS_IMAGE=name                   (default: hazeron-mingw-qt5)' \
-		'  LINUX_BUILD_VOLUME=name              (persistent CMake/Ninja cache)' \
-		'  WINDOWS_BUILD_VOLUME=name            (persistent MinGW cache)'
+		'  LINUX_CACHE_VOLUME=name              (default depends on CONFIG)' \
+		'  WINDOWS_CACHE_VOLUME=name            (default: hazeron-windows-release-cache)'
