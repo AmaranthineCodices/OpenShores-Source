@@ -17,10 +17,12 @@ trap cleanup EXIT
 
 cd "$repo_root"
 
-docker build \
-    --tag "$image" \
-    --file docker/windows/Dockerfile \
-    docker/windows
+if ! docker image inspect "$image" >/dev/null 2>&1; then
+    docker build \
+        --tag "$image" \
+        --file docker/windows/Dockerfile \
+        docker/windows
+fi
 
 container_id=$(docker create \
     --mount "type=volume,source=$build_volume,target=/build" \
@@ -41,7 +43,7 @@ tar \
     --exclude='*/*.pro' \
     -cf - . | docker exec -i "$container_id" tar -xf - -C /src
 
-docker exec "$container_id" /bin/bash -lc '
+docker exec "$container_id" /bin/bash -ec '
     "${MXE_TARGET}-cmake" \
         -S /src \
         -B /build \
@@ -50,13 +52,39 @@ docker exec "$container_id" /bin/bash -lc '
     cmake --build /build \
         --target client \
         --parallel "$(nproc)"
+
+    package_dir=/artifacts/bin
+    qt_plugins="/opt/mxe/usr/${MXE_TARGET}/qt5/plugins"
+    target_prefix="/opt/mxe/usr/${MXE_TARGET}"
+
     rm -rf /artifacts
-    mkdir -p /artifacts
-    cp -a /build/bin /artifacts/bin
-    cp -a /build/lib /artifacts/lib
+    mkdir -p "$package_dir" /artifacts/lib
+    cp -a /build/bin/. "$package_dir/"
+    cp -a /build/lib/. /artifacts/lib/
+
+    mkdir -p \
+        "$package_dir/platforms" \
+        "$package_dir/imageformats" \
+        "$package_dir/styles" \
+        "$package_dir/bearer"
+    cp "$qt_plugins/platforms/qwindows.dll" "$package_dir/platforms/"
+    cp "$qt_plugins/imageformats/"*.dll "$package_dir/imageformats/"
+    cp "$qt_plugins/styles/"*.dll "$package_dir/styles/"
+    cp "$qt_plugins/bearer/"*.dll "$package_dir/bearer/"
+
+    python3 /opt/mxe/tools/copydlldeps.py \
+        "$package_dir" \
+        -C "$package_dir" \
+           "$package_dir/platforms" \
+           "$package_dir/imageformats" \
+           "$package_dir/styles" \
+           "$package_dir/bearer" \
+        -L "$target_prefix/bin" \
+           "$target_prefix/qt5/bin"
 '
 
 docker cp "$container_id:/artifacts/." "$temporary_dir"
+rm -rf "$artifact_dir"
 mkdir -p "$artifact_dir"
 cp -a "$temporary_dir/." "$artifact_dir/"
 

@@ -180,7 +180,7 @@ help:
 		'make auloginserver          Docker-build AuLoginServer' \
 		'make aumailserver           Docker-build AuMailServer' \
 		'make ausceneserver          Docker-build AuSceneServer' \
-		'make windows-client         Cross-build AuSceneClient.exe with MinGW' \
+		'make windows-client         Build a runnable Windows x64 client bundle' \
 		'make linux-image            Build only the Linux toolchain image' \
 		'make windows-toolchain      Build only the MinGW/Qt 5 image' \
 		'make native-client          Build the client with host tools' \
