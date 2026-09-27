@@ -2,10 +2,34 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Docker: build client (Debug)",
+      "label": "Docker: build Linux client (Debug)",
       "type": "process",
       "command": "make",
       "args": ["CONFIG=debug", "client"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Docker: build Linux client (RelWithDebInfo)",
+      "type": "process",
+      "command": "make",
+      "args": ["CONFIG=relwithdebinfo", "client"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Docker: build Windows client (Debug)",
+      "type": "process",
+      "command": "make",
+      "args": ["CONFIG=debug", "windows-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -16,17 +40,13 @@
           "--exec", "make", "CONFIG=debug", "windows-client"
         ]
       },
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "problemMatcher": []
     },
     {
-      "label": "Docker: build client (RelWithDebInfo)",
+      "label": "Docker: build Windows client (RelWithDebInfo)",
       "type": "process",
       "command": "make",
-      "args": ["CONFIG=relwithdebinfo", "client"],
+      "args": ["CONFIG=relwithdebinfo", "windows-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },

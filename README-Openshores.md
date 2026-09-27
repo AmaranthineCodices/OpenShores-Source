@@ -78,13 +78,13 @@ Native builds require CMake, Ninja, Qt 5, OpenGL, OpenAL, and SDL2 development p
 
 ## F5 Debugging in VS Code
 
-Install the recommended C/C++ extension. Select `AuSceneClient (Docker Debug)` in Run and Debug, then press `F5`.
+Install the recommended C/C++ extension. Run and Debug groups the launch options under Linux and Windows. Each platform has Debug and RelWithDebInfo. Select one and press `F5`.
 
-Docker builds the client. GDB runs it on your machine. You do not need a local compiler or CMake.
+Docker builds the client. GDB runs it on the selected platform. You do not need a local compiler or CMake.
 
 The first build also exports the Qt and compiler headers to `build/editor/`. The C/C++ extension uses them for IntelliSense. The cache refreshes when the Docker toolchain changes. CMake Tools is not required. If it is already installed, disable it for this workspace.
 
-Use `AuSceneClient (Docker RelWithDebInfo)` for better game performance. Some variables may be unavailable in the debugger because of optimization.
+RelWithDebInfo gives better game performance. Some variables may be unavailable in the debugger because of optimization.
 
 ### Windows
 
@@ -103,7 +103,7 @@ pacman -S --needed mingw-w64-ucrt-x86_64-gdb
 
 If the update asks you to restart the terminal, do that and finish updating before installing GDB.
 
-Open the repository in Windows VS Code, not Remote WSL, and press `F5`. The build runs through WSL. The game and debugger run on Windows. No Windows Qt SDK is needed.
+Open the repository in Windows VS Code or Remote WSL. Select a Windows launch option and press `F5`. From WSL, VS Code starts Windows GDB through WSL interop. The game runs natively on Windows. No Windows Qt SDK is needed.
 
 If you installed MSYS2 elsewhere, change `miDebuggerPath` in `.vscode/launch.json`.
 
@@ -120,7 +120,7 @@ sudo apt install make git gdb libqt5opengl5 libqt5network5 \
 docker run --rm hello-world
 ```
 
-Open the repository in VS Code and press `F5`. Other distributions need libraries compatible with the Ubuntu 22.04 build.
+Open the repository in VS Code, select a Linux launch option, and press `F5`. Other distributions need libraries compatible with the Ubuntu 22.04 build.
 
 To debug the Linux client in WSL, use `WSL: Reopen Folder in WSL`. The game needs WSLg and a working OpenGL driver.
 

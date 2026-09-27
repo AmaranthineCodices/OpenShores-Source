@@ -2,17 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "AuSceneClient (Docker Debug)",
+      "name": "Linux Debug",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/linux-debug/bin/AuSceneClient",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
-      "windows": {
-        "program": "${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
-        "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe"
-      },
       "sourceFileMap": {
         "/src": "${workspaceFolder}"
       },
@@ -23,19 +19,58 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Docker: build client (Debug)"
+      "preLaunchTask": "Docker: build Linux client (Debug)",
+      "presentation": {
+        "group": "Linux",
+        "order": 1
+      },
+      "windows": {
+        "presentation": {
+          "hidden": true
+        }
+      }
     },
     {
-      "name": "AuSceneClient (Docker RelWithDebInfo)",
+      "name": "Linux RelWithDebInfo",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/linux-relwithdebinfo/bin/AuSceneClient",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      },
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty-printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Docker: build Linux client (RelWithDebInfo)",
+      "presentation": {
+        "group": "Linux",
+        "order": 2
+      },
       "windows": {
-        "program": "${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
-        "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe"
+        "presentation": {
+          "hidden": true
+        }
+      }
+    },
+    {
+      "name": "Windows Debug",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "pipeTransport": {
+        "pipeProgram": "C:/Windows/System32/cmd.exe",
+        "pipeArgs": ["/c"],
+        "debuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+        "pipeCwd": "${workspaceFolder}"
       },
       "sourceFileMap": {
         "/src": "${workspaceFolder}"
@@ -47,7 +82,60 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Docker: build client (RelWithDebInfo)"
+      "preLaunchTask": "Docker: build Windows client (Debug)",
+      "presentation": {
+        "group": "Windows",
+        "order": 1
+      },
+      "linux": {
+        "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
+        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
+        "pipeTransport": {
+          "pipeProgram": "/usr/bin/env",
+          "pipeArgs": [],
+          "debuggerPath": "/mnt/c/msys64/ucrt64/bin/gdb.exe",
+          "pipeCwd": "${workspaceFolder}"
+        }
+      }
+    },
+    {
+      "name": "Windows RelWithDebInfo",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",
+      "pipeTransport": {
+        "pipeProgram": "C:/Windows/System32/cmd.exe",
+        "pipeArgs": ["/c"],
+        "debuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+        "pipeCwd": "${workspaceFolder}"
+      },
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      },
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty-printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Docker: build Windows client (RelWithDebInfo)",
+      "presentation": {
+        "group": "Windows",
+        "order": 2
+      },
+      "linux": {
+        "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
+        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
+        "pipeTransport": {
+          "pipeProgram": "/usr/bin/env",
+          "pipeArgs": [],
+          "debuggerPath": "/mnt/c/msys64/ucrt64/bin/gdb.exe",
+          "pipeCwd": "${workspaceFolder}"
+        }
+      }
     }
   ]
 }
