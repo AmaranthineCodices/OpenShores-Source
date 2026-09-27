@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
 build_volume=${HAZERON_WINDOWS_BUILD_VOLUME:-hazeron-windows-release-build}
-artifact_dir="$repo_root/build/docker-windows-release"
+artifact_dir="$repo_root/build/windows-release"
 temporary_dir=$(mktemp -d)
 container_id=
 cleanup() {

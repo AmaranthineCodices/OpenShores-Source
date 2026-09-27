@@ -155,7 +155,7 @@ native-ausceneserver: native-configure
 		--parallel "$(PARALLEL)"
 
 run-client: client
-	"build/docker-linux-$(CONFIG)/bin/AuSceneClient"
+	"build/linux-$(CONFIG)/bin/AuSceneClient"
 
 # Exported build directories are disposable. Named volumes retain compiler output.
 clean:

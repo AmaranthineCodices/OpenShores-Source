@@ -28,7 +28,7 @@ if [[ ! "$target" =~ ^[A-Za-z0-9_.-]+$ ]]; then
 fi
 
 build_volume=${HAZERON_LINUX_BUILD_VOLUME:-hazeron-linux-${config}-build}
-artifact_dir="$repo_root/build/docker-linux-${config}"
+artifact_dir="$repo_root/build/linux-${config}"
 temporary_dir=$(mktemp -d)
 container_id=
 cleanup() {
