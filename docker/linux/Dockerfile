@@ -1,0 +1,22 @@
+FROM ubuntu:22.04 AS toolchain
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates \
+        cmake \
+        libgl1-mesa-dev \
+        libglu1-mesa-dev \
+        libopenal-dev \
+        libqt5opengl5-dev \
+        libqt5sql5-psql \
+        libsdl2-dev \
+        ninja-build \
+        qtbase5-dev \
+        qtbase5-dev-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+CMD ["/bin/bash"]

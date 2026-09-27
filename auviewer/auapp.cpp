@@ -16,11 +16,7 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QSysInfo>
-#if defined(Q_OS_WIN)
-#include <SDL.h>
-#else
 #include <SDL2/SDL.h>
-#endif
 
 AuApp::AuApp(int& argc, char** argv) : QApplication(argc, argv)
 {

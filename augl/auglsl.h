@@ -109,12 +109,7 @@ class AUGL_DLL AuOpenGLFunctions : public QOpenGLFunctions_3_2_Core
 };
 
 #else
-// AuGLVer.h file is created by make. See project Makefile.rel or Makefile.
-#if defined(QT_NO_DEBUG)
-#include ".r/AuGLVer.h"
-#else
-#include ".d/AuGLVer.h"
-#endif
+#include "AuGLVer.h"
 
 #if defined(AUGL41)
 // OpenGL 4.1

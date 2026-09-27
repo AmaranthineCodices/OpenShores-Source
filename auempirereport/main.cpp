@@ -53,7 +53,7 @@
 #include <QSqlQuery>
 #include <QTextStream>
 #if defined(Q_OS_LINUX)
-#include "../../linuxPlatform.h"
+#include "linuxPlatform.h"
 #endif
 
 class AuEmpireReportItem;

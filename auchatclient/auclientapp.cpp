@@ -12,7 +12,7 @@
 #include "dgdata.h"
 #include "dtsspacket.h"
 #if defined(Q_OS_LINUX)
-#include "../../linuxPlatform.h"
+#include "linuxPlatform.h"
 #endif
 
 AuClientApp::AuClientApp(int& argc, char** argv) : AuApp(argc, argv)

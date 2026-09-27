@@ -44,11 +44,7 @@
 #include "dtclientchat.h"
 #include "dtsspacket.h"
 //#include <exception>
-#if defined(Q_OS_WIN)
-#include <SDL.h>
-#else
 #include <SDL2/SDL.h>
-#endif
 #include <signal.h>
 #include <QDir>
 #include <QFile>

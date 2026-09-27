@@ -1268,6 +1268,21 @@ public:	// Operators
 		return !operator==(l);
 	}
 
+#if defined(Q_OS_WIN)
+	inline const AuScTriRender operator[](const SURFACE_EFFECT& e) const
+	{
+		const_iterator ti = find(e);
+		return ti != cend() ? *ti : AuScTriRender();
+	}
+
+	inline AuScTriRender& operator[](const SURFACE_EFFECT& e)
+	{
+		iterator ti = find(e);
+		Q_ASSERT(ti != end());
+		return *ti;
+	}
+#endif
+
 public:	// Methods
 	// Merges 'l' with this list.
 	void Insert(const AuScTriRenderList& l);
@@ -1284,24 +1299,6 @@ public:	// Methods
 			(*ti).Transform(t);
 	}
 };
-
-#if defined(Q_OS_WIN)
-inline const AuScTriRender QMultiMap<SURFACE_EFFECT, AuScTriRender>::operator[](const SURFACE_EFFECT& e) const
-{
-	const_iterator ti = find(e);
-	if(ti != cend())
-		return *ti;
-	else
-		return AuScTriRender();
-}
-
-inline AuScTriRender& QMultiMap<SURFACE_EFFECT, AuScTriRender>::operator[](const SURFACE_EFFECT& e)
-{
-	iterator ti = find(e);
-	Q_ASSERT(ti != end());
-	return *ti;
-}
-#endif
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 // A surface with n vertices. e.g. Triangle, quad, polygon.

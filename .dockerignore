@@ -1,0 +1,15 @@
+.git
+build
+debug
+release
+old-editor
+
+**/.d
+**/.r
+**/.qmake.stash
+
+auglobal/sfx/sfx.har
+auloginserver/AuLoginServer
+aumailserver/AuMailServer
+ausceneclient/AuSceneClient
+ausceneserver/AuSceneServer

@@ -11,9 +11,6 @@
 #if defined(__APPLE__)	//defined(Q_OS_APPLE) This fails.
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
-#elif defined(Q_OS_WIN)
-#include <al.h>
-#include <alc.h>
 #else
 #include <AL/al.h>
 #include <AL/alc.h>

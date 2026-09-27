@@ -357,3 +357,4 @@ auviewer/Makefile
 auviewer/auviewer.pro
 debug/
 release/
+/build/

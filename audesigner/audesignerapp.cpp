@@ -13,7 +13,7 @@
 #include "dtsspacket.h"
 #include "dttrash.h"
 #if defined(Q_OS_LINUX)
-#include "../../linuxPlatform.h"
+#include "linuxPlatform.h"
 #endif
 
 AuDesignerApp::AuDesignerApp(int& argc, char** argv, const QString& appName, const QString& settingsAppName, bool isSolo) :

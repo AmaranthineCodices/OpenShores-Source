@@ -9,11 +9,7 @@
 
 #include "auatom.h"
 #include <QVector>
-#if defined(Q_OS_WIN)
-#include <SDL.h>
-#else
 #include <SDL2/SDL.h>
-#endif
 
 class AUATOM_DLL AuJoystick
 {
