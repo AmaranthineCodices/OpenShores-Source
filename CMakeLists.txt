@@ -24,6 +24,19 @@ foreach(configuration Debug Release RelWithDebInfo MinSizeRel)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
 endforeach()
 
+set(AU_CLIENT_GD_OUTPUT "${AU_OUTPUT_ROOT}/bin/GD")
+add_custom_command(
+    OUTPUT "${AU_CLIENT_GD_OUTPUT}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${AU_OUTPUT_ROOT}/bin"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/GD"
+        "${AU_CLIENT_GD_OUTPUT}"
+    DEPENDS "${CMAKE_SOURCE_DIR}/GD"
+    COMMENT "Copying GD client runtime data"
+    VERBATIM
+)
+add_custom_target(AuClientRuntimeData DEPENDS "${AU_CLIENT_GD_OUTPUT}")
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
     set(CMAKE_BUILD_RPATH "$ORIGIN/../lib")
@@ -175,6 +188,7 @@ au_add_shared_library(AuClientMailRes auclientmailres DEFINE AUCLIENTMAILRES)
 
 # Primary game client.
 au_add_executable(AuSceneClient ausceneclient)
+add_dependencies(AuSceneClient AuClientRuntimeData)
 target_link_libraries(AuSceneClient PRIVATE
     AuClientRes
     AuDesigner

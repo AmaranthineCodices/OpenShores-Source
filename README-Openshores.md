@@ -64,7 +64,7 @@ build/
     └── lib/
 ```
 
-The Windows `bin/` directory contains `AuSceneClient.exe`, its DLLs, and its Qt plugins. Keep the whole directory together.
+Client `bin/` directories contain the `GD` runtime data file beside the executable. The Windows `bin/` directory also contains the client DLLs and Qt plugins. Keep the whole directory together.
 
 ## Native Linux Build
 
