@@ -35,9 +35,11 @@ For Linux development, keep the repository under `~/src/OpenShores` in WSL for b
 ## Build
 
 ```bash
-make client          # Linux client
+make client          # Linux scene client
+make client-all      # All Linux clients
+make win-client      # Windows x64 scene client
+make win-client-all  # All Windows clients
 make servers         # Linux multiplayer servers
-make windows-client  # Windows x64 client
 ```
 
 Use `make help` to list the other targets.
@@ -50,26 +52,34 @@ make CONFIG=debug client
 make CONFIG=relwithdebinfo client
 ```
 
-`release` is the default. Use `make CONFIG=debug windows-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
+`release` is the default. Use `make CONFIG=debug win-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
 
-## Output
+## Release packages
 
-```text
-build/
-├── linux-release/
-│   ├── bin/
-│   └── lib/
-└── windows-release/
-    ├── bin/
-    └── lib/
+```bash
+make linux-package   # Linux game and launcher archives
+make win-package     # Windows game and launcher archives
+make release-package # Every release archive
 ```
 
-Client `bin/` directories contain the `GD` runtime data file beside the executable. The Windows `bin/` directory also contains the client DLLs and Qt plugins. Keep the whole directory together.
+Release artifacts are written to `build/packages/`:
+
+```text
+soh-linux-x64.tar.gz
+soh-launcher-linux-x64.tar.gz
+soh-win64.zip
+soh-launcher-win64.zip
+linux-x64.sha256
+windows-x64.sha256
+```
+
+Packages are staged from a clean directory and include the public executable names, resource libraries, runtime dependencies, `GD`, `sfx.har`, textures, release blueprints, and updater checksum manifests.
 
 ## Native Linux Build
 
 ```bash
 make native-client
+make native-client-all
 make native-servers
 make native-build
 ```

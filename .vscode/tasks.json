@@ -63,7 +63,7 @@
       "label": "Docker: build Windows client (Debug)",
       "type": "process",
       "command": "make",
-      "args": ["CONFIG=debug", "windows-client"],
+      "args": ["CONFIG=debug", "win-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -71,7 +71,7 @@
         "command": "wsl.exe",
         "args": [
           "--cd", "${workspaceFolder}",
-          "--exec", "make", "CONFIG=debug", "windows-client"
+          "--exec", "make", "CONFIG=debug", "win-client"
         ]
       },
       "problemMatcher": []
@@ -80,7 +80,7 @@
       "label": "Docker: build Windows client (RelWithDebInfo)",
       "type": "process",
       "command": "make",
-      "args": ["CONFIG=relwithdebinfo", "windows-client"],
+      "args": ["CONFIG=relwithdebinfo", "win-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -88,7 +88,7 @@
         "command": "wsl.exe",
         "args": [
           "--cd", "${workspaceFolder}",
-          "--exec", "make", "CONFIG=relwithdebinfo", "windows-client"
+          "--exec", "make", "CONFIG=relwithdebinfo", "win-client"
         ]
       },
       "problemMatcher": []

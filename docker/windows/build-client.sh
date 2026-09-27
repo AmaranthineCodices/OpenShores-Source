@@ -4,6 +4,12 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
 config=${HAZERON_BUILD_CONFIG:-release}
+target=${AU_TARGET:-client}
+
+if [[ "$target" != client && "$target" != client-all ]]; then
+    echo "error: unsupported Windows client target: $target" >&2
+    exit 2
+fi
 
 case "$config" in
     debug)
@@ -55,6 +61,7 @@ docker run --rm \
     --env CCACHE_DIR=/build/ccache \
     --env "CMAKE_BUILD_TYPE=$cmake_build_type" \
     --env "AU_IMAGE_ID=$image_id" \
+    --env "AU_TARGET=$target" \
     --env "AU_WORKSPACE_ROOT=$editor_workspace_root" \
     --mount "type=bind,source=$daemon_repo_root,target=/src,readonly" \
     --mount "type=volume,source=$cache_volume,target=/build" \
@@ -74,7 +81,7 @@ docker run --rm \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
             -DAU_OUTPUT_ROOT=/output
         cmake --build /build \
-            --target client \
+            --target "$AU_TARGET" \
             --parallel "$(nproc)"
 
         find "$package_dir" -maxdepth 1 -type f \

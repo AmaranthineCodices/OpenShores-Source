@@ -364,9 +364,8 @@ bool AuLauncherDialog::CanLaunchCommander() const
 	QString launch = FileDir() + "/SoHCommander.app/Contents/MacOS/SoHCommander";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/HazeronCommander";
-	QString launch2 = FileDir() + "/AuChatClient";
-	return QFile::exists(launch) && QFile::exists(launch2);
+	QString launch = FileDir() + "/bin/HazeronCommander";
+	return QFile::exists(launch);
 #endif
 }
 
@@ -380,7 +379,7 @@ void AuLauncherDialog::LaunchCommander()
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHCommander.app/Contents/MacOS/SoHCommander";
 #else
-	QString launch = FileDir() + "/HazeronCommander";
+	QString launch = FileDir() + "/bin/HazeronCommander";
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -408,9 +407,8 @@ bool AuLauncherDialog::CanLaunchMail() const
 	QString launch = FileDir() + "/SoHMail.app/Contents/MacOS/SoHMail";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/HazeronMail";
-	QString launch2 = FileDir() + "/AuMailClient";
-	return QFile::exists(launch) && QFile::exists(launch2);
+	QString launch = FileDir() + "/bin/HazeronMail";
+	return QFile::exists(launch);
 #endif
 }
 
@@ -424,7 +422,7 @@ void AuLauncherDialog::LaunchMail()
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHMail.app/Contents/MacOS/SoHMail";
 #else
-	QString launch = FileDir() + "/HazeronMail";
+	QString launch = FileDir() + "/bin/HazeronMail";
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -452,9 +450,8 @@ bool AuLauncherDialog::CanLaunchSoH() const
 	QString launch = FileDir() + "/SoH.app/Contents/MacOS/SoH";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/ShoresOfHazeron";
-	QString launch2 = FileDir() + "/AuSceneClient";
-	return QFile::exists(launch) && QFile::exists(launch2);
+	QString launch = FileDir() + "/bin/ShoresOfHazeron";
+	return QFile::exists(launch);
 #endif
 }
 
@@ -468,7 +465,7 @@ void AuLauncherDialog::LaunchSoH()
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoH.app/Contents/MacOS/SoH";
 #else
-	QString launch = FileDir() + "/ShoresOfHazeron";
+	QString launch = FileDir() + "/bin/ShoresOfHazeron";
 #endif
 
 #if defined(Q_OS_MACOS)
