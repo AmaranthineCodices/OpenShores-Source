@@ -66,6 +66,9 @@ public:
 
 	virtual void ShowWaitInfoMsg();
 
+protected:
+	virtual void keyPressEvent(QKeyEvent* event);
+
 public slots:
 	virtual void EmpireDataReceived();
 	virtual void EnterNewAvatar();
@@ -106,14 +109,11 @@ class AuIntroLaunch : public QWidget
 
 	// Widgets
 	QToolButton*						m_DesignerButton;
-	QToolButton*						m_FullScreenButton;
-	QToolButton*						m_HazeronButton;
 	QToolButton*						m_LoginButton;
 	QToolButton*						m_Mature17Button;
 	QCheckBox*							m_Mature17Check;
 	QLabel*								m_Mature17Icon;
 	QLabel*								m_Mature17Label;
-	QToolButton*						m_SettingsButton;
 	QToolButton*						m_SoloButton;
 
 public:
@@ -147,9 +147,6 @@ class AuIntroLogin : public QWidget
 public:
 	AuIntroLogin(AuIntro* parent=0);
 	virtual ~AuIntroLogin();
-
-protected:
-	virtual void keyPressEvent(QKeyEvent* event);
 
 protected slots:
 	void Login();

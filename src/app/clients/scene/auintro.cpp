@@ -88,8 +88,70 @@ AuIntro::AuIntro(QWidget* parent) : AuIntroBase(parent)
 	m_Pages->addWidget(m_CreateAvatar4Page);
 	m_CreateAvatar4Idx = idx++;
 
+	// Keep the utility buttons outside the page stack so they survive Play/Back navigation.
+	QWidget* utilityFooter = new QWidget(this);
+
+	QToolButton* hazeronButton = new QToolButton(utilityFooter);
+	hazeronButton->setAutoRaise(true);
+	hazeronButton->setIcon(QIcon(QPixmap(":data/SoHLogo256.png").scaled(64,64,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
+	hazeronButton->setIconSize(QSize(64,64));
+	hazeronButton->setToolTip(QObject::tr("<html><b>About <i>%1</i>...</b><br>"
+				"Shows information about the <i>%1</i> program."
+				"</html>").arg(g_Au.ApplicationName()));
+	connect(hazeronButton, SIGNAL(clicked()), SIGNAL(HelpAbout()));
+
+	QToolButton* fullScreenButton = new QToolButton(utilityFooter);
+	fullScreenButton->setAutoRaise(true);
+	fullScreenButton->setIcon(QIcon(QPixmap(":data/ToggleFull.png").scaled(16,16,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
+	fullScreenButton->setIconSize(QSize(16,16));
+	fullScreenButton->setToolTip(QObject::tr("<html><b>Toggle Full Screen Mode</b><br>"
+				"Switches between <i>full screen</i> and <i>window</i> modes."
+				"</html>"));
+	connect(fullScreenButton, SIGNAL(clicked()), SIGNAL(ToggleFullScreen()));
+
+	QToolButton* settingsButton = new QToolButton(utilityFooter);
+	settingsButton->setAutoRaise(true);
+	settingsButton->setIcon(QIcon(QPixmap(":data/Settings.png").scaled(16,16,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
+	settingsButton->setIconSize(QSize(16,16));
+	settingsButton->setToolTip(QObject::tr("<html><b>Settings...</b><br>"
+				"Shows the <i>Settings</i> window to change settings that affect the <i>%1</i> program."
+				"</html>").arg(g_Au.ApplicationName()));
+	connect(settingsButton, SIGNAL(clicked()), SIGNAL(ToggleSettingsUI()));
+
+	QToolButton* exitButton = new QToolButton(utilityFooter);
+	exitButton->setAutoRaise(true);
+	exitButton->setIcon(QIcon(QPixmap(":data/ExitGame.png").scaled(12,12,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
+	exitButton->setIconSize(QSize(12,12));
+	exitButton->setToolTip(QObject::tr("<b>Exit</b><br>"
+				"Exits the <i>%1</i> program.").arg(g_Au.ApplicationName()));
+	connect(exitButton, SIGNAL(clicked()), SIGNAL(ExitGame()));
+
+	QHBoxLayout* alay = new QHBoxLayout;
+	alay->addStretch();
+	alay->addWidget(fullScreenButton);
+	alay->addWidget(hazeronButton);
+	alay->addWidget(settingsButton);
+	alay->addStretch();
+
+	QHBoxLayout* xlay = new QHBoxLayout;
+	xlay->addStretch();
+	xlay->addWidget(exitButton);
+	xlay->addStretch();
+
+	QVBoxLayout* footerLayout = new QVBoxLayout(utilityFooter);
+	footerLayout->addLayout(alay);
+	footerLayout->addLayout(xlay);
+
+	// Avatar pages have their own utility controls.
+	connect(m_Pages, &QStackedLayout::currentChanged, utilityFooter, [this, utilityFooter](int index)
+	{
+		utilityFooter->setVisible(index == m_LaunchIdx || index == m_LoginIdx);
+	});
+	utilityFooter->setVisible(m_Pages->currentIndex() == m_LaunchIdx || m_Pages->currentIndex() == m_LoginIdx);
+
 	QVBoxLayout* lay = new QVBoxLayout();
-	lay->addLayout(m_Pages);
+	lay->addLayout(m_Pages, 1);
+	lay->addWidget(utilityFooter);
 	lay->setMargin(0);
 	lay->setSpacing(2);
 	setLayout(lay);
@@ -101,6 +163,17 @@ AuIntro::AuIntro(QWidget* parent) : AuIntroBase(parent)
 
 AuIntro::~AuIntro()
 {
+}
+
+void AuIntro::keyPressEvent(QKeyEvent* e)
+{
+	if(e->key() == Qt::Key_Escape && m_Pages->currentIndex() == m_LoginIdx)
+	{
+		LoginBack();
+		e->accept();
+		return;
+	}
+	AuIntroBase::keyPressEvent(e);
 }
 
 void AuIntro::LoggedIn()
@@ -360,15 +433,6 @@ AuIntroLaunch::AuIntroLaunch(AuIntro* parent) : QWidget(parent)
 	connect(m_SoloButton, SIGNAL(clicked()), SIGNAL(LaunchSolitaire()));
 #endif
 
-	m_HazeronButton = new QToolButton(this);
-	m_HazeronButton->setAutoRaise(true);
-	m_HazeronButton->setIcon(QIcon(QPixmap(":data/SoHLogo256.png").scaled(64,64,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
-	m_HazeronButton->setIconSize(QSize(64,64));
-	m_HazeronButton->setToolTip(QObject::tr("<html><b>About <i>%1</i>...</b><br>"
-				"Shows information about the <i>%1</i> program."
-				"</html>").arg(g_Au.ApplicationName()));
-	connect(m_HazeronButton, SIGNAL(clicked()), parent, SIGNAL(HelpAbout()));
-
 	m_Mature17Button = new QToolButton(this);
 	m_Mature17Button->setAutoRaise(true);
 	m_Mature17Button->setIcon(QIcon(QPixmap(":data/Mature17Plus.png").scaled(32,32,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
@@ -381,32 +445,6 @@ AuIntroLaunch::AuIntroLaunch(AuIntro* parent) : QWidget(parent)
 				"</html>").arg(g_Au.ApplicationName()));
 	m_Mature17Button->setVisible(!mustAffirm17);
 	connect(m_Mature17Button, SIGNAL(clicked()), SLOT(Mature17Show()));
-
-	m_FullScreenButton = new QToolButton(this);
-	m_FullScreenButton->setAutoRaise(true);
-	m_FullScreenButton->setIcon(QIcon(QPixmap(":data/ToggleFull.png").scaled(16,16,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
-	m_FullScreenButton->setIconSize(QSize(16,16));
-	m_FullScreenButton->setToolTip(QObject::tr("<html><b>Toggle Full Screen Mode</b><br>"
-				"Switches between <i>full screen</i> and <i>window</i> modes."
-				"</html>"));
-	connect(m_FullScreenButton, SIGNAL(clicked()), parent, SIGNAL(ToggleFullScreen()));
-
-	m_SettingsButton = new QToolButton(this);
-	m_SettingsButton->setAutoRaise(true);
-	m_SettingsButton->setIcon(QIcon(QPixmap(":data/Settings.png").scaled(16,16,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
-	m_SettingsButton->setIconSize(QSize(16,16));
-	m_SettingsButton->setToolTip(QObject::tr("<html><b>Settings...</b><br>"
-				"Shows the <i>Settings</i> window to change settings that affect the <i>%1</i> program."
-				"</html>").arg(g_Au.ApplicationName()));
-	connect(m_SettingsButton, SIGNAL(clicked()), parent, SIGNAL(ToggleSettingsUI()));
-
-	QToolButton* exitButton = new QToolButton(this);
-	exitButton->setAutoRaise(true);
-	exitButton->setIcon(QIcon(QPixmap(":data/ExitGame.png").scaled(12,12,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
-	exitButton->setIconSize(QSize(12,12));
-	exitButton->setToolTip(QObject::tr("<b>Exit</b><br>"
-				"Exits the <i>%1</i> program.").arg(g_Au.ApplicationName()));
-	connect(exitButton, SIGNAL(clicked()), parent, SIGNAL(ExitGame()));
 
 	QVBoxLayout* glay = new QVBoxLayout;
 	{
@@ -444,26 +482,12 @@ AuIntroLaunch::AuIntroLaunch(AuIntro* parent) : QWidget(parent)
 	slay->addWidget(m_Mature17Button);
 	slay->addStretch();
 
-	QHBoxLayout* alay = new QHBoxLayout;
-	alay->addStretch();
-	alay->addWidget(m_FullScreenButton);
-	alay->addWidget(m_HazeronButton);
-	alay->addWidget(m_SettingsButton);
-	alay->addStretch();
-
-	QHBoxLayout* xlay = new QHBoxLayout;
-	xlay->addStretch();
-	xlay->addWidget(exitButton);
-	xlay->addStretch();
-
 	QVBoxLayout* lay = new QVBoxLayout;
 	lay->addStretch(30);
 	lay->addLayout(mlay);
 	lay->addLayout(glay);
 	lay->addStretch(10);
 	lay->addLayout(slay);
-	lay->addLayout(alay);
-	lay->addLayout(xlay);
 	setLayout(lay);
 }
 
@@ -767,11 +791,3 @@ void AuIntroLogin::Login()
 		break;
 	}
 }
-
-void AuIntroLogin::keyPressEvent(QKeyEvent* e)
-{
-	QWidget::keyPressEvent(e);
-	if(e->key() == Qt::Key_Escape)
-		emit Back();
-}
-
