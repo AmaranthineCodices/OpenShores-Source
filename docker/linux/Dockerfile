@@ -6,6 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
+        ccache \
         cmake \
         libgl1-mesa-dev \
         libglu1-mesa-dev \

@@ -1,0 +1,135 @@
+name: Publish production server image
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: server-prod-image-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Cache Linux toolchain image
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.temp }}/server-toolchain
+          key: server-toolchain-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('docker/linux/**') }}
+
+      - name: Load or build Linux toolchain image
+        shell: bash
+        run: |
+          cache_dir="$RUNNER_TEMP/server-toolchain"
+          if [[ -f "$cache_dir/toolchain.tar" ]]; then
+            docker load --input "$cache_dir/toolchain.tar"
+          else
+            docker build --tag hazeron-linux-qt5 --target toolchain \
+              --file docker/linux/Dockerfile docker/linux
+            mkdir -p "$cache_dir"
+            docker save --output "$cache_dir/toolchain.tar" hazeron-linux-qt5
+          fi
+
+      - name: Cache compiled server objects
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.temp }}/server-ccache
+          key: server-ccache-v1-${{ runner.os }}-${{ runner.arch }}-release-${{ hashFiles('docker/linux/**') }}-${{ github.sha }}
+          restore-keys: |
+            server-ccache-v1-${{ runner.os }}-${{ runner.arch }}-release-${{ hashFiles('docker/linux/**') }}-
+
+      - name: Set image name
+        shell: bash
+        run: |
+          : "${GHCR_USERNAME:?Set the GHCR_USERNAME repository secret}"
+          echo "SERVER_REGISTRY_IMAGE=ghcr.io/${GHCR_USERNAME,,}/openshores-server" >> "$GITHUB_ENV"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build production server image
+        shell: bash
+        env:
+          PRODUCTION_ENV_CONTENT: ${{ secrets.SERVER_PRODUCTION_ENV }}
+          HAZERON_LINUX_SKIP_TOOLCHAIN_BUILD: '1'
+          HAZERON_CCACHE_DIR: ${{ runner.temp }}/server-ccache
+        run: |
+          : "${PRODUCTION_ENV_CONTENT:?Set the SERVER_PRODUCTION_ENV repository secret}"
+          umask 077
+          printf '%s\n' "$PRODUCTION_ENV_CONTENT" > "$RUNNER_TEMP/server-production.env"
+          make server-prod-image SERVER_PRODUCTION_ENV="$RUNNER_TEMP/server-production.env" SERVER_CONFIG=release
+
+      - name: Tag and push server image
+        shell: bash
+        run: |
+          local_image=$(awk -F= '$1 == "SERVER_IMAGE" { print $2 }' build/server/production/compose.env)
+          docker tag "$local_image" "$SERVER_REGISTRY_IMAGE:$GITHUB_SHA"
+          docker tag "$local_image" "$SERVER_REGISTRY_IMAGE:latest"
+          docker push "$SERVER_REGISTRY_IMAGE:$GITHUB_SHA"
+          docker push "$SERVER_REGISTRY_IMAGE:latest"
+
+      - name: Package generated Compose configuration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          image = f"{os.environ['SERVER_REGISTRY_IMAGE']}:{os.environ['GITHUB_SHA']}"
+          path = Path("build/server/production/workers.compose.json")
+          config = json.loads(path.read_text())
+          for service in config["services"].values():
+              service["image"] = image
+              service["pull_policy"] = "missing"
+          path.write_text(json.dumps(config, indent=2) + "\n")
+
+          env_path = path.with_name("compose.env")
+          lines = env_path.read_text().splitlines()
+          env_path.write_text("\n".join(
+              f"SERVER_IMAGE={image}" if line.startswith("SERVER_IMAGE=") else line
+              for line in lines
+          ) + "\n")
+          PY
+          bundle=build/server/production
+          mkdir -p "$bundle/deploy/server/postgres"
+          cp deploy/server/compose.yaml "$bundle/deploy/server/"
+          cp deploy/server/postgres/Dockerfile deploy/server/postgres/init.sh \
+            "$bundle/deploy/server/postgres/"
+          cp -R deploy/server/postgres/schema "$bundle/deploy/server/postgres/"
+          install -m 0755 deploy/server/scripts/start-production.sh "$bundle/start.sh"
+          install -m 0755 deploy/server/scripts/stop-production.sh "$bundle/stop.sh"
+          chmod 0600 "$bundle/compose.env" "$bundle/workers.compose.json"
+          tar -cf build/server/server-production-compose.tar \
+            -C "$bundle" start.sh stop.sh compose.env workers.compose.json deploy
+
+      - name: Upload Compose archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: server-production-compose-${{ github.sha }}
+          path: build/server/server-production-compose.tar
+          if-no-files-found: error
+
+      - name: Deploy server
+        shell: bash
+        env:
+          DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
+        run: |
+          curl --fail-with-body \
+          -X POST https://soh-mgmt.dcole.dev/deploy \
+          -H "X-API-Key: $DEPLOY_API_KEY" \
+          --data-binary @build/server/server-production-compose.tar

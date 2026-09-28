@@ -122,6 +122,8 @@ for the TCP forwarding behavior in NAT mode.
 
 ## Single-host production
 
+### Host configuration
+
 Copy the production template and set the public host and every secret:
 
 ```bash
@@ -160,6 +162,29 @@ The public firewall must permit:
 All public roles currently advertise the same `PUBLIC_HOST` with unique ports. `server-prod-down` preserves the production PostgreSQL volume. There is deliberately no production reset target.
 
 The original protocol does not provide modern transport security. Public deployment still requires host hardening, firewall policy, monitoring, backups, and an explicit assessment of the legacy authentication protocol.
+
+### GitHub Actions image publishing
+
+Pushes to `main` publish `ghcr.io/<username>/openshores-server` with `latest` and
+commit SHA tags, plus a deployment artifact named `server-production-compose-<commit SHA>`.
+
+Set these repository Actions secrets:
+
+- `GHCR_USERNAME`: registry username.
+- `GHCR_TOKEN`: token with permission to publish the image.
+- `SERVER_PRODUCTION_ENV`: production `.env` contents; use
+  [`production.env.example`](environments/production.env.example) as a template.
+
+Download the artifact from the workflow run. On a host with Docker Engine and
+Docker Compose installed, extract its tar into a dedicated directory and start:
+
+```bash
+tar -xf server-production-compose.tar
+./start.sh
+```
+
+For private images, run `docker login ghcr.io` first. Run `./stop.sh` to stop the
+stack while preserving the database. **The artifact contains production credentials.**
 
 ## Configuration model
 
