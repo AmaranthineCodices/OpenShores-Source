@@ -87,6 +87,37 @@ Pop-Location
 
 VS Code includes local Debug client launches for Linux and Windows. Launch targets do not start or restart the stack; run `make server-up` first. The Linux-only `Linux Server: Attach scene-worker-1` launch attaches GDB to the first scene worker. The local Debug worker receives ptrace permissions; production workers do not.
 
+### Windows clients with Docker Engine inside WSL 2
+
+When Docker Engine runs directly inside WSL 2 in NAT mode, Windows `localhost`
+forwarding handles TCP but does not forward the game's UDP controls. Login and
+scene loading can work while attacking and switching held items fail. Movement
+can still appear to work because the client also processes it locally.
+
+Check the networking mode with `wslinfo --networking-mode`. For NAT mode, run
+`hostname -I` inside the WSL distribution hosting Docker and note its WSL IPv4
+address (usually the first address, not a Docker bridge address). Set both values
+in `deploy/server/environments/local.env` to that address, preserving any other
+overrides. For example:
+
+```dotenv
+BIND_ADDRESS=172.18.91.213
+PUBLIC_HOST=172.18.91.213
+```
+
+Run `make server-up` to apply the settings, then reconnect the Windows client
+using that address in the connection target field or with `-a172.18.91.213`.
+Use the actual WSL address in place of the example. Set the same address in the
+VS Code launch arguments when debugging. WSL's address can change after a WSL
+restart; update both settings and restart the stack when it does.
+
+This publishes the ports on the WSL interface and advertises an address Windows
+can reach over both TCP and UDP. Changing only the client connection target is
+insufficient because the servers redirect the client to `PUBLIC_HOST`.
+
+See Microsoft's [WSL localhost implementation notes](https://github.com/microsoft/WSL/blob/master/doc/docs/technical-documentation/localhost.md)
+for the TCP forwarding behavior in NAT mode.
+
 ## Single-host production
 
 Copy the production template and set the public host and every secret:
