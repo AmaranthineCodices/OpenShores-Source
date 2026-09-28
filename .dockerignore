@@ -3,15 +3,13 @@ build
 debug
 release
 old-editor
-deploy/server/local.env
-deploy/server/production.env
+docs
+**/__pycache__
+**/*.pyc
+
+deploy/server/environments/local.env
+deploy/server/environments/production.env
 
 **/.d
 **/.r
 **/.qmake.stash
-
-auglobal/sfx/sfx.har
-auloginserver/AuLoginServer
-aumailserver/AuMailServer
-ausceneclient/AuSceneClient
-ausceneserver/AuSceneServer

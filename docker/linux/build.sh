@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-daemon_repo_root=$(bash "$repo_root/docker/resolve-project-mount.sh" "$repo_root")
+daemon_repo_root=$(bash "$repo_root/docker/support/resolve-project-mount.sh" "$repo_root")
 image=${HAZERON_LINUX_IMAGE:-hazeron-linux-qt5}
 config=${HAZERON_BUILD_CONFIG:-release}
 target=${1:-all}
@@ -76,7 +76,7 @@ docker run --rm \
         cmake --build /build \
             --target "$AU_TARGET" \
             --parallel "$(nproc)"
-        python3 /src/docker/export-intellisense.py \
+        python3 /src/docker/support/export-intellisense.py \
             --compile-commands /build/compile_commands.json \
             --compiler c++ \
             --source-root /src \

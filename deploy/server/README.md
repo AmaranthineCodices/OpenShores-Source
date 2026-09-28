@@ -51,10 +51,11 @@ Scale the scene-worker pool:
 make server-up SCENE_WORKERS=3
 ```
 
-Local defaults are in `local.env.example`. Copy it to the ignored `local.env` only when overrides are needed:
+Local defaults are in `environments/local.env.example`. Copy it to the ignored `environments/local.env` only when overrides are needed:
 
 ```bash
-cp deploy/server/local.env.example deploy/server/local.env
+cp deploy/server/environments/local.env.example \
+   deploy/server/environments/local.env
 ```
 
 The local database creates this development account:
@@ -71,13 +72,15 @@ Change the credentials in `local.env` before the first initialization, or run `m
 Linux:
 
 ```bash
-build/linux-debug/bin/AuSceneClient -alocalhost -log
+(cd build/linux-debug/bin && ./AuSceneClient -alocalhost -log)
 ```
 
 Windows:
 
 ```powershell
-.\build\windows-debug\bin\AuSceneClient.exe -alocalhost -log
+Push-Location .\build\windows-debug\bin
+.\AuSceneClient.exe -alocalhost -log
+Pop-Location
 ```
 
 `-a` points the login, mail, and scene masters at `localhost`. Their fixed ports are `16757`, `16758`, and `16759`. Redirected workers advertise `127.0.0.1` and their configured published ports.
@@ -89,8 +92,9 @@ VS Code includes local Debug client launches for Linux and Windows. Launch targe
 Copy the production template and set the public host and every secret:
 
 ```bash
-cp deploy/server/production.env.example deploy/server/production.env
-$EDITOR deploy/server/production.env
+cp deploy/server/environments/production.env.example \
+   deploy/server/environments/production.env
+$EDITOR deploy/server/environments/production.env
 ```
 
 The renderer rejects template hostnames and unset secrets. Validate without starting services:

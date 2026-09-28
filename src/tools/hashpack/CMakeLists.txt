@@ -1,0 +1,5 @@
+au_collect_sources(hashpack_sources "${CMAKE_CURRENT_SOURCE_DIR}")
+add_executable(hashpack ${hashpack_sources})
+au_collect_include_directories(hashpack_include_directories "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(hashpack PRIVATE ${hashpack_include_directories})
+target_link_libraries(hashpack PRIVATE AuBuildSettings Qt5::Core Qt5::Gui)

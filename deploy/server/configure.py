@@ -108,7 +108,7 @@ def main() -> None:
     if environment == "production":
         settings.update(PRODUCTION_DEFAULTS)
 
-    default_env_path = DEPLOY_DIR / f"{environment}.env"
+    default_env_path = DEPLOY_DIR / "environments" / f"{environment}.env"
     env_path = args.env_file or default_env_path
     if environment == "production" and not env_path.exists():
         raise SystemExit(

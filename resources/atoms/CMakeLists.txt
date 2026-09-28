@@ -1,0 +1,7 @@
+add_subdirectory(shards/01)
+add_subdirectory(shards/02)
+add_subdirectory(shards/03)
+add_subdirectory(shards/04)
+add_subdirectory(shards/05)
+add_subdirectory(shards/06)
+add_subdirectory(bundle)
