@@ -142,6 +142,7 @@ class AuIntroLogin : public QWidget
 	QPushButton*						m_Login;
 	QLineEdit*							m_Password;
 	QCheckBox*							m_SavePassword;
+	QLineEdit*							m_Host;
 
 public:
 	AuIntroLogin(AuIntro* parent=0);

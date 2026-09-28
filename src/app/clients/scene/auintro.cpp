@@ -511,9 +511,15 @@ AuIntroLogin::AuIntroLogin(AuIntro* parent) : QWidget(parent)
 {
 	QString accountName = g_Au.Settings().readEntry("/Account/Name","");
 	int savePassword = g_Au.Settings().readNumEntry("/Account/SavePass", 0);
+	QString connect_target = g_Au.Settings().readEntry("/Account/Host","");
 	QString password;
 	if(savePassword)
 		g_Au.Settings().readEntry("/Account/Password", m_PassCrypt);
+
+	// Newly added connection target input field
+	m_Host = new QLineEdit(connect_target, this);
+	m_Host->setToolTip(QStringLiteral("Enter host/IP to connect to"));
+	m_Host->setPlaceholderText("Enter IP/host");
 
 	m_AccountName = new QLineEdit(accountName, this);
 	m_AccountName->setToolTip(QObject::tr("<html><b>Account Name</b><br>"
@@ -561,6 +567,7 @@ AuIntroLogin::AuIntroLogin(AuIntro* parent) : QWidget(parent)
 	blay->setSpacing(2);
 
 	QVBoxLayout* glay = new QVBoxLayout;
+	glay->addWidget(m_Host);
 	glay->addWidget(m_AccountName);
 	glay->addLayout(play);
 	glay->addLayout(blay);
@@ -600,6 +607,7 @@ void AuIntroLogin::PasswordEdited(const QString& password)
 void AuIntroLogin::Login()
 {
 	QString acctName = m_AccountName->text();
+	QString hostName = m_Host->text().trimmed();
 	if(g_Au.m_LogMessages & LOG_ConnectDisconnect)
 		g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("Intro: Login '%1' passcrypt %2").arg(acctName).arg(m_PassCrypt.isEmpty()));
 	if(acctName.isEmpty())
@@ -614,6 +622,7 @@ void AuIntroLogin::Login()
 
 	// Save last attempted name.
 	g_Au.Settings().writeEntry("/Account/Name", acctName);
+	g_Au.Settings().writeEntry("/Account/Host", hostName);
 	g_Au.Settings().writeEntry("/Account/SavePass", savePass?1:0);
 	if(savePass)
 		g_Au.Settings().writeEntry("/Account/Password", m_PassCrypt);
@@ -623,7 +632,17 @@ void AuIntroLogin::Login()
 		g_Au.Settings().writeEntry("/Account/Password", emptyArray);
 	}
 
+	if (!hostName.isEmpty()) {
+		g_Au.SetLoginMaster(hostName);
+		g_Au.SetMailMaster(hostName);
+		g_Au.SetSceneMaster(hostName);
+		if (g_Au.m_LogMessages & LOG_ConnectDisconnect) {
+    	g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("Setting LoginMaster, MailMaster, and SceneMaser to host %1").arg(hostName));
+}
+	}
+
 	// Disable controls while waiting to login.
+	m_Host->setEnabled(false);
 	m_AccountName->setEnabled(false);
 	m_Password->setEnabled(false);
 	m_SavePassword->setEnabled(false);
@@ -633,6 +652,7 @@ void AuIntroLogin::Login()
 	int result = logincomm.Login(acctName, m_PassCrypt);
 
 	// Enable controls now that we have the login result.
+	m_Host->setEnabled(true);
 	m_AccountName->setEnabled(true);
 	m_Password->setEnabled(true);
 	m_SavePassword->setEnabled(true);
