@@ -31,10 +31,12 @@ require_file() {
 for file in AuSceneClient AuChatClient AuMailClient AuLauncher GD sfx.har; do
     require_file "$output/bin/$file"
 done
-if [[ ! -d "$output/bin/tex" ]]; then
-    echo "error: required client texture directory is missing: $output/bin/tex" >&2
-    exit 1
-fi
+for directory in tex Blueprints/Buildings Blueprints/Spacecraft; do
+    if [[ ! -d "$output/bin/$directory" ]]; then
+        echo "error: required client runtime directory is missing: $output/bin/$directory" >&2
+        exit 1
+    fi
+done
 
 rm -rf "$stage"
 mkdir -p "$game/bin" "$game/lib" "$launcher/bin" "$launcher/lib" "$packages"
@@ -46,9 +48,7 @@ install -m 644 "$output/bin/GD" "$game/bin/GD"
 install -m 644 "$output/bin/sfx.har" "$game/bin/sfx.har"
 cp -a "$output/bin/tex" "$game/bin/tex"
 
-mkdir -p "$game/bin/Blueprints"
-cp -a "$repo_root/Blueprints/Buildings" "$game/bin/Blueprints/Buildings"
-cp -a "$repo_root/Blueprints/Spacecraft" "$game/bin/Blueprints/Spacecraft"
+cp -a "$output/bin/Blueprints" "$game/bin/Blueprints"
 
 # Package only project libraries imported by the clients. System Qt, SDL,
 # OpenAL, and OpenGL libraries remain distribution-provided dependencies.

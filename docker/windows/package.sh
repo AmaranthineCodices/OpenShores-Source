@@ -13,7 +13,7 @@ case "$config" in
 esac
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-daemon_repo_root=$(bash "$repo_root/docker/resolve-project-mount.sh" "$repo_root")
+daemon_repo_root=$(bash "$repo_root/docker/support/resolve-project-mount.sh" "$repo_root")
 image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
 local_output="$repo_root/build/windows-$config"
 daemon_output="$daemon_repo_root/build/windows-$config"
@@ -53,10 +53,12 @@ docker run --rm \
         for file in AuSceneClient.exe AuChatClient.exe AuMailClient.exe AuLauncher.exe GD sfx.har; do
             require_file "/output/bin/$file"
         done
-        if [[ ! -d /output/bin/tex ]]; then
-            echo "error: required client texture directory is missing: /output/bin/tex" >&2
-            exit 1
-        fi
+        for directory in tex Blueprints/Buildings Blueprints/Spacecraft; do
+            if [[ ! -d "/output/bin/$directory" ]]; then
+                echo "error: required client runtime directory is missing: /output/bin/$directory" >&2
+                exit 1
+            fi
+        done
 
         rm -rf "$stage"
         mkdir -p "$game" "$launcher" "$packages"
@@ -67,9 +69,7 @@ docker run --rm \
         install -m 644 /output/bin/GD "$game/GD"
         install -m 644 /output/bin/sfx.har "$game/sfx.har"
         cp -a /output/bin/tex "$game/tex"
-        mkdir -p "$game/Blueprints"
-        cp -a /src/Blueprints/Buildings "$game/Blueprints/Buildings"
-        cp -a /src/Blueprints/Spacecraft "$game/Blueprints/Spacecraft"
+        cp -a /output/bin/Blueprints "$game/Blueprints"
 
         resource_libraries=(
             libAuAtomRes.dll

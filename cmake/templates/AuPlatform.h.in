@@ -1,0 +1,4 @@
+#pragma once
+
+// Identifies the Linux runtime bundle used by the current build environment.
+#define SEiLINUXPLATFORM @AU_LINUX_PLATFORM@

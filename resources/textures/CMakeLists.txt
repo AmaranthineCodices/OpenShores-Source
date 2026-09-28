@@ -1,0 +1,7 @@
+add_subdirectory(scene/01)
+add_subdirectory(scene/02)
+add_subdirectory(scene/03)
+add_subdirectory(scene/04)
+add_subdirectory(scene/05)
+add_subdirectory(ships)
+add_subdirectory(bundle)

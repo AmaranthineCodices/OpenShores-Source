@@ -7,7 +7,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/linux-debug/bin/AuSceneClient",
       "args": ["-alocalhost", "-log"],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/build/linux-debug/bin",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
       "sourceFileMap": {
@@ -75,7 +75,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/linux-relwithdebinfo/bin/AuSceneClient",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/build/linux-relwithdebinfo/bin",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
       "sourceFileMap": {
@@ -105,7 +105,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
       "args": ["-alocalhost", "-log"],
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/build/windows-debug/bin",
       "MIMode": "gdb",
       "pipeTransport": {
         "pipeProgram": "C:/Windows/System32/cmd.exe",
@@ -130,7 +130,7 @@
       },
       "linux": {
         "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
-        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
+        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-debug/bin",
         "pipeTransport": {
           "pipeProgram": "/bin/sh",
           "pipeArgs": ["-c"],
@@ -144,7 +144,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/build/windows-relwithdebinfo/bin",
       "MIMode": "gdb",
       "pipeTransport": {
         "pipeProgram": "C:/Windows/System32/cmd.exe",
@@ -169,7 +169,7 @@
       },
       "linux": {
         "program": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-relwithdebinfo/bin/AuSceneClient.exe",
-        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}",
+        "cwd": "//wsl.localhost/${env:WSL_DISTRO_NAME}${workspaceFolder}/build/windows-relwithdebinfo/bin",
         "pipeTransport": {
           "pipeProgram": "/bin/sh",
           "pipeArgs": ["-c"],

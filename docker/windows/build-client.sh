@@ -27,7 +27,7 @@ case "$config" in
         ;;
 esac
 
-daemon_repo_root=$(bash "$repo_root/docker/resolve-project-mount.sh" "$repo_root")
+daemon_repo_root=$(bash "$repo_root/docker/support/resolve-project-mount.sh" "$repo_root")
 cache_volume=${HAZERON_WINDOWS_CACHE_VOLUME:-hazeron-windows-${config}-cache}
 local_output_dir="$repo_root/build/windows-${config}"
 daemon_output_dir="$daemon_repo_root/build/windows-${config}"
@@ -111,7 +111,7 @@ docker run --rm \
             -L "$target_prefix/bin" \
                "$target_prefix/qt5/bin"
 
-        python3 /src/docker/export-intellisense.py \
+        python3 /src/docker/support/export-intellisense.py \
             --compile-commands /build/compile_commands.json \
             --compiler "${MXE_TARGET}-g++" \
             --source-root /src \

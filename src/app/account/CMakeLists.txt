@@ -1,0 +1,5 @@
+add_subdirectory(email)
+add_subdirectory(expire)
+add_subdirectory(new)
+add_subdirectory(password)
+add_subdirectory(send-password)

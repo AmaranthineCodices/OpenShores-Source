@@ -1,15 +1,15 @@
 include(CMakeParseArguments)
 
 function(au_collect_sources output directory)
-    file(GLOB sources CONFIGURE_DEPENDS
-        "${CMAKE_SOURCE_DIR}/${directory}/*.cpp"
-        "${CMAKE_SOURCE_DIR}/${directory}/*.h"
-        "${CMAKE_SOURCE_DIR}/${directory}/*.qrc"
+    file(GLOB_RECURSE sources CONFIGURE_DEPENDS
+        "${directory}/*.cpp"
+        "${directory}/*.h"
+        "${directory}/*.qrc"
     )
 
     if(WIN32)
-        file(GLOB windows_resources CONFIGURE_DEPENDS
-            "${CMAKE_SOURCE_DIR}/${directory}/*.rc"
+        file(GLOB_RECURSE windows_resources CONFIGURE_DEPENDS
+            "${directory}/*.rc"
         )
         list(APPEND sources ${windows_resources})
     endif()
@@ -21,11 +21,21 @@ function(au_collect_sources output directory)
     set(${output} ${sources} PARENT_SCOPE)
 endfunction()
 
+function(au_collect_include_directories output directory)
+    file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${directory}/*.h")
+    set(include_directories "${directory}")
+    foreach(header IN LISTS headers)
+        get_filename_component(header_directory "${header}" DIRECTORY)
+        list(APPEND include_directories "${header_directory}")
+    endforeach()
+    list(REMOVE_DUPLICATES include_directories)
+    set(${output} ${include_directories} PARENT_SCOPE)
+endfunction()
+
 function(au_configure_target target directory)
+    au_collect_include_directories(include_directories "${directory}")
     target_link_libraries(${target} PUBLIC AuBuildSettings AuQt)
-    target_include_directories(${target} PUBLIC
-        "${CMAKE_SOURCE_DIR}/${directory}"
-    )
+    target_include_directories(${target} PUBLIC ${include_directories})
 endfunction()
 
 function(au_add_static_library target directory)
