@@ -358,3 +358,5 @@ auviewer/auviewer.pro
 debug/
 release/
 /build/
+/deploy/server/local.env
+/deploy/server/production.env

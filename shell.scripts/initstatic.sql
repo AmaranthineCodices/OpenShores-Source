@@ -35,7 +35,7 @@
 -- This data describes all objects that can exist as a_Items.
 -- Commodities are the core components of the economy.
 -- class DbCommodity
-DROP TABLE b_Commodity;
+DROP TABLE IF EXISTS b_Commodity;
 CREATE TABLE b_Commodity
 (
   id               integer primary key unique,
@@ -2378,7 +2378,7 @@ SELECT * FROM b_Commodity;
 -- for other reasons. e.g. An office building might also employ a custodian and
 -- a manager.
 -- class DbIndustry
-DROP TABLE b_Industry;
+DROP TABLE IF EXISTS b_Industry;
 CREATE TABLE b_Industry
 (
  id                                     integer primary key unique,
@@ -2537,7 +2537,7 @@ SELECT * FROM b_Industry;
 -- Manufacturing components are required for each manufacturing process in
 -- b_ManufacturingProcess.
 -- class DbManufacturingComponent
-DROP TABLE b_ManufacturingComponent;
+DROP TABLE IF EXISTS b_ManufacturingComponent;
 CREATE TABLE b_ManufacturingComponent
 (
   id               serial primary key unique,
@@ -2555,7 +2555,7 @@ SELECT * FROM b_ManufacturingComponent;
 -- class DbManufacturingProcess
 -- NOTE: Manufacturing components are limited to 6 different modifiers. That is
 --       commodities that either have 'consumes == 0' or 'ide != 5'.
-DROP TABLE b_ManufacturingProcess;
+DROP TABLE IF EXISTS b_ManufacturingProcess;
 CREATE TABLE b_ManufacturingProcess
 (
   id               integer primary key unique,

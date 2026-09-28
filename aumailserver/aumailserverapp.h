@@ -97,6 +97,11 @@ public:
 		return m_ServerMap;
 	}
 
+	inline quint16 AdvertisedPort() const
+	{
+		return m_AdvertisedPort;
+	}
+
 	inline const QDateTime& TimeUp() const
 	{
 		return m_tmUp;
@@ -141,6 +146,7 @@ private:
 	QMutex				m_muServerMap;
 	QMap<QString,DhMailServer>	m_ServerMap;	// Used when running as MailMaster.
 	AuMailServer		m_TcpServer;
+	quint16				m_AdvertisedPort;
 	QTimer*				m_timer;
 	QDateTime			m_tmCheckIn;	// Last time this Server checked in with Master.
 										// On master last time old city reports removed.

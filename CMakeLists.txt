@@ -24,6 +24,55 @@ foreach(configuration Debug Release RelWithDebInfo MinSizeRel)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
 endforeach()
 
+set(AU_SFX_ARCHIVE "${CMAKE_SOURCE_DIR}/build/assets/sfx.har" CACHE FILEPATH
+    "Host-generated sound archive copied beside client executables"
+)
+
+set(AU_CLIENT_RUNTIME_OUTPUTS)
+foreach(runtime_file IN ITEMS GD sfx.har)
+    if(runtime_file STREQUAL "GD")
+        set(runtime_source "${CMAKE_SOURCE_DIR}/GD")
+    else()
+        set(runtime_source "${AU_SFX_ARCHIVE}")
+    endif()
+    set(runtime_output "${AU_OUTPUT_ROOT}/bin/${runtime_file}")
+    add_custom_command(
+        OUTPUT "${runtime_output}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${AU_OUTPUT_ROOT}/bin"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${runtime_source}"
+            "${runtime_output}"
+        DEPENDS "${runtime_source}"
+        COMMENT "Copying client runtime data: ${runtime_file}"
+        VERBATIM
+    )
+    list(APPEND AU_CLIENT_RUNTIME_OUTPUTS "${runtime_output}")
+endforeach()
+
+file(GLOB AU_CLIENT_TEXTURE_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/autexture/data/*.png"
+)
+if(NOT AU_CLIENT_TEXTURE_SOURCES)
+    message(FATAL_ERROR "No client runtime textures found in autexture/data")
+endif()
+foreach(texture_source IN LISTS AU_CLIENT_TEXTURE_SOURCES)
+    get_filename_component(texture_name "${texture_source}" NAME)
+    set(texture_output "${AU_OUTPUT_ROOT}/bin/tex/${texture_name}")
+    add_custom_command(
+        OUTPUT "${texture_output}"
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${AU_OUTPUT_ROOT}/bin/tex"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${texture_source}"
+            "${texture_output}"
+        DEPENDS "${texture_source}"
+        COMMENT "Copying client texture: ${texture_name}"
+        VERBATIM
+    )
+    list(APPEND AU_CLIENT_RUNTIME_OUTPUTS "${texture_output}")
+endforeach()
+
+add_custom_target(AuClientRuntimeData DEPENDS ${AU_CLIENT_RUNTIME_OUTPUTS})
+
 if(UNIX AND NOT APPLE)
     set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
     set(CMAKE_BUILD_RPATH "$ORIGIN/../lib")
@@ -175,6 +224,7 @@ au_add_shared_library(AuClientMailRes auclientmailres DEFINE AUCLIENTMAILRES)
 
 # Primary game client.
 au_add_executable(AuSceneClient ausceneclient)
+add_dependencies(AuSceneClient AuClientRuntimeData)
 target_link_libraries(AuSceneClient PRIVATE
     AuClientRes
     AuDesigner
@@ -224,11 +274,13 @@ target_link_libraries(AuSceneServer PRIVATE
 
 # Additional clients.
 au_add_executable(AuMailClient aumailclient)
+add_dependencies(AuMailClient AuClientRuntimeData)
 target_link_libraries(AuMailClient PRIVATE
     AuClientMailRes AuData AuGlobal AuUtil AuGL AuMath AuLoginClient AuMail
 )
 
 au_add_executable(AuChatClient auchatclient)
+add_dependencies(AuChatClient AuClientRuntimeData)
 target_link_libraries(AuChatClient PRIVATE
     AuClientRes AuClient AuAtom AuData AuLoginClient AuMail AuGlobal AuUtil
     AuMath AuGL AuAtomRes AuBodyPartsRes AuModelRes AuTexture
@@ -286,7 +338,7 @@ add_executable(hashpack ${hashpack_sources})
 target_link_libraries(hashpack PRIVATE AuBuildSettings Qt5::Core Qt5::Gui)
 
 add_custom_target(client DEPENDS AuSceneClient)
-add_custom_target(clients DEPENDS
+add_custom_target(client-all DEPENDS
     AuSceneClient AuMailClient AuChatClient AuLauncher
 )
 add_custom_target(servers DEPENDS AuLoginServer AuMailServer AuSceneServer)
@@ -297,4 +349,4 @@ add_custom_target(cgi DEPENDS
 add_custom_target(tools DEPENDS
     AuEmpireReport AuScript AuServerMon AuViewer hashpack
 )
-add_custom_target(programs DEPENDS clients servers cgi tools)
+add_custom_target(programs DEPENDS client-all servers cgi tools)

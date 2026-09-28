@@ -35,9 +35,11 @@ For Linux development, keep the repository under `~/src/OpenShores` in WSL for b
 ## Build
 
 ```bash
-make client          # Linux client
+make client          # Linux scene client
+make client-all      # All Linux clients
+make win-client      # Windows x64 scene client
+make win-client-all  # All Windows clients
 make servers         # Linux multiplayer servers
-make windows-client  # Windows x64 client
 ```
 
 Use `make help` to list the other targets.
@@ -50,26 +52,34 @@ make CONFIG=debug client
 make CONFIG=relwithdebinfo client
 ```
 
-`release` is the default. Use `make CONFIG=debug windows-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
+`release` is the default. Use `make CONFIG=debug win-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
 
-## Output
+## Release packages
 
-```text
-build/
-├── linux-release/
-│   ├── bin/
-│   └── lib/
-└── windows-release/
-    ├── bin/
-    └── lib/
+```bash
+make linux-package   # Linux game and launcher archives
+make win-package     # Windows game and launcher archives
+make release-package # Every release archive
 ```
 
-The Windows `bin/` directory contains `AuSceneClient.exe`, its DLLs, and its Qt plugins. Keep the whole directory together.
+Release artifacts are written to `build/packages/`:
+
+```text
+soh-linux-x64.tar.gz
+soh-launcher-linux-x64.tar.gz
+soh-win64.zip
+soh-launcher-win64.zip
+linux-x64.sha256
+windows-x64.sha256
+```
+
+Packages are staged from a clean directory and include the public executable names, resource libraries, runtime dependencies, `GD`, `sfx.har`, textures, release blueprints, and updater checksum manifests.
 
 ## Native Linux Build
 
 ```bash
 make native-client
+make native-client-all
 make native-servers
 make native-build
 ```
@@ -123,6 +133,27 @@ docker run --rm hello-world
 Open the repository in VS Code, select a Linux launch option, and press `F5`. Other distributions need libraries compatible with the Ubuntu 22.04 build.
 
 To debug the Linux client in WSL, use `WSL: Reopen Folder in WSL`. The game needs WSLg and a working OpenGL driver.
+
+## Local and production servers
+
+The multiplayer stack runs PostgreSQL plus separate login, mail, scene-master, scene-manager, and scene-worker containers.
+
+```bash
+make server-up                         # Local Debug stack
+make server-up SCENE_WORKERS=3         # Scale local scene workers
+make server-logs
+make server-down
+```
+
+Start a matching client with `-alocalhost -log`. Production uses the same images and topology with a separate environment file:
+
+```bash
+cp deploy/server/production.env.example deploy/server/production.env
+make server-prod-config
+make server-prod-up
+```
+
+See `deploy/server/README.md` for configuration, ports, persistence, scaling, logs, client launches, and Linux GDB attachment.
 
 ## Clean
 

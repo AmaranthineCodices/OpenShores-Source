@@ -39,8 +39,8 @@ bool DtLoginDb::OpenDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-	db.setHostName("LoginDb.Hazeron.net");
-	if(!db.open("audog","Gold"))
+	db.setHostName(qEnvironmentVariable("AU_LOGIN_DB_HOST", "LoginDb.Hazeron.net"));
+	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
 		QString sdv = er.driverText();
@@ -62,8 +62,8 @@ bool DtLoginDb::OpenUniverseDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
-	db.setHostName("UniverseDb.Hazeron.net");
-	if(!db.open("audog","Gold"))
+	db.setHostName(qEnvironmentVariable("AU_UNIVERSE_DB_HOST", "UniverseDb.Hazeron.net"));
+	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
 		QString sdv = er.driverText();

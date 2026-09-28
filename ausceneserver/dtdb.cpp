@@ -79,8 +79,8 @@ bool DtDb::OpenDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
-	db.setHostName("UniverseDb.Hazeron.net");
-	if(!db.open("audog","Gold"))
+	db.setHostName(qEnvironmentVariable("AU_UNIVERSE_DB_HOST", "UniverseDb.Hazeron.net"));
+	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
 		QString sdv = er.driverText();
@@ -3903,8 +3903,8 @@ void DtDb::UpdateEmpires(DgData& gd, QSqlDatabase& db)
 	//   Password: Gold
 	QSqlDatabase dbLogin = QSqlDatabase::database("AuLogin", false);
 	dbLogin.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-	dbLogin.setHostName("LoginDb.Hazeron.net");
-	if(!dbLogin.open("audog","Gold"))
+	dbLogin.setHostName(qEnvironmentVariable("AU_LOGIN_DB_HOST", "LoginDb.Hazeron.net"));
+	if(!dbLogin.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = dbLogin.lastError();
 		QString sdv = er.driverText();

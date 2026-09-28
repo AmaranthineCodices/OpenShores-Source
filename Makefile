@@ -3,7 +3,7 @@
 # Examples:
 #   make client
 #   make servers
-#   make windows-client
+#   make win-client
 #   make native-client
 #   make CONFIG=debug native-client
 #   make clean
@@ -17,7 +17,25 @@ LINUX_IMAGE ?= hazeron-linux-qt5
 WINDOWS_IMAGE ?= hazeron-mingw-qt5
 LINUX_CACHE_VOLUME ?= hazeron-linux-$(CONFIG)-cache
 WINDOWS_CACHE_VOLUME ?= hazeron-windows-$(CONFIG)-cache
+ASSETS_CACHE_VOLUME ?= hazeron-assets-cache
 NATIVE_BUILD_DIR ?= build/native-linux-$(CONFIG)
+SERVER_CONFIG ?=
+SCENE_WORKERS ?=
+SERVER_LOG_TAIL ?= 200
+SERVER_PRODUCTION_ENV ?= deploy/server/production.env
+
+LOCAL_SERVER_DIR := build/server/local
+LOCAL_SERVER_ENV := $(LOCAL_SERVER_DIR)/compose.env
+LOCAL_SERVER_WORKERS := $(LOCAL_SERVER_DIR)/workers.compose.json
+PRODUCTION_SERVER_DIR := build/server/production
+PRODUCTION_SERVER_ENV := $(PRODUCTION_SERVER_DIR)/compose.env
+PRODUCTION_SERVER_WORKERS := $(PRODUCTION_SERVER_DIR)/workers.compose.json
+LOCAL_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
+	--env-file "$(LOCAL_SERVER_ENV)" \
+	-f deploy/server/compose.yaml -f "$(LOCAL_SERVER_WORKERS)"
+PRODUCTION_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
+	--env-file "$(PRODUCTION_SERVER_ENV)" \
+	-f deploy/server/compose.yaml -f "$(PRODUCTION_SERVER_WORKERS)"
 
 DEFAULT_CACHE_VOLUMES := \
 	hazeron-linux-debug-cache \
@@ -25,7 +43,8 @@ DEFAULT_CACHE_VOLUMES := \
 	hazeron-linux-relwithdebinfo-cache \
 	hazeron-windows-debug-cache \
 	hazeron-windows-release-cache \
-	hazeron-windows-relwithdebinfo-cache
+	hazeron-windows-relwithdebinfo-cache \
+	hazeron-assets-cache
 
 ifeq ($(CONFIG),debug)
 CMAKE_BUILD_TYPE := Debug
@@ -37,13 +56,18 @@ else
 $(error CONFIG must be debug, release, or relwithdebinfo)
 endif
 
-.PHONY: all build client clients servers cgi tools \
+.PHONY: all build assets client client-all servers cgi tools \
         ausceneclient auloginserver aumailserver ausceneserver \
-        linux-image windows-toolchain windows-client \
-        native-configure native-build native-client native-clients \
+        linux-image windows-toolchain win-client win-client-all \
+        native-configure native-build native-client native-client-all \
         native-servers native-cgi native-tools \
+        linux-package win-package release-package \
         native-ausceneclient native-auloginserver \
         native-aumailserver native-ausceneserver \
+        server-config server-ensure-config server-image server-up server-down \
+        server-logs server-status server-reset \
+        server-prod-config server-prod-ensure-config server-prod-image server-prod-up \
+        server-prod-down server-prod-logs server-prod-status \
         run-client clean rebuild help
 
 define run_linux_build
@@ -53,10 +77,15 @@ HAZERON_BUILD_CONFIG="$(CONFIG)" \
 	bash docker/linux/build.sh $(1)
 endef
 
-all:
+all: assets
 	$(call run_linux_build,programs)
 
 build: all
+
+assets:
+	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
+	HAZERON_ASSETS_CACHE_VOLUME="$(ASSETS_CACHE_VOLUME)" \
+		bash docker/linux/build-assets.sh
 
 # Dockerized Linux builds.
 linux-image:
@@ -64,11 +93,11 @@ linux-image:
 		--target toolchain \
 		--file docker/linux/Dockerfile docker/linux
 
-client:
+client: assets
 	$(call run_linux_build,client)
 
-clients:
-	$(call run_linux_build,clients)
+client-all: assets
+	$(call run_linux_build,client-all)
 
 servers:
 	$(call run_linux_build,servers)
@@ -96,27 +125,44 @@ windows-toolchain:
 		--target toolchain \
 		--file docker/windows/Dockerfile docker/windows
 
-windows-client:
+win-client: assets
 	HAZERON_MINGW_IMAGE="$(WINDOWS_IMAGE)" \
 	HAZERON_WINDOWS_CACHE_VOLUME="$(WINDOWS_CACHE_VOLUME)" \
 	HAZERON_BUILD_CONFIG="$(CONFIG)" \
+	AU_TARGET=client \
 		bash docker/windows/build-client.sh
+
+win-client-all: assets
+	HAZERON_MINGW_IMAGE="$(WINDOWS_IMAGE)" \
+	HAZERON_WINDOWS_CACHE_VOLUME="$(WINDOWS_CACHE_VOLUME)" \
+	HAZERON_BUILD_CONFIG="$(CONFIG)" \
+	AU_TARGET=client-all \
+		bash docker/windows/build-client.sh
+
+linux-package: client-all
+	bash docker/linux/package.sh "$(CONFIG)"
+
+win-package: win-client-all
+	HAZERON_MINGW_IMAGE="$(WINDOWS_IMAGE)" \
+		bash docker/windows/package.sh "$(CONFIG)"
+
+release-package: linux-package win-package
 
 # Opt-in native Linux build for faster local iteration.
 native-configure:
 	$(CMAKE) -S . -B "$(NATIVE_BUILD_DIR)" -G "$(GENERATOR)" \
 		-DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE)
 
-native-build: native-configure
+native-build: assets native-configure
 	$(CMAKE) --build "$(NATIVE_BUILD_DIR)" \
 		--parallel "$(PARALLEL)"
 
-native-client native-ausceneclient: native-configure
+native-client native-ausceneclient: assets native-configure
 	$(CMAKE) --build "$(NATIVE_BUILD_DIR)" --target client \
 		--parallel "$(PARALLEL)"
 
-native-clients: native-configure
-	$(CMAKE) --build "$(NATIVE_BUILD_DIR)" --target clients \
+native-client-all: assets native-configure
+	$(CMAKE) --build "$(NATIVE_BUILD_DIR)" --target client-all \
 		--parallel "$(PARALLEL)"
 
 native-servers: native-configure
@@ -146,11 +192,78 @@ native-ausceneserver: native-configure
 run-client: client
 	"build/linux-$(CONFIG)/bin/AuSceneClient"
 
+server-config:
+	python3 deploy/server/configure.py --environment local \
+		$(if $(strip $(SERVER_CONFIG)),--config "$(SERVER_CONFIG)") \
+		$(if $(strip $(SCENE_WORKERS)),--scene-workers "$(SCENE_WORKERS)")
+
+server-ensure-config:
+	@if [ ! -f "$(LOCAL_SERVER_ENV)" ] || [ ! -f "$(LOCAL_SERVER_WORKERS)" ]; then \
+		python3 deploy/server/configure.py --environment local; \
+	fi
+
+server-image: server-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	image=$$(awk -F= '$$1 == "SERVER_IMAGE" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	target=$$(awk -F= '$$1 == "SERVER_IMAGE_TARGET" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	bash docker/server/build.sh "$$config" "$$image" "$$target" "$(LINUX_IMAGE)"
+
+server-up: server-image
+	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-down: server-ensure-config
+	$(LOCAL_COMPOSE) down --remove-orphans
+
+server-logs: server-ensure-config
+	$(LOCAL_COMPOSE) logs --follow --tail="$(SERVER_LOG_TAIL)" $(SERVICE)
+
+server-status: server-ensure-config
+	$(LOCAL_COMPOSE) ps
+
+server-reset: server-image
+	@if [ "$(CONFIRM)" != "yes" ]; then \
+		printf 'Delete the local universe database and restart? [y/N] '; \
+		read answer; \
+		case "$$answer" in y|Y|yes|YES) ;; *) echo 'Cancelled.'; exit 1;; esac; \
+	fi
+	$(LOCAL_COMPOSE) down --volumes --remove-orphans
+	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-prod-config:
+	python3 deploy/server/configure.py --environment production \
+		--env-file "$(SERVER_PRODUCTION_ENV)" \
+		$(if $(strip $(SERVER_CONFIG)),--config "$(SERVER_CONFIG)") \
+		$(if $(strip $(SCENE_WORKERS)),--scene-workers "$(SCENE_WORKERS)")
+
+server-prod-ensure-config:
+	@if [ ! -f "$(PRODUCTION_SERVER_ENV)" ] || [ ! -f "$(PRODUCTION_SERVER_WORKERS)" ]; then \
+		python3 deploy/server/configure.py --environment production \
+			--env-file "$(SERVER_PRODUCTION_ENV)"; \
+	fi
+
+server-prod-image: server-prod-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	image=$$(awk -F= '$$1 == "SERVER_IMAGE" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	target=$$(awk -F= '$$1 == "SERVER_IMAGE_TARGET" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	bash docker/server/build.sh "$$config" "$$image" "$$target" "$(LINUX_IMAGE)"
+
+server-prod-up: server-prod-image
+	$(PRODUCTION_COMPOSE) up --build --detach --remove-orphans --wait
+
+server-prod-down: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) down --remove-orphans
+
+server-prod-logs: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) logs --follow --tail="$(SERVER_LOG_TAIL)" $(SERVICE)
+
+server-prod-status: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) ps
+
 # Docker caches live in named volumes. build/ contains exported bin/lib files
 # and any opt-in native build trees.
 clean:
 	$(CMAKE) -E remove_directory build
-	@for volume in $(sort $(DEFAULT_CACHE_VOLUMES) $(LINUX_CACHE_VOLUME) $(WINDOWS_CACHE_VOLUME)); do \
+	@for volume in $(sort $(DEFAULT_CACHE_VOLUMES) $(LINUX_CACHE_VOLUME) $(WINDOWS_CACHE_VOLUME) $(ASSETS_CACHE_VOLUME)); do \
 		docker volume rm "$$volume" >/dev/null 2>&1 || true; \
 	done
 
@@ -165,12 +278,17 @@ help:
 	printf '%b\n' \
 		"$${heading}Common builds$${reset}" \
 		'  make                      Build all Linux programs' \
-		'  make client               Build the Linux client' \
-		'  make servers              Build all Linux servers' \
-		'  make windows-client       Build the Windows client' \
+		'  make client               Build the Linux scene client' \
+		'  make client-all           Build all Linux clients' \
+		'  make win-client           Build the Windows scene client' \
+		'  make win-client-all       Build all Windows clients' \
+		'' \
+		"$${heading}Release packages$${reset}" \
+		'  make linux-package        Build the Linux game and launcher archives' \
+		'  make win-package          Build the Windows game and launcher archives' \
+		'  make release-package      Build every release archive' \
 		'' \
 		"$${heading}Linux target groups$${reset}" \
-		'  make clients              Build all clients' \
 		'  make cgi                  Build account and status programs' \
 		'  make tools                Build admin and content tools' \
 		'' \
@@ -180,12 +298,23 @@ help:
 		'  make ausceneserver        Build AuSceneServer' \
 		'' \
 		"$${heading}Native Linux builds$${reset}" \
-		'  make native-client        Build the client' \
-		'  make native-clients       Build all clients' \
+		'  make native-client        Build the scene client' \
+		'  make native-client-all    Build all clients' \
 		'  make native-servers       Build all servers' \
 		'  make native-cgi           Build account and status programs' \
 		'  make native-tools         Build admin and content tools' \
 		'  make native-build         Build every configured target' \
+		'' \
+		"$${heading}Local multiplayer servers$${reset}" \
+		'  make server-up            Build and start the local stack' \
+		'  make server-down          Stop it without deleting data' \
+		'  make server-logs          Follow all server logs' \
+		'  make server-status        Show container and health status' \
+		'  make server-reset         Delete local data and restart' \
+		'  make server-prod-up       Build and start production' \
+		'  make server-prod-down     Stop production, preserving data' \
+		'  make server-prod-logs     Follow production logs' \
+		'  make server-prod-status   Show production status' \
 		'' \
 		"$${heading}Toolchains and maintenance$${reset}" \
 		'  make run-client           Build and run the Linux client' \
@@ -209,7 +338,14 @@ help:
 		'  WINDOWS_IMAGE=name                   (default: hazeron-mingw-qt5)' \
 		'  LINUX_CACHE_VOLUME=name              (default depends on CONFIG)' \
 		'  WINDOWS_CACHE_VOLUME=name            (default depends on CONFIG)' \
+		'  ASSETS_CACHE_VOLUME=name             (default: hazeron-assets-cache)' \
+		'  SERVER_CONFIG=debug|release|relwithdebinfo' \
+		'  SCENE_WORKERS=N                       (default: 1)' \
+		'  SERVICE=name                          (filter log targets)' \
+		'  SERVER_PRODUCTION_ENV=path            (production settings)' \
 		'' \
 		"$${heading}Examples$${reset}" \
 		'  make CONFIG=debug client' \
-		'  make CONFIG=relwithdebinfo windows-client'
+		'  make CONFIG=relwithdebinfo win-client' \
+		'  make server-up SCENE_WORKERS=3' \
+		'  make server-logs SERVICE=scene-worker-1'

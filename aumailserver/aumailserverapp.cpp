@@ -50,6 +50,7 @@ AuMailServerApp::AuMailServerApp(int& argc, char** argv) :
 	// Get default values that may be overridden by command line options.
 	bool isMaster = false;
 	QString netName;
+	quint16 advertisedPort = AuUtil::MailMasterPort();
 
 	// Parse command line.
 	QStringList args = arguments();
@@ -59,6 +60,10 @@ AuMailServerApp::AuMailServerApp(int& argc, char** argv) :
 		if((*it).left(2) == "-n")
 		{
 			netName = (*it).mid(2);
+		}
+		else if((*it).left(2) == "-p")
+		{
+			advertisedPort = QVariant((*it).mid(2)).toUInt();
 		}
 		else if((*it) == "-master")
 		{
@@ -79,6 +84,14 @@ AuMailServerApp::AuMailServerApp(int& argc, char** argv) :
 		gp_AuGlobal = new AuGlobal("Hazeron Mail Worker", "Hazeron Freehold", AuGlobal::MailWorker);
 		g_Au.Log("Mail Worker Started");
 	}
+
+	// Workers can advertise a host-published port while continuing to listen
+	// on the protocol's fixed port inside their own network namespace.
+	m_AdvertisedPort = isMaster ? AuUtil::MailMasterPort() : advertisedPort;
+
+	QString loginServer = qEnvironmentVariable("AU_LOGIN_SERVER");
+	if(!loginServer.isEmpty())
+		g_Au.SetLoginMaster(loginServer);
 
 	// Configure internet name.
 	if(!netName.isEmpty())
@@ -421,8 +434,8 @@ bool AuMailServerApp::OpenDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auMail");			// NOTE: Name is case sensitive.
-	db.setHostName("MailDb.Hazeron.net");
-	if(!db.open("audog","Gold"))
+	db.setHostName(qEnvironmentVariable("AU_MAIL_DB_HOST", "MailDb.Hazeron.net"));
+	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
 		QString sdv = er.driverText();

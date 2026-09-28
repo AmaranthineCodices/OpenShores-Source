@@ -6,6 +6,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/linux-debug/bin/AuSceneClient",
+      "args": ["-alocalhost", "-log"],
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "/usr/bin/gdb",
@@ -22,6 +23,45 @@
       "preLaunchTask": "Docker: build Linux client (Debug)",
       "presentation": {
         "group": "Linux",
+        "order": 1
+      },
+      "windows": {
+        "presentation": {
+          "hidden": true
+        }
+      }
+    },
+    {
+      "name": "Linux Server: Attach scene-worker-1",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "/opt/openshores/bin/AuSceneServer",
+      "processId": "1",
+      "MIMode": "gdb",
+      "pipeTransport": {
+        "pipeProgram": "docker",
+        "pipeArgs": [
+          "compose",
+          "--env-file", "build/server/local/compose.env",
+          "-f", "deploy/server/compose.yaml",
+          "-f", "build/server/local/workers.compose.json",
+          "exec", "--privileged", "--user", "root", "-i", "scene-worker-1"
+        ],
+        "debuggerPath": "/usr/bin/gdb",
+        "pipeCwd": "${workspaceFolder}"
+      },
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}"
+      },
+      "setupCommands": [
+        {
+          "description": "Enable GDB pretty-printing",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "presentation": {
+        "group": "Linux Servers",
         "order": 1
       },
       "windows": {
@@ -64,6 +104,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/build/windows-debug/bin/AuSceneClient.exe",
+      "args": ["-alocalhost", "-log"],
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "pipeTransport": {
