@@ -18,6 +18,7 @@
 #include "aushipment.h"
 #include "dgempire.h"
 #include "dtdb.h"
+#include <QAtomicInt>
 #include <QMutex>
 #include <QSemaphore>
 #include <QTcpSocket>
@@ -64,6 +65,9 @@ public:
 	void SendJobOffer(const AuJobOffer& jobOffer);
 
 	void SendPacket(const QByteArray& ba);
+
+	// Request a fresh status packet from the channel thread. Safe to call from other threads.
+	void RequestStatus();
 
 public slots:
 	void SendStatus();
@@ -243,6 +247,7 @@ private:
 	quint32			m_PacketSize;		// Data packet size.
 	int				m_PacketSizeBytesLeft;	// Number of packet size bytes we are expecting.
 	QHash<quint32, quint32>	m_PacketsRx;	// Count of packets received, keyed by packet type.
+	QAtomicInt		m_StatusRequested;	// Coalesces readiness changes until the channel sends fresh status.
 	QSemaphore		m_semAlive;			// Used to know when I'm supposed to die.
 	QByteArray		m_TxBuffer;			// TCP tx buffer
 };

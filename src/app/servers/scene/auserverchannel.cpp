@@ -26,6 +26,8 @@ void AuServerChannel::incomingConnection(qintptr socketDescriptor)
 		m_NextId++;	// skip zero and one
 	DtServerChannel* tserver = new DtServerChannel(m_NextId, socketDescriptor, this);
 
+	connect(tserver, SIGNAL(ReadinessChanged()), auSceneServerApp, SLOT(RequestStatusUpdate()), Qt::QueuedConnection);
+
 	connect(tserver, SIGNAL(AdminSummon(AuId, AuId, quint8)),
 			auSceneServerApp, SLOT(AdminSummon(AuId, AuId, quint8)),
 			Qt::QueuedConnection);

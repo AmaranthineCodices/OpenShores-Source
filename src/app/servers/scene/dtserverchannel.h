@@ -416,6 +416,8 @@ protected slots:
 	void ThreadFinished();
 
 signals:
+	void ReadinessChanged();
+
 	void AddCitizenToEmpire(quint32 oldEmpireId, quint32 nuEmpireId, AuId personId, QString personName, quint8 personGender);
 
 	void AdminSummon(AuId person, AuId adminId, quint8 rideAlso);

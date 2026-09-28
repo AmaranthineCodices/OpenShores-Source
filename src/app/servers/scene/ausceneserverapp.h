@@ -1691,6 +1691,7 @@ protected:
 protected slots:
 	void ClientChannelLost();
 	void DbFinishedInit();
+	void RequestStatusUpdate();
 	void ReadPendingDatagrams();
 	void ServerChannelClosed(unsigned int channelId);
 	void Shutdown();

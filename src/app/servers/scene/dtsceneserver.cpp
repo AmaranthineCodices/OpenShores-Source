@@ -121,7 +121,6 @@ void DtSceneServer::run()
 
 	// Login check interval must be longer than the cache decay time in the login server.
 	const int loginCheckInterval = 20 * 60;	// seconds between login checks
-	AuElapsedTimer tmLoginCheck;
 	while(tcpSocket.state() == QAbstractSocket::ConnectedState && !tcpSocket.waitForDisconnected(10))
 	{
 		// Still connected so check to see if we have anything to send.
@@ -159,10 +158,10 @@ void DtSceneServer::run()
 		// Check to see if the login server still thinks this guy is logged in.
 		if(!gp_AuGlobal)
 			break;
-		if(!tmLoginCheck.isValid() || tmLoginCheck.elapsed()/d_MSecPerSec > loginCheckInterval)
+		if(m_tmLoginCheck.isValid() && m_tmLoginCheck.elapsed()/d_MSecPerSec > loginCheckInterval)
 		{
 			CheckLoginStatus();
-			tmLoginCheck.restart();
+			m_tmLoginCheck.restart();
 			if(tcpSocket.state() != QAbstractSocket::ConnectedState)
 				break;
 		}
@@ -915,6 +914,8 @@ void DtSceneServer::ReadPacket(const QByteArray& ba, QTcpSocket& tcpSocket)
 			AuId idUnits[6];
 			if(g_Au.IsPlayerLoggedIn(idPlayer, confirmNum, idUnits, m_AccountType, m_AccountExpiry))
 			{
+				m_tmLoginCheck.start();
+
 				// Emit a signal to insure no other channels are open to the player.
 				emit PlayerConnecting(idPlayer, (unsigned long)m_ThreadId);
 
@@ -1634,9 +1635,13 @@ void DtSceneServer::SyncClient()
 
 void DtSceneServer::DeferClient()
 {
-	if(!m_tmAtomQuery.isValid())
+	QMutexLocker queryLock(&m_muAtomQuery);
+	if(m_QueryReason == QUERY_RetryDefer && m_tmAtomQuery.elapsed() < d_MSecPerSec)
+		return;
+
+	if(!m_tmAtomQuery.isValid() || m_QueryReason == QUERY_RetryDefer)
 	{
-		// The defer time is null so start the defer process.
+		// Start a lookup, or retry a completed negative result after one second.
 		//qDebug("DtSceneServer::DeferClient started for unitId %d", m_idUnit.GetID());
 		m_tmAtomQuery.start();
 
@@ -1644,15 +1649,18 @@ void DtSceneServer::DeferClient()
 		m_QueryReason = QUERY_Defer;
 		m_AtomQuery = m_idUnit;
 		m_EmpireQuery = 0;
+		queryLock.unlock();
 		emit DeferClient(m_idUnit);	// Defer to server with my unit.
 	}
-	else if(m_tmAtomQuery.elapsed()/d_MSecPerSec > 15)
+	else if(m_QueryReason == QUERY_Defer && m_tmAtomQuery.elapsed()/d_MSecPerSec > 15)
 	{
 		// We should have received a result by now.
 		QString logmsg = QString("SCENE:%99 DtSceneServer::DeferClient timed out for unitId %1 %2, deferring to master")
 			.arg(m_idUnit.GetID()).arg(m_UnitName).arg(m_Id);
 		g_Au.LogConnect(auSceneServerApp->LoginName(), logmsg);
-		DeferToMaster();
+		// Preserve the reconnect fallback for an unanswered query. Only completed
+		// negative results can be retried without leaving an outstanding query.
+		AtomPresence(g_Au.SceneMasterName(), AuUtil::SceneMasterPort(), g_Au.SceneMasterName());
 	}
 
 	// Still waiting for result of DeferClient signal, which should be a call to my AtomPresence function.
@@ -1661,6 +1669,7 @@ void DtSceneServer::DeferClient()
 void DtSceneServer::DeferToMaster()
 {
 	//qDebug("DtSceneServer::DeferToMaster");
+	QMutexLocker queryLock(&m_muAtomQuery);
 	m_QueryReason = QUERY_Defer;
 	QString netName = g_Au.SceneMasterName();
 	quint16 port = AuUtil::SceneMasterPort();
@@ -2627,8 +2636,20 @@ void DtSceneServer::PlayerOnlineStatus(AuPlayerOnlineStatus& status) const
 
 void DtSceneServer::AtomPresenceResolved(AuId atom, quint32 empire, QString netName, quint16 port, QString peerName)
 {
-	if(IsAwaitingAtomQuery(atom, empire))
-		AtomPresence(netName, port, peerName);
+	QMutexLocker queryLock(&m_muAtomQuery);
+	if(m_QueryReason != QUERY_Defer || atom != m_AtomQuery || empire != m_EmpireQuery)
+		return;
+
+	if(g_Au.IsSceneMaster() && netName == g_Au.SceneMasterName() && port == AuUtil::SceneMasterPort())
+	{
+		// No worker has the avatar yet. Keep this authenticated connection while
+		// its world loads instead of sending the client back to this same master.
+		m_QueryReason = QUERY_RetryDefer;
+		m_tmAtomQuery.restart();
+		return;
+	}
+
+	AtomPresence(netName, port, peerName);
 }
 
 void DtSceneServer::EmpireRecordAvailable(quint32 empireId)

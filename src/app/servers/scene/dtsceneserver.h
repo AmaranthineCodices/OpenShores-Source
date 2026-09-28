@@ -75,6 +75,7 @@ public:
 	{
 		QUERY_None,
 		QUERY_Defer,
+		QUERY_RetryDefer,
 	};
 
 public:
@@ -84,8 +85,6 @@ public:
 	{
 		return m_AccountType;
 	}
-
-	void AtomPresence(const QString& netName, quint16 port, const QString& peerName);
 
 	inline int BadPacketCount() const
 	{
@@ -128,17 +127,6 @@ public:
 	inline unsigned int Id() const
 	{
 		return m_Id;
-	}
-
-	inline bool IsAwaitingAtomQuery(const AuId& atom, unsigned int empire) const
-	{
-		if(m_QueryReason == QUERY_None)
-			return false;
-		if(empire != m_EmpireQuery)
-			return false;
-		if(atom != m_AtomQuery)
-			return false;
-		return true;
 	}
 
 	inline bool IsEmpireInScene(quint32 idEmpire) const
@@ -277,6 +265,9 @@ protected:
 	virtual void run();
 
 private:
+	// Caller holds m_muAtomQuery.
+	void AtomPresence(const QString& netName, quint16 port, const QString& peerName);
+
 	void CheckLoginStatus();
 
 	void ClientCollision(const AuId& myId, const AuPoint& myChange, const AuPoint& myHitLoc, const AuId& hitId,
@@ -383,6 +374,7 @@ private:
 	int				m_socketDescriptor;	// Provided in the constructor.
 	AuTime			m_tmConnect;		// Time connection is established.
 	AuElapsedTimer	m_tmDisconnect;		// Null until time to disconnect.
+	AuElapsedTimer	m_tmLoginCheck;		// Time since successful login or the last periodic validation.
 
 	QByteArray		m_TxBuffer;			// On the client, the tx buffer is a property of AuApp.
 	bool			m_TxBufferFlush;	// true to flush the data when it is next transmitted.
@@ -396,6 +388,7 @@ private:
 	unsigned int	m_IdEmpire;
 
 	// Atom query values.
+	QMutex			m_muAtomQuery;		// Shared by the connection thread and presence-result slot.
 	QUERY_REASON	m_QueryReason;		// Reason we are waiting for atom query.
 	AuElapsedTimer	m_tmAtomQuery;		// We don't wait forever for atom query.
 	AuId			m_AtomQuery;

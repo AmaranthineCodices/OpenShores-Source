@@ -950,6 +950,7 @@ void AuSceneServerApp::DbFinishedInit()
 		if(g_Au.IsSceneWorker())
 			g_AuDb.LoadScripts();	// Load and validate story scripts.
 		StartSceneServer();
+		RequestStatusUpdate();
 		break;
 	case DtDb::OpenError:			// Database did not open ok.
 		if(g_Au.m_LogMessages & LOG_Error)
@@ -960,6 +961,12 @@ void AuSceneServerApp::DbFinishedInit()
 			g_Au.Error(tr("Failed to Load Database Driver"));
 		break;
 	}
+}
+
+void AuSceneServerApp::RequestStatusUpdate()
+{
+	if(m_tClientChannel)
+		m_tClientChannel->RequestStatus();
 }
 
 // Returns sum of average tick times of solar systems on worker server.
@@ -2289,13 +2296,23 @@ void AuSceneServerApp::QueryAtomServer(AuId idAtom, quint32 empire, AuId atomToS
 		query.m_Atom = idAtom;
 		query.m_Empire = empire;
 		const unordered_map<unsigned int, DtServerChannel*>& servers = m_ServerChannel.LockServerList(__FILE__, __LINE__);
-		query.m_RepliesPending = servers.size();	// The number of reponses we are expecting from the query.
+		for(const auto& server : servers)
+			if(!server.second->isFinished())
+				query.m_RepliesPending++;
 		m_ServerChannel.UnlockServerList(__FILE__, __LINE__);
+		const bool noServers = !query.m_RepliesPending;
+		if(noServers)
+			query.m_RepliesPending = 1;	// Complete locally through the normal negative-result path.
 
 		// Remember the atom queries that are unresolved.
 		m_QueryMutex.lock();
 		m_AtomQueries.append(query);
 		m_QueryMutex.unlock();
+		if(noServers)
+		{
+			AtomPresence(idAtom, empire, 0, 0);
+			return;
+		}
 
 		// This signal should be sent to each server channel thread in a nice thread-safe Qt way; cross your fingers.
 		emit QueryAtomServerDown(idAtom, empire, atomToSpawn);
@@ -3886,6 +3903,9 @@ void AuSceneServerApp::ServerChannelClosed(unsigned int serverId)
 		}
 		m_AssignmentsLock.unlock();
 	}
+
+	// Losing a worker can change whether this manager is ready for assignments.
+	RequestStatusUpdate();
 }
 
 void AuSceneServerApp::EmpireRecordLoaded(quint32 idEmpire)

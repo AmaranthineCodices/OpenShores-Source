@@ -1239,6 +1239,7 @@ void DtServerChannel::ReadPacket(const QByteArray& ba, QTcpSocket& /*tcpSocket*/
 			block >> serverMode;
 
 			m_SubStatusLock.lockForWrite();
+			bool wasReady = m_SubTickTime != 0xffffffff;
 			m_SubServerMode = serverMode;
 			block >> m_SubAtomLoad;
 			block >> m_SubTickTime;
@@ -1261,7 +1262,12 @@ void DtServerChannel::ReadPacket(const QByteArray& ba, QTcpSocket& /*tcpSocket*/
 				m_SubSystemClients.insert(pair<AuId, AuSystemStatus>(idSystem, sstat));
 			}
 			m_SubCheckInTime = AuTime::Now();
+			bool readinessChanged = wasReady != (m_SubTickTime != 0xffffffff);
 			m_SubStatusLock.unlock();
+
+			// Let the manager refresh its upstream status without waiting for its next heartbeat.
+			if(readinessChanged)
+				emit ReadinessChanged();
 
 			if(g_Au.IsSceneMaster() && serverMode == 2)
 			{

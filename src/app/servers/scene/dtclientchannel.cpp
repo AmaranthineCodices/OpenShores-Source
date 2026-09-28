@@ -19,7 +19,7 @@
 #include "dtserverchannel.h"
 #include <QDataStream>
 
-DtClientChannel::DtClientChannel(QObject* parent) : QThread(parent), m_semAlive(1)
+DtClientChannel::DtClientChannel(QObject* parent) : QThread(parent), m_StatusRequested(0), m_semAlive(1)
 {
 	m_AwaitingAtomIdRestock = false;
 	m_AwaitingBuildingDesignIdRestock = false;
@@ -64,6 +64,7 @@ void DtClientChannel::run()
 
 	const int secsToCheckIn = 60;	// Worker checks in every minute.
 	AuElapsedTimer tmStatus;
+	tmStatus.start();
 	while(Alive() && tcpSocket.state() == QAbstractSocket::ConnectedState &&
 			!tcpSocket.waitForDisconnected(10))
 	{
@@ -78,9 +79,9 @@ void DtClientChannel::run()
 		// Restock local id values from boss.
 		RestockNextIds();
 
-		// Send a status packet to the server periodically so it knows I'm alive, not
-		// just "connected".
-		if(!tmStatus.isValid() || tmStatus.elapsed()/d_MSecPerSec >= secsToCheckIn)
+		// Report readiness changes promptly; otherwise check in once per minute.
+		// Only this thread builds status packets, preserving the order of their snapshots.
+		if(m_StatusRequested.fetchAndStoreAcquire(0) || tmStatus.elapsed()/d_MSecPerSec >= secsToCheckIn)
 		{
 			SendStatus();
 			tmStatus.restart();
@@ -1409,6 +1410,11 @@ void DtClientChannel::SendPacket(const QByteArray& ba)
 	m_TxBuffer.append(ba);
 	m_muTxBuffer.unlock();
 	//qDebug("DtClientChannel::SendPacket done");
+}
+
+void DtClientChannel::RequestStatus()
+{
+	m_StatusRequested.storeRelease(1);
 }
 
 void DtClientChannel::SendStatus()
