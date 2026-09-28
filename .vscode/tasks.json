@@ -5,7 +5,7 @@
       "label": "Docker: build Linux client (Debug)",
       "type": "process",
       "command": "make",
-      "args": ["CONFIG=debug", "client"],
+      "args": ["CONFIG=debug", "linux-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -19,7 +19,7 @@
       "label": "Docker: build Linux client (RelWithDebInfo)",
       "type": "process",
       "command": "make",
-      "args": ["CONFIG=relwithdebinfo", "client"],
+      "args": ["CONFIG=relwithdebinfo", "linux-client"],
       "options": {
         "cwd": "${workspaceFolder}"
       },

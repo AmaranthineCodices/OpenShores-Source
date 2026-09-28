@@ -96,10 +96,6 @@ add_custom_target(client DEPENDS AuSceneClient)
 add_custom_target(clients DEPENDS
     AuSceneClient AuMailClient AuChatClient AuLauncher
 )
-# Keep the packaging target name introduced by the local-server branch.
-add_custom_target(client-all DEPENDS
-    AuSceneClient AuMailClient AuChatClient AuLauncher
-)
 add_custom_target(servers DEPENDS AuLoginServer AuMailServer AuSceneServer)
 add_custom_target(cgi DEPENDS
     AuAcctEmail AuAcctExpire AuAcctNew AuAcctPassword

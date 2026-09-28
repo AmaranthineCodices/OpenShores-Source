@@ -1,18 +1,16 @@
-# OpenShores Build Guide
+# OpenShores
 
-OpenShores uses CMake. Docker builds are the default, with native Linux builds available for development.
+Pick any star in the night sky and fly to it. Build cities, design your own starships deck by deck, and walk aboard.
 
-## Repository layout
+OpenShores is a community volunteer project continuing development of **Shores of Hazeron**, with the goal of keeping the game alive and free to play.
 
-- `src/lib/` contains reusable code libraries.
-- `src/app/` contains clients, servers, account programs, and administration programs.
-- `src/tools/` contains content and inspection tools.
-- `resources/` contains shared Qt resource bundles and runtime game content.
-- `deploy/server/` contains the complete multiplayer server deployment.
-- `docker/` contains reusable Linux and Windows build toolchains.
-- `cmake/` and `mk/` contain build-system implementation.
+The original game was created by **David Hoeft (“Haxus”)**. David’s passion for the project over more than two decades shaped a remarkably ambitious game, bringing together interstellar exploration, city building, and starships you can design and walk aboard. We’re grateful for the work he put into it and for sharing the source code so its development can continue.
 
-The original project notes remain in `README-legacy.md`.
+Support David by purchasing [Hazeron Starship on Steam](https://store.steampowered.com/app/2239520/Hazeron_Starship/), the official single-player version of the game.
+
+Shores of Hazeron is copyright © 2026 **Hazeron Freehold LLC**. See [LICENSE](LICENSE) for usage and distribution terms.
+
+Original project notes: [README-legacy.md](README-legacy.md).
 
 ## Requirements
 
@@ -47,26 +45,25 @@ For Linux development, keep the repository under `~/src/OpenShores` in WSL for b
 ## Build
 
 ```bash
-make client          # Linux scene client
-make client-all      # All Linux clients
+make                 # Show common commands
+make all             # All Linux programs and Windows clients
+make linux           # All Linux programs
+make linux-client    # Linux scene client
+make linux-clients   # All Linux clients
+make linux-servers   # Linux multiplayer servers
+make win             # All Windows clients
 make win-client      # Windows x64 scene client
-make win-client-all  # All Windows clients
-make servers         # Linux multiplayer servers
 ```
 
-Use `make help` to list the other targets.
+Use `make help FULL=1` to include advanced commands and options.
 
-Linux and Windows builds support three configurations:
+Set `CONFIG` to `release` (default), `debug`, or `relwithdebinfo`:
 
 ```bash
-make CONFIG=release client
-make CONFIG=debug client
-make CONFIG=relwithdebinfo client
+make win-client CONFIG=debug
 ```
 
-`release` is the default. Use `make CONFIG=debug win-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
-
-Docker builds export executables and runtime libraries to `build/<platform>-<config>/bin` and `lib`. Static libraries (`.a`) and Windows import libraries (`.dll.a`) are linking intermediates, so CMake keeps them in `/build/lib` inside that configuration's Docker cache volume. Existing caches are reconfigured automatically on the next build; cached object files are reused to recreate libraries at the new location. Native builds keep these libraries in their own CMake build directory's `lib/`.
+Output goes to `build/<platform>-<config>/`. Run clients from `bin/` and keep the runtime files beside them.
 
 ## Release packages
 
@@ -76,56 +73,13 @@ make win-package     # Windows game and launcher archives
 make release-package # Every release archive
 ```
 
-Release artifacts are written to `build/packages/`:
-
-```text
-soh-linux-x64.tar.gz
-soh-launcher-linux-x64.tar.gz
-soh-win64.zip
-soh-launcher-win64.zip
-linux-x64.sha256
-windows-x64.sha256
-```
-
-Packages are staged from a clean directory and include the public executable names, resource libraries, runtime dependencies, `GD`, `sfx.har`, textures, release blueprints, and updater checksum manifests.
-
-Each packaging run uses a unique temporary staging directory, removed when the script exits, including on failure. To retain it for inspection, run `HAZERON_KEEP_STAGING=1 make win-package` (or `linux-package`); the script prints the retained directory's path. Completed archives remain in `build/packages/`.
-
-Client `bin/` directories are also self-contained runtime trees containing `GD`, `Blueprints/`, `tex/`, and `sfx.har` beside the executable. The Windows directory also contains client DLLs and Qt plugins. Run the client with `bin/` as its working directory and keep the whole directory together.
-
-## Native Linux Build
-
-```bash
-make native-client
-make native-client-all
-make native-servers
-make native-build
-```
-
-Native builds require CMake, Ninja, Qt 5, OpenGL, OpenAL, and SDL2 development packages.
-
-## Content assets
-
-Prebuilt shader and story archives remain checked in. The sound archive is generated locally because it is too large for the repository. Normal Docker client builds create it automatically.
-
-```bash
-make audio-assets   # resources/audio/source/*.wav -> build/assets/sfx.har
-make shader-assets  # GLSL sources -> embedded glsl.har
-make story-assets   # Validate scripts and rebuild story script.har files
-make assets         # Rebuild all three families
-```
-
-`make story-assets` uses the CMake-built `AuScript` and `hashpack` tools. It has no developer-specific paths.
+Archives and checksums go to `build/packages/`.
 
 ## F5 Debugging in VS Code
 
-Install the recommended C/C++ extension. Run and Debug groups the launch options under Linux and Windows. Each platform has Debug and RelWithDebInfo. Select one and press `F5`.
+Install the recommended C/C++ extension, select a Linux or Windows launch configuration, and press `F5`. Docker builds the client; GDB runs it locally.
 
-Docker builds the client. GDB runs it on the selected platform. You do not need a local compiler or CMake.
-
-The first build also exports the Qt and compiler headers to `build/editor/`. The C/C++ extension uses them for IntelliSense. The cache refreshes when the Docker toolchain changes. CMake Tools is not required. If it is already installed, disable it for this workspace.
-
-RelWithDebInfo gives better game performance. Some variables may be unavailable in the debugger because of optimization.
+Use Debug for easier debugging or RelWithDebInfo for better performance. Disable CMake Tools for this workspace if installed.
 
 ### Windows
 
@@ -142,9 +96,7 @@ pacman -Syu
 pacman -S --needed mingw-w64-ucrt-x86_64-gdb
 ```
 
-If the update asks you to restart the terminal, do that and finish updating before installing GDB.
-
-Open the repository in Windows VS Code or Remote WSL. Select a Windows launch option and press `F5`. From WSL, VS Code starts Windows GDB through WSL interop. The game runs natively on Windows. No Windows Qt SDK is needed.
+Open the repository in Windows VS Code or Remote WSL. Select a Windows launch option and press `F5`. From WSL, VS Code starts Windows GDB through WSL interop. The game runs natively on Windows.
 
 If you installed MSYS2 elsewhere, change `miDebuggerPath` in `.vscode/launch.json`.
 
@@ -163,35 +115,16 @@ docker run --rm hello-world
 
 Open the repository in VS Code, select a Linux launch option, and press `F5`. Other distributions need libraries compatible with the Ubuntu 22.04 build.
 
-To debug the Linux client in WSL, use `WSL: Reopen Folder in WSL`. The game needs WSLg and a working OpenGL driver.
 
 ## Local and production servers
 
-The multiplayer stack runs PostgreSQL plus separate login, mail, scene-master, scene-manager, and scene-worker containers.
+**WSL 2:** If Docker Engine runs inside WSL in NAT mode and you’re connecting from Windows, follow the [WSL networking setup](deploy/server/README.md#windows-clients-with-docker-engine-inside-wsl-2) before starting the server. `localhost` forwarding does not carry the game’s UDP controls.
 
 ```bash
-make server-up                         # Local Debug stack
-make server-up SCENE_WORKERS=3         # Scale local scene workers
+make server-up       # Start the local Debug stack
 make server-logs
 make server-down
 ```
 
-Start a matching client with `-alocalhost -log`. Production uses the same images and topology with a separate environment file:
+See [the server guide](deploy/server/README.md) for configuration and deployment details.
 
-```bash
-cp deploy/server/environments/production.env.example \
-   deploy/server/environments/production.env
-make server-prod-config
-make server-prod-up
-```
-
-See `deploy/server/README.md` for configuration, ports, persistence, scaling, logs, client launches, and Linux GDB attachment.
-
-## Clean
-
-```bash
-make clean    # Remove artifacts and build-cache volumes
-make rebuild  # Clean and rebuild all migrated Linux programs
-```
-
-Docker toolchain images are not removed by `make clean`.

@@ -3,6 +3,7 @@
 > Historical reference from the original source release. Build commands and
 > repository paths below are obsolete; use `README.md` for current instructions.
 
+```
 Shores of Hazeron
 -----------------
 	The multiplayer sandbox universe.
@@ -529,5 +530,5 @@ Final Thoughts
 		branched. A lot of changes were made with no attempt to keep the
 		multiplayer capability working. It would be painfully difficult to
 		backport those changes into the multiplayer code.
-
+```
 

@@ -24,7 +24,7 @@ mkdir -p "$local_output" "$local_packages"
 
 if ! docker image inspect "$image" >/dev/null 2>&1; then
     echo "error: Windows toolchain image does not exist: $image" >&2
-    echo "Build win-client-all before packaging." >&2
+    echo "Run make win before packaging." >&2
     exit 1
 fi
 

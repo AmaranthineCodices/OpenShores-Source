@@ -6,7 +6,7 @@ image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
 config=${HAZERON_BUILD_CONFIG:-release}
 target=${AU_TARGET:-client}
 
-if [[ "$target" != client && "$target" != client-all ]]; then
+if [[ "$target" != client && "$target" != clients ]]; then
     echo "error: unsupported Windows client target: $target" >&2
     exit 2
 fi

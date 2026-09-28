@@ -1,6 +1,8 @@
-# Docker builds are the default. Native builds are opt-in.
+# Docker builds are the default. NATIVE=1 selects native Linux compilation.
+.DEFAULT_GOAL := help
 
 CONFIG ?= release
+NATIVE ?= 0
 CMAKE ?= cmake
 GENERATOR ?= Ninja
 PARALLEL ?= $(shell nproc 2>/dev/null || echo 4)
@@ -22,8 +24,14 @@ else
 $(error CONFIG must be debug, release, or relwithdebinfo)
 endif
 
-include mk/build.mk
+ifneq ($(NATIVE),0)
+ifneq ($(NATIVE),1)
+$(error NATIVE must be 0 or 1)
+endif
+endif
+
 include mk/native.mk
+include mk/build.mk
 include mk/windows.mk
 include mk/assets.mk
 include mk/package.mk

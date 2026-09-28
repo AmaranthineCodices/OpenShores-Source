@@ -3,17 +3,13 @@ STORY_COMPILER := build/linux-$(CONFIG)/bin/AuScript
 SHADER_ARCHIVE := src/lib/graphics/resources/glsl.har
 SHADER_SOURCES := $(wildcard src/lib/graphics/resources/shaders/*.glsl)
 
-.PHONY: assets runtime-assets audio-assets shader-assets story-assets
+.PHONY: assets audio-assets shader-assets story-assets
 
-# Default client builds package runtime audio. Shader and story archives are
-# checked in and rebuilt explicitly when their authoring sources change.
-all client clients client-all windows-client windows-clients \
-    win-client win-client-all native-build native-client native-clients \
-    native-client-all native-ausceneclient: runtime-assets
+# Client builds need runtime audio with either toolchain. Shader and story
+# archives are checked in and rebuilt explicitly when their sources change.
+linux linux-client linux-clients win win-client: audio-assets
 
 assets: audio-assets shader-assets story-assets
-
-runtime-assets: audio-assets
 
 audio-assets:
 	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" \
