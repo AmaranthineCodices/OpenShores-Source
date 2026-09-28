@@ -2,6 +2,7 @@
 /debug/
 /release/
 /old-editor/
+/scripts/
 
 __pycache__/
 *.pyc
