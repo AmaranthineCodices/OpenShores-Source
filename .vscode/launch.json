@@ -45,9 +45,10 @@
           "--env-file", "build/server/local/compose.env",
           "-f", "deploy/server/compose.yaml",
           "-f", "build/server/local/workers.compose.json",
-          "exec", "--privileged", "--user", "root", "-i", "scene-worker-1"
+          "exec", "-T", "--privileged", "--user", "root", "-i", "scene-worker-1"
         ],
         "debuggerPath": "/usr/bin/gdb",
+        "quoteArgs": false,
         "pipeCwd": "${workspaceFolder}"
       },
       "sourceFileMap": {
