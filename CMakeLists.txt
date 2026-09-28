@@ -12,16 +12,18 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(AU_OUTPUT_ROOT "${CMAKE_BINARY_DIR}" CACHE PATH
-    "Directory that receives the bin and lib build artifacts"
+    "Directory that receives executables and runtime libraries"
 )
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${AU_OUTPUT_ROOT}/lib")
+# Static libraries and Windows import libraries are only needed while linking.
+# Keep them with the CMake intermediates (the Docker build-cache volume).
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 foreach(configuration Debug Release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${configuration}" configuration_upper)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/bin")
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${AU_OUTPUT_ROOT}/lib")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${configuration_upper} "${CMAKE_BINARY_DIR}/lib")
 endforeach()
 
 if(UNIX AND NOT APPLE)

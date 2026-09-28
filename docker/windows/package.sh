@@ -13,6 +13,7 @@ case "$config" in
 esac
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source "$repo_root/docker/support/staging.sh"
 daemon_repo_root=$(bash "$repo_root/docker/support/resolve-project-mount.sh" "$repo_root")
 image=${HAZERON_MINGW_IMAGE:-hazeron-mingw-qt5}
 local_output="$repo_root/build/windows-$config"
@@ -27,15 +28,19 @@ if ! docker image inspect "$image" >/dev/null 2>&1; then
     exit 1
 fi
 
+create_staging_directory "$local_output" package-stage
+daemon_stage="$daemon_output/${staging_dir##*/}"
+
 docker run --rm \
     --user "$(id -u):$(id -g)" \
     --env HOME=/tmp \
     --mount "type=bind,source=$daemon_repo_root,target=/src,readonly" \
-    --mount "type=bind,source=$daemon_output,target=/output" \
+    --mount "type=bind,source=$daemon_output,target=/output,readonly" \
+    --mount "type=bind,source=$daemon_stage,target=/stage" \
     --mount "type=bind,source=$daemon_packages,target=/packages" \
     "$image" \
     /bin/bash -ec '
-        stage=/output/package-stage
+        stage=/stage
         packages=/packages
         game_name=soh-win64
         launcher_name=soh-launcher-win64
@@ -60,7 +65,6 @@ docker run --rm \
             fi
         done
 
-        rm -rf "$stage"
         mkdir -p "$game" "$launcher" "$packages"
 
         install -m 755 /output/bin/AuSceneClient.exe "$game/Shores of Hazeron.exe"

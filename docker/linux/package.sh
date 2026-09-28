@@ -13,13 +13,11 @@ case "$config" in
 esac
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+source "$repo_root/docker/support/staging.sh"
 output="$repo_root/build/linux-$config"
-stage="$output/package-stage"
 packages="$repo_root/build/packages"
 game_name=soh-linux-x64
 launcher_name=soh-launcher-linux-x64
-game="$stage/$game_name"
-launcher="$stage/$launcher_name"
 
 require_file() {
     if [[ ! -f "$1" ]]; then
@@ -38,7 +36,10 @@ for directory in tex Blueprints/Buildings Blueprints/Spacecraft; do
     fi
 done
 
-rm -rf "$stage"
+create_staging_directory "$output" package-stage
+stage=$staging_dir
+game="$stage/$game_name"
+launcher="$stage/$launcher_name"
 mkdir -p "$game/bin" "$game/lib" "$launcher/bin" "$launcher/lib" "$packages"
 
 install -m 755 "$output/bin/AuSceneClient" "$game/bin/ShoresOfHazeron"

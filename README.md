@@ -66,6 +66,8 @@ make CONFIG=relwithdebinfo client
 
 `release` is the default. Use `make CONFIG=debug win-client` for a Windows Debug build. Each platform/configuration has its own output directory and cache.
 
+Docker builds export executables and runtime libraries to `build/<platform>-<config>/bin` and `lib`. Static libraries (`.a`) and Windows import libraries (`.dll.a`) are linking intermediates, so CMake keeps them in `/build/lib` inside that configuration's Docker cache volume. Existing caches are reconfigured automatically on the next build; cached object files are reused to recreate libraries at the new location. Native builds keep these libraries in their own CMake build directory's `lib/`.
+
 ## Release packages
 
 ```bash
@@ -86,6 +88,8 @@ windows-x64.sha256
 ```
 
 Packages are staged from a clean directory and include the public executable names, resource libraries, runtime dependencies, `GD`, `sfx.har`, textures, release blueprints, and updater checksum manifests.
+
+Each packaging run uses a unique temporary staging directory, removed when the script exits, including on failure. To retain it for inspection, run `HAZERON_KEEP_STAGING=1 make win-package` (or `linux-package`); the script prints the retained directory's path. Completed archives remain in `build/packages/`.
 
 Client `bin/` directories are also self-contained runtime trees containing `GD`, `Blueprints/`, `tex/`, and `sfx.har` beside the executable. The Windows directory also contains client DLLs and Qt plugins. Run the client with `bin/` as its working directory and keep the whole directory together.
 
