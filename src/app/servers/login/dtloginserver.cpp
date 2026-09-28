@@ -1693,6 +1693,8 @@ void DtLoginServer::CheckIn()
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{
 		// The connection attempt succeeded.
+		const QString masterIp = tcpSocket.peerAddress().toString();
+		const quint16 masterPort = tcpSocket.peerPort();
 		QString netName = g_Au.InternetName();
 		quint16 netPort = auLoginServerApp->AdvertisedPort();
 
@@ -1716,8 +1718,9 @@ void DtLoginServer::CheckIn()
 		}
 
 		QString logmsg;
-		logmsg = QObject::tr("Checked in with master server %1.")
-				.arg(g_Au.LoginMasterName());
+		logmsg = QObject::tr("Checked in with master server %1:%2.")
+				.arg(masterIp.contains(':') ? QString("[%1]").arg(masterIp) : masterIp)
+				.arg(masterPort);
 		g_Au.Log(logmsg);
 	}
 	else
