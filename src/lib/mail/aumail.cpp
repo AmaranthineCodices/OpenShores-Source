@@ -1486,21 +1486,10 @@ void AuMail::StopThreads()
 {
 	if(m_tMailClient)
 	{
-		m_tMailClient->deleteLater();
 		m_tMailClient->Kill();
-
-		AuElapsedTimer t;
-		t.start();
-		while(m_tMailClient->isRunning())
-		{
-			if(t.elapsed() > 1000)
-			{
-#if !defined(QT_NO_DEBUG)
-				qDebug() << "D AuMail::StopThreads Waiting for the Mail thread to die.";
-#endif
-				t.restart();
-			}
-		}
+		// Join the worker before destroying it, without spinning on the UI thread.
+		m_tMailClient->wait();
+		delete m_tMailClient;
 		m_tMailClient = 0;
 	}
 }
