@@ -23,7 +23,7 @@ class AUMAIL_DLL DtMailClient : public QThread
 
 	int									m_BytesRx;			// Total bytes received from client
 	int									m_BytesTx;			// Total bytes sent to client
-	bool								m_DeferredToWorker;	// True if we have contacted the master to be directed to a worker.
+	bool								m_DeferredToWorker;	// True once a worker is selected by redirection or a successful direct request.
 	QList<quint32>						m_DeleteQueue;
 	AuId								m_idPerson;			// atom id of current person who's mail is being managed
 	AuElapsedTimer						m_LastRx;			// Time of last mail fetch.

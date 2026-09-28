@@ -433,6 +433,8 @@ int DtMailClient::ReadPacket(const QByteArray& ba)
 		return 2;
 
 	case DtMailServer::P_DoneOk:	// Server says their's no more mail for me.
+		// A direct worker connection succeeds without a P_Deferred reply.
+		m_DeferredToWorker = true;
 		break;
 
 	case DtMailServer::P_LoginError:
