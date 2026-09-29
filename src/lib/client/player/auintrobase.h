@@ -153,6 +153,7 @@ class AuIntroChooseAvatar : public QWidget
 {
 	Q_OBJECT;
 	int									m_AvatarSampleRendered;	// Number of frames of sample rendered.
+	bool								m_FirstFramePending;
 
 	// Widgets
 	AuIntroAvatarWidget*				m_Avatar[6];
@@ -167,6 +168,10 @@ public:
 
 	void SetAccountInfo();
 
+protected:
+	virtual void paintEvent(QPaintEvent* event);
+	void NotifyFirstFrameDisplayed();
+
 public slots:
 	void UpdateGL();
 
@@ -180,6 +185,7 @@ protected slots:
 
 signals:
 	void AvatarLogin(AuId);
+	void FirstFrameDisplayed();
 	void NewAvatarDNA3(int index);
 	void NewAvatarDNA4(int index);
 };

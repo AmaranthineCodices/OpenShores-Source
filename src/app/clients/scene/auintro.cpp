@@ -13,6 +13,7 @@
 #include "AuMsgDialog.h"
 #include "dgdata.h"
 #include <QCheckBox>
+#include <QEventLoop>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -45,11 +46,18 @@ AuIntro::AuIntro(QWidget* parent) : AuIntroBase(parent)
 
 	// Login page
 	m_LoginPage = new AuIntroLogin(this);
+	connect(m_LoginPage, &AuIntroLogin::LoginStarted, this, &AuIntro::ShowLoginMsg);
+	connect(m_LoginPage, &AuIntroLogin::LoginFailed, this, &AuIntro::HideWaitInfoMsg);
 	connect(m_LoginPage, SIGNAL(LoginOk()), SLOT(LoggedIn()));
 	connect(m_LoginPage, SIGNAL(Back()), SLOT(LoginBack()));
 
 	// Avatar selection page
 	m_ChooseAvatarPage = new AuIntroChooseAvatar(this);
+	connect(m_ChooseAvatarPage, &AuIntroChooseAvatar::FirstFrameDisplayed, this, [this]()
+	{
+		if(m_Pages->currentIndex() == m_ChooseAvatarIdx && auApp->RunState() == AuApp::LoggedInInit)
+			HideWaitInfoMsg();
+	});
 	connect(m_ChooseAvatarPage, SIGNAL(NewAvatarDNA3(int)), SLOT(NewAvatarDNA3(int)));
 	connect(m_ChooseAvatarPage, SIGNAL(NewAvatarDNA4(int)), SLOT(NewAvatarDNA4(int)));
 	connect(m_ChooseAvatarPage, SIGNAL(AvatarLogin(AuId)), SLOT(ExistingAvatarLogin(AuId)));
@@ -178,7 +186,7 @@ void AuIntro::keyPressEvent(QKeyEvent* e)
 
 void AuIntro::LoggedIn()
 {
-	ShowWaitInfoMsg();
+	ShowWaitMessage(tr("Getting Game Data"));
 	emit LoginOk();
 }
 
@@ -188,9 +196,6 @@ void AuIntro::SetAccountInfo()
 		return;
 	m_HasInfo = true;
 
-	if(m_msgDialog)
-		m_msgDialog->hide();
-
 	// Make the avatar selection page current.
 	m_ChooseAvatarPage->SetAccountInfo();
 	m_Pages->setCurrentIndex(m_ChooseAvatarIdx);
@@ -198,12 +203,30 @@ void AuIntro::SetAccountInfo()
 
 void AuIntro::ShowWaitInfoMsg()
 {
+	if(!m_msgDialog || m_msgDialog->isHidden())
+		ShowWaitMessage(tr("Getting Game Data"));
+}
+
+void AuIntro::ShowWaitMessage(const QString& message)
+{
 	if(!m_msgDialog)
-	{
 		m_msgDialog = new AuMsgDialog(this);
-		m_msgDialog->SetMessage(0, tr("Getting Game Data"));
-		m_msgDialog->show();
-	}
+	m_msgDialog->SetMessage(0, message);
+	m_msgDialog->show();
+}
+
+void AuIntro::ShowLoginMsg()
+{
+	ShowWaitMessage(tr("Logging In"));
+	// Paint the message before synchronous authentication blocks the UI thread.
+	auApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	m_msgDialog->repaint();
+}
+
+void AuIntro::HideWaitInfoMsg()
+{
+	if(m_msgDialog)
+		m_msgDialog->hide();
 }
 
 void AuIntro::paintEvent(QPaintEvent* pe)
@@ -672,8 +695,11 @@ void AuIntroLogin::Login()
 	m_SavePassword->setEnabled(false);
 	m_Login->setEnabled(false);
 
+	emit LoginStarted();
 	AuLoginComm logincomm;
 	int result = logincomm.Login(acctName, m_PassCrypt);
+	if(result != 0)
+		emit LoginFailed();
 
 	// Enable controls now that we have the login result.
 	m_Host->setEnabled(true);

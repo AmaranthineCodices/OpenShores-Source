@@ -68,6 +68,7 @@ public:
 
 protected:
 	virtual void keyPressEvent(QKeyEvent* event);
+	void ShowWaitMessage(const QString& message);
 
 public slots:
 	virtual void EmpireDataReceived();
@@ -75,6 +76,7 @@ public slots:
 
 protected slots:
 	void ExistingAvatarLogin(AuId avatarId);
+	void HideWaitInfoMsg();
 	void LaunchLogin();
 #if defined(INTRO_SOLO_TOO)
 	void LaunchSolo();
@@ -85,6 +87,7 @@ protected slots:
 	void NewAvatarDNA3(int index);
 	void NewAvatarDNA4(int index);
 	void NewAvatarLogin(int index);
+	void ShowLoginMsg();
 	void TimerUpdate();
 
 signals:
@@ -154,7 +157,9 @@ protected slots:
 
 signals:
 	void Back();
+	void LoginFailed();
 	void LoginOk();
+	void LoginStarted();
 };
 
 #endif // AuIntro_H

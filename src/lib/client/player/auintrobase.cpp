@@ -40,6 +40,7 @@
 #include <QSlider>
 #include <QStackedLayout>
 #include <QTableWidget>
+#include <QTimer>
 #include <QToolButton>
 
 AuIntroBase::AuIntroBase(QWidget* parent) : QWidget(parent)	//QVideoWidget(parent)
@@ -616,6 +617,7 @@ void AuIntroAvatarWidget::Save()
 AuIntroChooseAvatar::AuIntroChooseAvatar(QWidget* parent) : QWidget(parent)
 {
 	m_AvatarSampleRendered = 0;
+	m_FirstFramePending = false;
 
 	QToolButton* exitButton = new QToolButton(this);
 	exitButton->setAutoRaise(true);
@@ -652,6 +654,11 @@ AuIntroChooseAvatar::AuIntroChooseAvatar(QWidget* parent) : QWidget(parent)
 	m_AvatarSample = new AuBodyRenderWidget(this);
 	m_AvatarSample->hide();
 	m_AvatarSample->SetShowScene(true);
+	connect(m_AvatarSample, &QOpenGLWidget::frameSwapped, this, [this]()
+	{
+		if(m_AvatarSample->isVisible())
+			NotifyFirstFrameDisplayed();
+	}, Qt::DirectConnection);
 
 	m_Pose = new QComboBox(this);
 	m_Pose->hide();
@@ -800,6 +807,29 @@ void AuIntroChooseAvatar::SetAccountInfo()
 	}
 	if(!didSel)
 		AvatarSelected(0);				// Select the first avatar slot.
+	m_FirstFramePending = true;
+}
+
+void AuIntroChooseAvatar::paintEvent(QPaintEvent* event)
+{
+	QWidget::paintEvent(event);
+	if(m_FirstFramePending && m_AvatarSample->isHidden())
+	{
+		// Empty slots have no GL frame. Let the page and its children finish painting first.
+		QTimer::singleShot(0, this, [this]()
+		{
+			if(m_AvatarSample->isHidden())
+				NotifyFirstFrameDisplayed();
+		});
+	}
+}
+
+void AuIntroChooseAvatar::NotifyFirstFrameDisplayed()
+{
+	if(!m_FirstFramePending || !isVisible())
+		return;
+	m_FirstFramePending = false;
+	emit FirstFrameDisplayed();
 }
 
 void AuIntroChooseAvatar::AvatarSelected(int index)
