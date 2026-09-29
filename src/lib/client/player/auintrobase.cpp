@@ -4914,7 +4914,7 @@ AuIntroStartReach::AuIntroStartReach(QWidget* parent) : QWidget(parent)
 	m_RoidIco = new QLabel(this);
 	m_RoidIco->setText(tr("<html>"
 				"<p>"
-				"<img height=\"32\" align=\"left\" src=\"qrc:data/Asteroid.png\"> "
+				"<img height=\"32\" align=\"left\" src=\":data/Asteroid.png\"> "
 				"<span style=\"color: rgb(255, 130, 32);\"><b>A giant asteroid will annihilate your homeworld one week from now, "
 				"whether you are online or not.</b></span> "
 				"Destroy the asteroid or colonize another planet before it hits. "
@@ -4980,7 +4980,7 @@ void AuIntroStartReach::SetSolo(bool solo)
 	{
 		m_RoidIco->setText(tr("<html>"
 					"<p>"
-					"<img height=\"32\" align=\"left\" src=\"qrc:data/Asteroid.png\"> "
+					"<img height=\"32\" align=\"left\" src=\":data/Asteroid.png\"> "
 					"<span style=\"color: rgb(255, 130, 32);\">"
 					"<b>A giant asteroid will annihilate your homeworld one week from now, "
 					"while you are playing the game.</b></span> "
@@ -4993,7 +4993,7 @@ void AuIntroStartReach::SetSolo(bool solo)
 	{
 		m_RoidIco->setText(tr("<html>"
 					"<p>"
-					"<img height=\"32\" align=\"left\" src=\"qrc:data/Asteroid.png\"> "
+					"<img height=\"32\" align=\"left\" src=\":data/Asteroid.png\"> "
 					"<span style=\"color: rgb(255, 130, 32);\">"
 					"<b>A giant asteroid will annihilate your homeworld one week from now, "
 					"whether you are online or not.</b></span> "
@@ -5197,7 +5197,7 @@ AuIntroStartSavage::AuIntroStartSavage(QWidget* parent) : QWidget(parent)
 				"Begin as a savage in the wilderness. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world. "
+				"Your avatar enters Hazeron on an unexplored habitable world. No village, no Targoss, no asteroid."
 				"</p>"
 				"</html>")
 			.arg(ScenarioName(SavageState)), this);

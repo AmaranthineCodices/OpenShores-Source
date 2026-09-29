@@ -6,6 +6,7 @@
 
 #include "austory.h"
 //
+#include "auatomchat.h"
 #include "aucommpacket.h"
 #include "audnabase.h"
 #include "aufilever.h"
@@ -10342,6 +10343,25 @@ int AuStory::ExecuteContinue(const AuScript& script, DaPerson& person, bool& sto
 	// If the goto label is blank, the story is over.
 	if(branchToLabel.isEmpty())
 	{
+		if(g_Au.IsSceneWorker())
+		{
+			// Keep recipients in the story until its queued narration has been delivered.
+			bool narrationPending = false;
+			const AuAtomChatList* chat = g_Au.LockAtomChat();
+			for(AuAtomChatList::const_iterator it = chat->cbegin(); it != chat->cend(); it++)
+			{
+				const AuCommPacket* msg = (*it).CommPacket();
+				if(msg && msg->StoryInstance() == m_StoryInstanceId && msg->IsNarratorMessage())
+				{
+					narrationPending = true;
+					break;
+				}
+			}
+			g_Au.UnlockAtomChat();
+			if(narrationPending)
+				return 0;
+		}
+
 		if(g_Au.m_LogMessages & LOG_Story)
 		{
 			QString logmsg = QObject::tr("AuStory::ExecuteContinue %1 script %2 person %3 %4 Story Ended")

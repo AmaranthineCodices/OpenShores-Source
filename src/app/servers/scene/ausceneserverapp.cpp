@@ -5615,7 +5615,6 @@ void AuSceneServerApp::AtomChat()
 		for(AuAtomChatList::iterator it = chat->begin(); it != chat->end(); it++)
 		{
 			msg = (*it).CommPacket()->Clone();
-			chat->erase(it);
 			break;	// Break out to send this message. We'll come back for another one on the go-around.
 		}
 		g_Au.UnlockAtomChat();
@@ -5623,7 +5622,11 @@ void AuSceneServerApp::AtomChat()
 		// Send the message without the atom chat mutex locked or we'll eventually deadlock.
 		if(msg)
 		{
+			// Keep the message queued until synchronous recipient filtering finishes,
+			// so a terminal story cannot remove its recipients before narration is sent.
 			Chat(*msg, true);	// Send the chat message. It's allowed to propagate.
+			g_Au.LockAtomChat()->removeFirst();
+			g_Au.UnlockAtomChat();
 			delete msg;
 			sentMsg = true;
 		}

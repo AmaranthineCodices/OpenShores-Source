@@ -668,8 +668,8 @@ namespace AuDef
 		{
 		case ReachForTheStars:
 		case CitizenOfTheGalaxy:
-			return true;
 		case SavageState:
+			return true;
 		case LostAtlantis:
 		case SCENARIO_Count:
 			break;
