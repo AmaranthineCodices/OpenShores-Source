@@ -88,7 +88,14 @@ AuDockTitle::AuDockTitle(QWidget* parent) : QWidget(parent)
 
     //system menu
     createActions();
+	RefreshStyle();
+}
+
+void AuDockTitle::RefreshStyle()
+{
 	AuStyleSheet::SetTitleBar(this, m_label, m_hbox_TitleBar);
+	updateGeometry();
+	update();
 }
 
 void AuDockTitle::contextMenuEvent(QContextMenuEvent *e)

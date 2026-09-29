@@ -9,8 +9,11 @@
 #include "auapp.h"
 #include "aucheckbox.h"
 #include "auclientglobal.h"
+#include "audlgtitle.h"
+#include "audocktitle.h"
 #include "audockwidget.h"
 #include "auframe.h"
+#include <QApplication>
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QFontDialog>
@@ -482,6 +485,14 @@ void AuSetWindows::SetInactiveTrans(int value)
 void AuSetWindows::SetTitleBarHeight(int value)
 {
 	g_Au.Settings().writeEntry("/Settings/TitleBarHeight", value);
+	qApp->setProperty("titleBarHeight", value);
+	for(QWidget* widget : QApplication::allWidgets())
+	{
+		if(AuDlgTitleBar* title = qobject_cast<AuDlgTitleBar*>(widget))
+			title->RefreshStyle();
+		else if(AuDockTitle* title = qobject_cast<AuDockTitle*>(widget))
+			title->RefreshStyle();
+	}
 }
 
 void AuSetWindows::DockBottomChanged(int state, int value)

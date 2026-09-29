@@ -106,7 +106,14 @@ AuDlgTitleBar::AuDlgTitleBar(QWidget *parent) : QWidget(parent)
    
     //system menu
     createActions();
+	RefreshStyle();
+}
+
+void AuDlgTitleBar::RefreshStyle()
+{
 	AuStyleSheet::SetTitleBar(this, m_label, m_hbox_TitleBar);
+	updateGeometry();
+	update();
 }
 
 void AuDlgTitleBar::contextMenuEvent(QContextMenuEvent *e)
