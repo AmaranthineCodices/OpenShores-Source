@@ -43,6 +43,7 @@ class QSlider;
 class QStackedLayout;
 class QTableWidget;
 class QToolButton;
+class QVBoxLayout;
 
 class AUCLIENT_DLL AuIntroBase : public QWidget	//public QVideoWidget
 {
@@ -684,7 +685,7 @@ class AuIntroStartReach : public QWidget
 	QLabel*								m_RoidIco;
 
 public:
-	AuIntroStartReach(QWidget* parent=0);
+	AuIntroStartReach(QStackedLayout* descriptions, QWidget* parent=0);
 	virtual ~AuIntroStartReach();
 
 public:
@@ -711,7 +712,7 @@ class AuIntroStartCitizen : public QWidget
 	QComboBox*							m_Sectors;
 
 public:
-	AuIntroStartCitizen(QWidget* parent=0);
+	AuIntroStartCitizen(QStackedLayout* descriptions, QWidget* parent=0);
 	virtual ~AuIntroStartCitizen();
 
 public:
@@ -751,7 +752,7 @@ class AuIntroStartSavage : public QWidget
 	QComboBox*							m_Region;
 
 public:
-	AuIntroStartSavage(QWidget* parent=0);
+	AuIntroStartSavage(QStackedLayout* descriptions, QWidget* parent=0);
 	virtual ~AuIntroStartSavage();
 
 public:
@@ -776,7 +777,7 @@ class AuIntroStartLost : public QWidget
 	QComboBox*							m_Region;
 
 public:
-	AuIntroStartLost(QWidget* parent=0);
+	AuIntroStartLost(QStackedLayout* descriptions, QWidget* parent=0);
 	virtual ~AuIntroStartLost();
 
 public:
@@ -811,15 +812,16 @@ class AuIntroStartScenarios : public QWidget
 	bool								m_Solo;
 
 	// Widgets
+	QStackedLayout*						m_Descriptions;
 	AuIntroStartCitizen*				m_Citizen;
 	AuIntroStartLost*					m_Lost;
-	QStackedLayout*						m_Pages;
+	QVBoxLayout*						m_Pages;
 	AuIntroStartReach*					m_Reach;
 	AuIntroStartSavage*					m_Savage;
 	QComboBox*							m_Scenarios;
 
 public:
-	AuIntroStartScenarios(QWidget* parent=0);
+	AuIntroStartScenarios(QToolButton* enterButton, QWidget* parent=0);
 	virtual ~AuIntroStartScenarios();
 
 	QDateTime AsteroidImpact() const;

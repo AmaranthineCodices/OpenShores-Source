@@ -1666,7 +1666,7 @@ AuIntroCreateAvatar::AuIntroCreateAvatar(QWidget* parent) : QWidget(parent)
 				"Saves avatar DNA to a .chr file."));
 	connect(m_Save, SIGNAL(clicked()), SLOT(Save()));
 
-	m_Scenarios = new AuIntroStartScenarios(this);
+	m_Scenarios = new AuIntroStartScenarios(m_Enter, this);
 	connect(m_Scenarios, SIGNAL(OkToGoChanged()), SLOT(EnableControls()));
 
 	QToolButton* exitButton = new QToolButton(this);
@@ -1757,7 +1757,6 @@ AuIntroCreateAvatar::AuIntroCreateAvatar(QWidget* parent) : QWidget(parent)
 	QHBoxLayout* xlay = new QHBoxLayout;
 	xlay->addWidget(exitButton, 0, Qt::AlignLeft|Qt::AlignBottom);
 	xlay->addWidget(m_Scenarios, 1);
-	xlay->addWidget(m_Enter, 0, Qt::AlignRight|Qt::AlignBottom);
 	xlay->setSpacing(2);
 	xlay->setMargin(0);
 
@@ -2394,7 +2393,7 @@ AuIntroCreateAvatar4::AuIntroCreateAvatar4(QWidget* parent) : QWidget(parent)
 				"<b>This posts a query for data from the server. It could take a few minutes.</b>"));
 	connect(m_EmpireDNA, SIGNAL(clicked()), SLOT(EmpireDNA()));
 
-	m_Scenarios = new AuIntroStartScenarios(this);
+	m_Scenarios = new AuIntroStartScenarios(m_Enter, this);
 	connect(m_Scenarios, SIGNAL(OkToGoChanged()), SLOT(EnableControls()));
 
 	QToolButton* exitButton = new QToolButton(this);
@@ -2523,7 +2522,6 @@ AuIntroCreateAvatar4::AuIntroCreateAvatar4(QWidget* parent) : QWidget(parent)
 	QHBoxLayout* xlay = new QHBoxLayout;
 	xlay->addWidget(exitButton, 0, Qt::AlignLeft|Qt::AlignBottom);
 	xlay->addWidget(m_Scenarios, 1);
-	xlay->addWidget(m_Enter, 0, Qt::AlignRight|Qt::AlignBottom);
 	xlay->setSpacing(2);
 	xlay->setMargin(0);
 
@@ -4858,7 +4856,7 @@ void AuIntroCreateWeapon::UpdateWeaponLocations(const DhDNA& dna)
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuIntroStartReach::AuIntroStartReach(QWidget* parent) : QWidget(parent)
+AuIntroStartReach::AuIntroStartReach(QStackedLayout* descriptions, QWidget* parent) : QWidget(parent)
 {
 	QLabel* lbinfo = new QLabel(tr("<html>"
 				"<p>"
@@ -4878,6 +4876,7 @@ AuIntroStartReach::AuIntroStartReach(QWidget* parent) : QWidget(parent)
 			.arg(ScenarioName(ReachForTheStars)), this);
 	lbinfo->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	lbinfo->setWordWrap(true);
+	descriptions->addWidget(lbinfo);
 
 	QLabel* regionlabel = new QLabel(tr("Homeworld Region"), this);
 
@@ -4922,6 +4921,7 @@ AuIntroStartReach::AuIntroStartReach(QWidget* parent) : QWidget(parent)
 				"</html>"));
 	m_RoidIco->setMinimumWidth(400);
 	m_RoidIco->setWordWrap(true);
+	m_RoidIco->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 
 	QDateTime impact = QDateTime::currentDateTime().addDays(7);
 	QDateTime impactMin = impact.addDays(-1);
@@ -4946,21 +4946,21 @@ AuIntroStartReach::AuIntroStartReach(QWidget* parent) : QWidget(parent)
 	row++;
 	alay->addWidget(regionlabel, row,0);
 	alay->addWidget(m_Region, row,1);
-	alay->setRowStretch(0,1);
-	alay->setRowStretch(row,1);
 	alay->setSpacing(2);
 	alay->setMargin(0);
+	alay->setAlignment(Qt::AlignLeft);
 
 	QVBoxLayout* vlay = new QVBoxLayout;
 	vlay->addWidget(m_RoidIco);
 	vlay->addLayout(alay);
+	vlay->setAlignment(Qt::AlignTop);
 	vlay->setMargin(0);
 
 	QHBoxLayout* lay = new QHBoxLayout;
-	lay->addWidget(lbinfo, 1);
 	lay->addLayout(vlay);
 	lay->setSpacing(2);
 	lay->setMargin(0);
+	lay->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	setLayout(lay);
 }
 
@@ -5015,7 +5015,7 @@ quint8 AuIntroStartReach::Region() const
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuIntroStartCitizen::AuIntroStartCitizen(QWidget* parent) : QWidget(parent)
+AuIntroStartCitizen::AuIntroStartCitizen(QStackedLayout* descriptions, QWidget* parent) : QWidget(parent)
 {
 	QLabel* lbinfo = new QLabel(tr("<html>"
 				"<p>"
@@ -5030,6 +5030,7 @@ AuIntroStartCitizen::AuIntroStartCitizen(QWidget* parent) : QWidget(parent)
 			.arg(ScenarioName(CitizenOfTheGalaxy)), this);
 	lbinfo->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	lbinfo->setWordWrap(true);
+	descriptions->addWidget(lbinfo);
 
 	AuPictureWidget* pic = new AuPictureWidget(true, this);
 	pic->SetImage(QImage(":data/GovCommerce.png"));
@@ -5057,13 +5058,12 @@ AuIntroStartCitizen::AuIntroStartCitizen(QWidget* parent) : QWidget(parent)
 				"</html>"));
 
 	QGridLayout* lay = new QGridLayout;
-	lay->addWidget(lbinfo, 0,0, 5,1);
-	lay->addWidget(pic, 0,1, 5,1);
-	lay->addWidget(m_EmpiresCombo, 1,2, 1,1);
-	lay->addWidget(m_JoinPass, 2,2, 1,1);
-	lay->addWidget(m_Sectors, 3,2, 1,1);
+	lay->addWidget(pic, 0,0, 5,1);
+	lay->addWidget(m_EmpiresCombo, 1,1, 1,1);
+	lay->addWidget(m_JoinPass, 2,1, 1,1);
+	lay->addWidget(m_Sectors, 3,1, 1,1);
 	lay->setMargin(0);
-	lay->setColumnStretch(0, 1);
+	lay->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	setLayout(lay);
 }
 
@@ -5188,7 +5188,7 @@ AuId AuIntroStartCitizen::EmpireJoinSector() const
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuIntroStartSavage::AuIntroStartSavage(QWidget* parent) : QWidget(parent)
+AuIntroStartSavage::AuIntroStartSavage(QStackedLayout* descriptions, QWidget* parent) : QWidget(parent)
 {
 	QLabel* lbinfo = new QLabel(tr("<html>"
 				"<p>"
@@ -5197,12 +5197,16 @@ AuIntroStartSavage::AuIntroStartSavage(QWidget* parent) : QWidget(parent)
 				"Begin as a savage in the wilderness. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world. No village, no items, no Targoss, no asteroid."
+				"Your avatar enters Hazeron on an unexplored habitable world."
+				"</p>"
+				"<p>"
+				"<b>No village, no items, no Targoss, no asteroid.</b>"
 				"</p>"
 				"</html>")
 			.arg(ScenarioName(SavageState)), this);
 	lbinfo->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	lbinfo->setWordWrap(true);
+	descriptions->addWidget(lbinfo);
 
 	QLabel* regionlabel = new QLabel(tr("Homeworld Region"), this);
 
@@ -5247,15 +5251,15 @@ AuIntroStartSavage::AuIntroStartSavage(QWidget* parent) : QWidget(parent)
 
 	QVBoxLayout* vlay = new QVBoxLayout;
 	vlay->addStretch();
-	vlay->addWidget(pic);
+	vlay->addWidget(pic, 0, Qt::AlignLeft);
 	vlay->addLayout(rlay);
 	vlay->addStretch();
 	vlay->setMargin(0);
 
 	QHBoxLayout* lay = new QHBoxLayout;
-	lay->addWidget(lbinfo, 1);
 	lay->addLayout(vlay);
 	lay->setMargin(0);
+	lay->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	setLayout(lay);
 }
 
@@ -5275,7 +5279,7 @@ quint8 AuIntroStartSavage::Region() const
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuIntroStartLost::AuIntroStartLost(QWidget* parent) : QWidget(parent)
+AuIntroStartLost::AuIntroStartLost(QStackedLayout* descriptions, QWidget* parent) : QWidget(parent)
 {
 	m_IsOk = false;
 
@@ -5293,6 +5297,7 @@ AuIntroStartLost::AuIntroStartLost(QWidget* parent) : QWidget(parent)
 			.arg(ScenarioName(LostAtlantis)), this);
 	lbinfo->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	lbinfo->setWordWrap(true);
+	descriptions->addWidget(lbinfo);
 
 	QLabel* regionlabel = new QLabel(tr("Homeworld Region"), this);
 
@@ -5366,10 +5371,10 @@ AuIntroStartLost::AuIntroStartLost(QWidget* parent) : QWidget(parent)
 	glay->setMargin(0);
 
 	QHBoxLayout* lay = new QHBoxLayout;
-	lay->addWidget(lbinfo, 1);
 	lay->addWidget(pic);
 	lay->addLayout(glay);
 	lay->setMargin(0);
+	lay->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	setLayout(lay);
 }
 
@@ -5485,10 +5490,12 @@ quint8 AuIntroStartLost::Region() const
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
-AuIntroStartScenarios::AuIntroStartScenarios(QWidget* parent) : QWidget(parent)
+AuIntroStartScenarios::AuIntroStartScenarios(QToolButton* enterButton, QWidget* parent) : QWidget(parent)
 {
 	m_Solo = false;
-	m_Pages = new QStackedLayout();
+	m_Descriptions = new QStackedLayout();
+	m_Pages = new QVBoxLayout();
+	m_Pages->setMargin(0);
 
 	m_Scenarios = new QComboBox(this);
 	m_Scenarios->setToolTip(tr("<html>"
@@ -5500,28 +5507,55 @@ AuIntroStartScenarios::AuIntroStartScenarios(QWidget* parent) : QWidget(parent)
 
 	// Create all scenario configuration pages.
 	{
-		m_Reach = new AuIntroStartReach(this);
+		m_Reach = new AuIntroStartReach(m_Descriptions, this);
 		m_Pages->addWidget(m_Reach);
 	}
 	{
-		m_Citizen = new AuIntroStartCitizen(this);
+		m_Citizen = new AuIntroStartCitizen(m_Descriptions, this);
 		connect(m_Citizen, SIGNAL(OkToGoChanged()), SIGNAL(OkToGoChanged()));
 		m_Pages->addWidget(m_Citizen);
 	}
 	{
-		m_Savage = new AuIntroStartSavage(this);
+		m_Savage = new AuIntroStartSavage(m_Descriptions, this);
 		m_Pages->addWidget(m_Savage);
 	}
 	{
-		m_Lost = new AuIntroStartLost(this);
+		m_Lost = new AuIntroStartLost(m_Descriptions, this);
 		connect(m_Lost, SIGNAL(OkToGoChanged()), SIGNAL(OkToGoChanged()));
 		m_Pages->addWidget(m_Lost);
 	}
-	m_Pages->setCurrentIndex(0);
+	for(int i=0; i<m_Pages->count(); i++)
+		m_Pages->itemAt(i)->widget()->setVisible(i == 0);
+
+	QVBoxLayout* descriptionLayout = new QVBoxLayout;
+	descriptionLayout->addWidget(m_Scenarios, 0, Qt::AlignLeft);
+	descriptionLayout->addLayout(m_Descriptions, 1);
+	descriptionLayout->setSpacing(8);
+	descriptionLayout->setMargin(0);
+
+	QWidget* descriptionColumn = new QWidget(this);
+	descriptionColumn->setLayout(descriptionLayout);
+	descriptionColumn->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+
+	QGridLayout* scenarioLayout = new QGridLayout;
+	scenarioLayout->addWidget(descriptionColumn, 0,0, 2,1);
+	scenarioLayout->addLayout(m_Pages, 0,1);
+	scenarioLayout->addWidget(enterButton, 1,0, 1,2, Qt::AlignHCenter);
+	scenarioLayout->setColumnStretch(0, 1);
+	scenarioLayout->setSpacing(8);
+	scenarioLayout->setContentsMargins(12, 12, 12, 12);
+
+	const int scenarioBoxHeight = 240; // Adjust the fixed height here (logical pixels).
+	QGroupBox* group = new QGroupBox(tr("Starting Scenario"), this);
+	group->setStyleSheet("QGroupBox { border: 1px solid #4080c0; margin-top: 0.6em; }"
+			"QGroupBox::title { subcontrol-origin: margin; left: 12px; padding: 0 4px; }");
+	group->setLayout(scenarioLayout);
+	group->setFixedSize(800, scenarioBoxHeight);
 
 	QHBoxLayout* lay = new QHBoxLayout;
-	lay->addLayout(m_Pages);
-	lay->addWidget(m_Scenarios);
+	lay->addStretch();
+	lay->addWidget(group);
+	lay->addStretch();
 	lay->setMargin(0);
 	setLayout(lay);
 }
@@ -5546,7 +5580,9 @@ void AuIntroStartScenarios::setVisible(bool visible)
 
 void AuIntroStartScenarios::ScenarioChanged(int index)
 {
-	m_Pages->setCurrentIndex(index);
+	m_Descriptions->setCurrentIndex(index);
+	for(int i=0; i<m_Pages->count(); i++)
+		m_Pages->itemAt(i)->widget()->setVisible(i == index);
 	emit OkToGoChanged();
 }
 
