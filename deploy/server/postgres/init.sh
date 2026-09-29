@@ -49,7 +49,7 @@ if [[ "$CREATE_LOCAL_PLAYER" == "true" ]]; then
 INSERT INTO g_Player
     (name, passcrypt, timeCreate, status, activated, neverExpire)
 VALUES
-    (:'player_name', decode(:'player_hash', 'hex'), CURRENT_TIMESTAMP, 0,
+    (:'player_name', decode(:'player_hash', 'hex'), CURRENT_TIMESTAMP, 5,
      CURRENT_TIMESTAMP, true);
 SQL
 fi
