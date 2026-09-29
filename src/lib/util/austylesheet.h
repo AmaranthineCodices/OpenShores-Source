@@ -8,8 +8,11 @@
 #define AuStyleSheet_H
 
 #include <QApplication>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QPainter>
 #include <QPalette>
+#include <QToolButton>
 
 // NOTE: The png files referenced in the style sheet url's must be available. They are found in the AuGlobal library.
 //       If you only include this file and not the AuGlobal library, you must put them into your resources. AuLauncher does this.
@@ -17,6 +20,21 @@
 class AuStyleSheet
 {
 public:
+	inline static void SetTitleBar(QWidget* bar, QLabel* title, QHBoxLayout* layout)
+	{
+		bar->setFixedHeight(28);
+		bar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		title->setStyleSheet("font-size: 14px; color: white;");
+		title->setMinimumWidth(1); // Allow long titles to clip without hiding buttons.
+		layout->setContentsMargins(2, 2, 2, 2);
+		layout->setSpacing(2);
+		for(QToolButton* button : bar->findChildren<QToolButton*>(QString(), Qt::FindDirectChildrenOnly))
+		{
+			button->setFixedSize(22, 22);
+			button->setIconSize(QSize(16, 16));
+		}
+	}
+
 	inline static int FontHeight()
 	{
 		QImage img(1,1, QImage::Format_ARGB32);
