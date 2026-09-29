@@ -5197,7 +5197,7 @@ AuIntroStartSavage::AuIntroStartSavage(QWidget* parent) : QWidget(parent)
 				"Begin as a savage in the wilderness. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world. No village, no Targoss, no asteroid."
+				"Your avatar enters Hazeron on an unexplored habitable world. No village, no items, no Targoss, no asteroid."
 				"</p>"
 				"</html>")
 			.arg(ScenarioName(SavageState)), this);
