@@ -24,10 +24,16 @@ AuMailLogin::AuMailLogin(QWidget* parent) : AuDialog(parent)
 	setAuDlgIcon(QIcon(":/data/Login.png"));
 	setAuDlgTitle(g_Au.ApplicationName() + " Login");
 
+	QString connect_target = g_Au.Settings().readEntry("/Account/Host","");
 	m_AcctName = g_Au.Settings().readEntry("/Account/Name","");
 	int savePassword = g_Au.Settings().readNumEntry("/Account/SavePass", 0);
 	if(savePassword)
 		g_Au.Settings().readEntry("/Account/Password", m_AcctPassCrypt);
+
+	// Newly added connection target input field
+	m_Host = new QLineEdit(connect_target, this);
+	m_Host->setToolTip(QStringLiteral("Enter host/IP to connect to"));
+	m_Host->setPlaceholderText("Enter IP/host");
 
 	QLabel* lb1 = new QLabel("Account Name");
 	QLineEdit* le1 = new QLineEdit(m_AcctName);
@@ -79,14 +85,16 @@ AuMailLogin::AuMailLogin(QWidget* parent) : AuDialog(parent)
 	pb1->setToolTip(toolTip);
 
 	QGridLayout* lay = new QGridLayout();
-	lay->addWidget(lb1, 0,0);
-	lay->addWidget(le1, 0,1, 1,2);
-	lay->addWidget(lb2, 1,0);
-	lay->addWidget(m_PasswordEdit, 1,1, 1,2);
-	lay->addWidget(cb, 2,0, 1,2);
-	lay->addWidget(settingsButton, 2, 2);
-	lay->addWidget(pb2, 3,0);
-	lay->addWidget(pb1, 3,1, 1,2);
+	lay->addWidget(new QLabel("Host"), 0,0);
+	lay->addWidget(m_Host, 0,1, 1,2);
+	lay->addWidget(lb1, 1,0);
+	lay->addWidget(le1, 1,1, 1,2);
+	lay->addWidget(lb2, 2,0);
+	lay->addWidget(m_PasswordEdit, 2,1, 1,2);
+	lay->addWidget(cb, 3,0, 1,2);
+	lay->addWidget(settingsButton, 3, 2);
+	lay->addWidget(pb2, 4,0);
+	lay->addWidget(pb1, 4,1, 1,2);
     lay->setMargin(4);
     lay->setSpacing(4);
 	setAuDlgLayout(lay);
@@ -95,6 +103,7 @@ AuMailLogin::AuMailLogin(QWidget* parent) : AuDialog(parent)
 void AuMailLogin::Login()
 {
 	QLineEdit* le1 = findChild<QLineEdit*>("m_AcctName");
+	QString hostName = m_Host->text().trimmed();
 	if(le1)
 		m_AcctName = le1->text();
 	if(m_AcctName.isEmpty())
@@ -113,6 +122,7 @@ void AuMailLogin::Login()
 
 	// Save last attempted name.
 	g_Au.Settings().writeEntry("/Account/Name", m_AcctName);
+	g_Au.Settings().writeEntry("/Account/Host", hostName);
 	g_Au.Settings().writeEntry("/Account/SavePass", savePass?1:0);
 	if(savePass)
 		g_Au.Settings().writeEntry("/Account/Password", m_AcctPassCrypt);
@@ -122,7 +132,17 @@ void AuMailLogin::Login()
 		g_Au.Settings().writeEntry("/Account/Password", blankPass);
 	}
 
+	if (!hostName.isEmpty()) {
+		g_Au.SetLoginMaster(hostName);
+		g_Au.SetMailMaster(hostName);
+		g_Au.SetSceneMaster(hostName);
+		if (g_Au.m_LogMessages & LOG_ConnectDisconnect) {
+			g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("Setting LoginMaster, MailMaster, and SceneMaser to host %1").arg(hostName));
+		}
+	}
+
 	// Disable controls while waiting to login.
+	m_Host->setEnabled(false);
 	le1->setEnabled(false);
 	m_PasswordEdit->setEnabled(false);
 	cb->setEnabled(false);
@@ -135,6 +155,7 @@ void AuMailLogin::Login()
 	int result = logincomm.Login(m_AcctName, m_AcctPassCrypt);
 
 	// Enable controls now that we have the login result.
+	m_Host->setEnabled(true);
 	le1->setEnabled(true);
 	m_PasswordEdit->setEnabled(true);
 	cb->setEnabled(true);

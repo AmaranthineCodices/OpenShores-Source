@@ -684,8 +684,8 @@ void AuIntroLogin::Login()
 		g_Au.SetMailMaster(hostName);
 		g_Au.SetSceneMaster(hostName);
 		if (g_Au.m_LogMessages & LOG_ConnectDisconnect) {
-    	g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("Setting LoginMaster, MailMaster, and SceneMaser to host %1").arg(hostName));
-}
+    		g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("Setting LoginMaster, MailMaster, and SceneMaser to host %1").arg(hostName));
+		}
 	}
 
 	// Disable controls while waiting to login.

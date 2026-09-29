@@ -22,6 +22,7 @@ private:
 private:
 	// Widgets
 	QLineEdit*							m_PasswordEdit;
+	QLineEdit*							m_Host;
 
 public:
 	AuMailLogin(QWidget* parent=0);
