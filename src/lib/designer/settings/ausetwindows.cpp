@@ -15,10 +15,12 @@
 #include <QFileDialog>
 #include <QFontDialog>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSlider>
+#include <QSpinBox>
 #include <QToolBar>
 
 // These are the names of the dock bars as they will be listed for docking settings. They don't have to match 1:1 with the widgets.
@@ -236,6 +238,13 @@ AuSetWindows::AuSetWindows(QWidget *parent) : QWidget(parent)
 				"</html>").arg(g_Au.MiddleDotSymbol()));
 	connect(ckstorydialog, SIGNAL(stateChanged(int)), SLOT(UseStoryDialogChanged(int)));
 
+	QLabel* lbtitleheight = new QLabel(tr("Title bar height"), this);
+	QSpinBox* titleheight = new QSpinBox(this);
+	titleheight->setRange(16, 48);
+	titleheight->setSuffix(tr(" px"));
+	titleheight->setValue(g_Au.Settings().readNumEntry("/Settings/TitleBarHeight", 28));
+	connect(titleheight, SIGNAL(valueChanged(int)), SLOT(SetTitleBarHeight(int)));
+
 	QPushButton* pbresetw = new QPushButton("Reset Saved Window Positions");
 	pbresetw->setToolTip(tr("Resets the positions of all windows. The last visible size and\n"
 				"position of all windows is cleared; they will appear at their\n"
@@ -418,6 +427,12 @@ AuSetWindows::AuSetWindows(QWidget *parent) : QWidget(parent)
 	row++;
 	lay->addWidget(ckstorydialog, row,0);
 	row++;
+	QHBoxLayout* titleheightrow = new QHBoxLayout;
+	titleheightrow->addWidget(lbtitleheight);
+	titleheightrow->addWidget(titleheight);
+	titleheightrow->addStretch();
+	lay->addLayout(titleheightrow, row,0, 1,2);
+	row++;
 	if(bAllowTransparency)
 	{
 		lay->addWidget(lbactive, row,0, 1,2);
@@ -462,6 +477,11 @@ void AuSetWindows::SetActiveTrans(int value)
 void AuSetWindows::SetInactiveTrans(int value)
 {
 	g_Au.SetWindowOpacity(false, 100 - value);
+}
+
+void AuSetWindows::SetTitleBarHeight(int value)
+{
+	g_Au.Settings().writeEntry("/Settings/TitleBarHeight", value);
 }
 
 void AuSetWindows::DockBottomChanged(int state, int value)
