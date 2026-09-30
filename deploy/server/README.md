@@ -78,10 +78,23 @@ separate Ubuntu image. Its PHP homepage executes `AuServerStatus` with `-l`,
 The scene status uses the management channel, which recognizes the database states.
 The tool connects to the masters by service name on the private Docker network.
 Apache runs PHP through `mod_actions` and `mod_cgid`, keeping the `event` MPM;
-`AuServerStatus` remains a command-line program. The legacy account CGI handlers
-are not installed.
+`AuServerStatus` remains a command-line program. `/register` serves the static
+`register.html` form, which submits to `/cgi-bin/AuAcctNew`. The CGI handler
+creates an account through the deployment's `login-worker` and returns its
+existing success or error page. Apache passes `AU_LOGIN_SERVER`,
+`AU_ACCOUNT_REGISTRATION=1`, and `AU_WEBMASTER_PASSWORD` (from
+`SERVER_LOGIN_PASSWORD`) to this handler. The password must match the Webmaster
+account in the login database, as initialized by the PostgreSQL setup script.
+Outside Docker, the tool also accepts `AU_LOGIN_PORT` (default 16757);
+registration uses `AuAcctNew.ini` unless `AU_ACCOUNT_REGISTRATION` is supplied.
 
-For this testing setup, build the status tool first, then build and start Apache
+`/reset` currently displays an unavailable notice. `AuAcctSendPassword` is the
+forgotten-password tool; `AuAcctPassword` changes a password using the current
+password. The reset tool is deliberately not exposed yet: the login server
+changes the password before invoking `mail`, and email delivery is not configured
+in the server image.
+
+For this testing setup, build the CGI tools first, then build and start Apache
 without rebuilding or restarting the game servers:
 
 ```bash
@@ -95,18 +108,18 @@ The page refreshes its results when reloaded; it does not poll in the background
 Each status command has a 12-second timeout, after which the page shows an error
 for that service. Command failures also go to the Apache error log.
 
-The executable is mounted read-only from
-`build/linux-<SERVER_BUILD_CONFIG>/bin/AuServerStatus`; the Qt runtime libraries
+The `AuServerStatus` and `AuAcctNew` executables are mounted read-only from
+`build/linux-<SERVER_BUILD_CONFIG>/bin/`; the Qt runtime libraries
 are installed in the web image. Match `CONFIG` to the deployment's
 `SERVER_BUILD_CONFIG` (`debug` locally and `release` in production by default).
 After rebuilding the executable, rerun the web-up target. It recreates the web
 container so Docker remounts the new file if the linker replaced it.
 
-The normal `make server-up` also includes Apache, but does not compile this tool.
+The normal `make server-up` also includes Apache, but does not compile these tools.
 For production, use `make server-prod-web-up` or the full `make server-prod-up`.
 Build `make linux-cgi CONFIG=release` first for a production source checkout.
 The production archive's `./start.sh` builds the bundled web image along with
-the PostgreSQL image; CI includes the Release status executable in that archive.
+the PostgreSQL image; CI includes both Release executables in that archive.
 
 This is the existing status report output, including its legacy timezone labels
 and player-page links. The scene query still attempts its legacy report-file

@@ -43,6 +43,15 @@ function serverStatus(string $label, string $flag): void
             max-width: 240px;
             padding: 5px;
         }
+        #links {
+            padding: 5px;
+            border: 1px solid grey;
+            max-width: 240px;
+            margin-top: 10px;
+        }
+        a:visited {
+            color: #6078ac;
+        }
     </style>
     <title>OpenShores</title>
 </head>
@@ -58,6 +67,9 @@ function serverStatus(string $label, string $flag): void
             <hr>
             <section><?php serverStatus('Scene Servers', '-g'); ?></section>
         </div>
+        <div id="links">
+            <a href="/register">Register account</a><br>
+            <a href="/reset">Reset password</a>
     </main>
 </body>
 </html>

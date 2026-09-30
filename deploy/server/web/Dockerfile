@@ -6,7 +6,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         apache2 ca-certificates curl php-cgi libqt5gui5 libqt5network5 \
     && rm -rf /var/lib/apt/lists/* \
-    && a2enmod cgid actions \
+    && a2enmod cgid actions env \
     && a2disconf serve-cgi-bin \
     && a2dissite 000-default \
     && install -d /opt/openshores/www /opt/openshores/cgi-bin /opt/openshores/bin \
@@ -15,6 +15,8 @@ RUN apt-get update \
 
 COPY openshores.conf /etc/apache2/sites-available/openshores.conf
 COPY index.php /opt/openshores/www/index.php
+COPY register.html /opt/openshores/www/register.html
+COPY reset.html /opt/openshores/www/reset.html
 COPY health.cgi /opt/openshores/cgi-bin/health.cgi
 COPY entrypoint.sh /usr/local/bin/openshores-web
 
