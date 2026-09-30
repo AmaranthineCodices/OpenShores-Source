@@ -627,7 +627,20 @@ AuIntroChooseAvatar::AuIntroChooseAvatar(QWidget* parent) : QWidget(parent)
 				"Exits the <i>%1</i> program.").arg(g_Au.ApplicationName()));
 	connect(exitButton, SIGNAL(clicked()), parent, SIGNAL(ExitGame()));
 
-	QHBoxLayout* xlay = new QHBoxLayout;
+	QToolButton* logoutButton = new QToolButton(this);
+	logoutButton->setAutoRaise(true);
+	logoutButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+	logoutButton->setText(tr("Logout"));
+	logoutButton->setToolTip(tr("Log out of the server and return to the login page."));
+	logoutButton->setStyleSheet(
+		"QToolButton { color: white; border: 1px solid red; padding: 8px 16px; background-color: #001d4b; }"
+		"QToolButton:hover { color: yellow; background-color: #082c66; border: 1px solid red; border-image: none; }"
+		"QToolButton:pressed { color: white; background-color: #265092; border: 1px solid red; border-image: none; }"
+	);
+	connect(logoutButton, &QToolButton::clicked, this, &AuIntroChooseAvatar::LogoutRequested);
+
+	QVBoxLayout* xlay = new QVBoxLayout;
+	xlay->addWidget(logoutButton);
 	xlay->addWidget(exitButton);
 	xlay->addStretch();
 	xlay->setSpacing(2);
@@ -778,13 +791,12 @@ void AuIntroChooseAvatar::SetAccountInfo()
 	const DgData& gd = g_Au.LockDataForRead();
 	for(int unitIndex=0; unitIndex<6; unitIndex++)
 	{
+		m_Avatar[unitIndex]->Clear();
 		AuId unitId = gd.ClientUnitId(unitIndex);
 		QString unitName = gd.ClientUnitName(unitId);
 		const AuDNABase* dna = gd.ClientUnitDNA(unitId);
 
-		if(unitId.IsNull() || unitName.isEmpty() || !dna)
-			m_Avatar[unitIndex]->Clear();
-		else
+		if(!unitId.IsNull() && !unitName.isEmpty() && dna)
 			m_Avatar[unitIndex]->SetAvatar(unitId, unitName, *dna, gd.ClientUnitChromatid(unitId), gd.ClientUnitHand(unitId));
 		m_Avatar[unitIndex]->setVisible(true);
 	}
@@ -5757,4 +5769,3 @@ AuId AuIntroStartScenarios::EmpireJoinSector() const
 	}
 	return AuId();
 }
-

@@ -61,6 +61,7 @@ AuIntro::AuIntro(QWidget* parent) : AuIntroBase(parent)
 	connect(m_ChooseAvatarPage, SIGNAL(NewAvatarDNA3(int)), SLOT(NewAvatarDNA3(int)));
 	connect(m_ChooseAvatarPage, SIGNAL(NewAvatarDNA4(int)), SLOT(NewAvatarDNA4(int)));
 	connect(m_ChooseAvatarPage, SIGNAL(AvatarLogin(AuId)), SLOT(ExistingAvatarLogin(AuId)));
+	connect(m_ChooseAvatarPage, &AuIntroChooseAvatar::LogoutRequested, this, &AuIntro::Logout);
 
 #if defined(INTRO_SOLO_TOO)
 	// Solo avatar selection page
@@ -188,6 +189,18 @@ void AuIntro::LoggedIn()
 {
 	ShowWaitMessage(tr("Getting Game Data"));
 	emit LoginOk();
+}
+
+void AuIntro::Logout()
+{
+	if(m_Pages->currentIndex() != m_ChooseAvatarIdx || auApp->RunState() != AuApp::LoggedInInit)
+		return;
+
+	auApp->Logout();
+	m_HasInfo = false;
+	HideWaitInfoMsg();
+	m_LoginPage->ResetLogin();
+	LaunchLogin();
 }
 
 void AuIntro::SetAccountInfo()
@@ -637,6 +650,11 @@ AuIntroLogin::AuIntroLogin(AuIntro* parent) : QWidget(parent)
 
 AuIntroLogin::~AuIntroLogin()
 {
+}
+
+void AuIntroLogin::ResetLogin()
+{
+	m_Login->setEnabled(true);
 }
 
 void AuIntroLogin::PasswordEdited(const QString& password)

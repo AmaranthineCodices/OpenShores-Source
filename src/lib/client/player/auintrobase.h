@@ -187,6 +187,7 @@ protected slots:
 signals:
 	void AvatarLogin(AuId);
 	void FirstFrameDisplayed();
+	void LogoutRequested();
 	void NewAvatarDNA3(int index);
 	void NewAvatarDNA4(int index);
 };
