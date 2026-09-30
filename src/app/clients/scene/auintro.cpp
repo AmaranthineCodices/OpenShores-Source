@@ -608,6 +608,9 @@ AuIntroLogin::AuIntroLogin(AuIntro* parent) : QWidget(parent)
 	m_Login->setToolTip(QObject::tr("<html><b>Login</b><br>"
 				"Requests access to the <i>%1</i> game by sending the name and password to the server.</html>").arg(g_Au.ApplicationName()));
 	connect(m_Login, SIGNAL(clicked()), SLOT(Login()));
+	connect(m_Host, &QLineEdit::returnPressed, m_Login, &QPushButton::click);
+	connect(m_AccountName, &QLineEdit::returnPressed, m_Login, &QPushButton::click);
+	connect(m_Password, &QLineEdit::returnPressed, m_Login, &QPushButton::click);
 
 	QToolButton* backButton = new QToolButton(this);
 	backButton->setAutoRaise(true);
