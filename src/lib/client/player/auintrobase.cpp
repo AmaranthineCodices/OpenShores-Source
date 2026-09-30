@@ -1595,6 +1595,7 @@ AuIntroCreateAvatar::AuIntroCreateAvatar(QWidget* parent) : QWidget(parent)
 	m_Summary = new QLabel(this);
 	m_Summary->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	m_Summary->setWordWrap(true);
+	m_Summary->setStyleSheet("QLabel { border: 1px solid #808080; border-radius: 6px; padding: 8px; }");
 
 	m_BackButton = new QToolButton(this);
 	m_BackButton->setAutoRaise(true);
@@ -1742,7 +1743,7 @@ AuIntroCreateAvatar::AuIntroCreateAvatar(QWidget* parent) : QWidget(parent)
 	QVBoxLayout* clay = new QVBoxLayout;
 	clay->addLayout(tlay);
 	clay->addLayout(blay);
-	clay->addWidget(m_Summary, 10);
+	clay->addWidget(m_Summary, 10, Qt::AlignLeft|Qt::AlignTop);
 	clay->setSpacing(2);
 	clay->setMargin(2);
 
@@ -2348,6 +2349,7 @@ AuIntroCreateAvatar4::AuIntroCreateAvatar4(QWidget* parent) : QWidget(parent)
 	m_Summary = new QLabel(this);
 	m_Summary->setAlignment(Qt::AlignLeft|Qt::AlignTop);
 	m_Summary->setWordWrap(true);
+	m_Summary->setStyleSheet("QLabel { border: 1px solid #808080; border-radius: 6px; padding: 8px; }");
 
 	m_BackButton = new QToolButton(this);
 	m_BackButton->setAutoRaise(true);
@@ -2503,7 +2505,7 @@ AuIntroCreateAvatar4::AuIntroCreateAvatar4(QWidget* parent) : QWidget(parent)
 	QVBoxLayout* clay = new QVBoxLayout;
 	clay->addLayout(tlay);
 	clay->addWidget(m_Individual);
-	clay->addWidget(m_Summary, 10);
+	clay->addWidget(m_Summary, 10, Qt::AlignLeft|Qt::AlignTop);
 	clay->setSpacing(2);
 	clay->setMargin(2);
 
