@@ -136,10 +136,18 @@ services:
     <<: *server
     command:
       - /opt/openshores/bin/AuSceneServer
+      - =/etc/openshores/scene-master
       - -master
       - -m16762
       - -lu1s0
       - -w${SERVER_LOGIN_PASSWORD}
+    volumes:
+      - type: bind
+        source: ./environments/${DEPLOY_ENVIRONMENT:?DEPLOY_ENVIRONMENT must be local or production}.ini
+        target: /etc/openshores/scene-master.ini
+        read_only: true
+        bind:
+          create_host_path: false
     depends_on:
       postgres:
         condition: service_healthy

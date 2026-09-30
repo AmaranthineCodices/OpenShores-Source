@@ -107,7 +107,10 @@ jobs:
           PY
           bundle=build/server/production
           mkdir -p "$bundle/deploy/server/postgres"
+          mkdir -p "$bundle/deploy/server/environments"
           cp deploy/server/compose.yaml "$bundle/deploy/server/"
+          install -m 0644 deploy/server/environments/production.ini \
+            "$bundle/deploy/server/environments/production.ini"
           cp deploy/server/postgres/Dockerfile deploy/server/postgres/init.sh \
             "$bundle/deploy/server/postgres/"
           cp -R deploy/server/postgres/schema "$bundle/deploy/server/postgres/"
