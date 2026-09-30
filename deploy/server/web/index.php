@@ -26,6 +26,26 @@ function serverStatus(string $label, string $flag): void
         error_log('AuServerStatus ' . $flag . ' failed with exit code ' . $exitCode);
     }
 }
+
+function getVersion(string $flag)
+    {
+        $program = '/opt/openshores/bin/AuServerStatus';
+        $output = [];
+        $exitCode = 1;
+
+        if (is_executable($program)) {
+            // Only the fixed flags below are accepted; no request data enters this command.
+            exec('/usr/bin/timeout --kill-after=1s 12s ' . escapeshellarg($program)
+                . ' ' . escapeshellarg($flag), $output, $exitCode);
+        }
+
+        if ($exitCode === 0 && count($output) > 0) {
+            // AuServerStatus produces the HTML fragment, not HTTP headers.
+            echo implode("\n", $output);
+        } else {
+            echo "Version info failed to load!";
+        }
+    }
 ?>
 <!doctype html>
 <html lang="en">
@@ -72,6 +92,8 @@ function serverStatus(string $label, string $flag): void
             <a href="/reset">Reset password</a><br>
             <a href="/emailchange">Change E-mail address</a><br>
             <a href="/passchange">Change password</a><br>
+        </div>
+        <p><?php getVersion('-v'); ?></p>
     </main>
 </body>
 </html>

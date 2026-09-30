@@ -128,10 +128,15 @@ Build `make linux-cgi CONFIG=release` first for a production source checkout.
 The production archive's `./start.sh` builds the bundled web image along with
 the PostgreSQL image; CI includes all four Release executables in that archive.
 
-This is the existing status report output, including its legacy timezone labels
-and player-page links. The scene query still attempts its legacy report-file
-writes; those paths are not provisioned by this setup. Report generation and
-the persistent reports volume are not yet connected to the PHP page.
+The avatar count links to `/playerson.php`, which runs `AuServerStatus -p` to
+query the scene master for a fresh JSON list. PHP renders the avatar names and
+AFK markers; failures display an unavailable message rather than an empty list.
+`/playerson.html` redirects to this page. No player report file or history is
+written, and the homepage no longer makes the additional player-list query.
+
+The status output retains its legacy timezone labels. The scene query still
+attempts legacy galactic-chat report writes; those paths are not provisioned by
+this setup. The persistent reports volume is not yet connected to these pages.
 
 `WEB_PORT` defaults to `80`. `WEB_BIND_ADDRESS` defaults to `127.0.0.1` locally
 and `0.0.0.0` in production, independently of the game's `BIND_ADDRESS`.
