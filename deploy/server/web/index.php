@@ -69,7 +69,9 @@ function serverStatus(string $label, string $flag): void
         </div>
         <div id="links">
             <a href="/register">Register account</a><br>
-            <a href="/reset">Reset password</a>
+            <a href="/reset">Reset password</a><br>
+            <a href="/emailchange">Change E-mail address</a><br>
+            <a href="/passchange">Change password</a><br>
     </main>
 </body>
 </html>

@@ -94,6 +94,13 @@ password. The reset tool is deliberately not exposed yet: the login server
 changes the password before invoking `mail`, and email delivery is not configured
 in the server image.
 
+`/emailchange` and `/passchange` serve static forms that POST to `AuAcctEmail`
+and `AuAcctPassword`, respectively. Both verify the account's current password
+against the deployment's `login-worker`; they do not need Webmaster credentials
+or email delivery. The handlers return their existing result pages. The legacy
+change protocol does not acknowledge database updates, so verify changes by
+logging in with the new password or inspecting the account record.
+
 For this testing setup, build the CGI tools first, then build and start Apache
 without rebuilding or restarting the game servers:
 
@@ -108,7 +115,7 @@ The page refreshes its results when reloaded; it does not poll in the background
 Each status command has a 12-second timeout, after which the page shows an error
 for that service. Command failures also go to the Apache error log.
 
-The `AuServerStatus` and `AuAcctNew` executables are mounted read-only from
+The `AuServerStatus`, `AuAcctNew`, `AuAcctEmail`, and `AuAcctPassword` executables are mounted read-only from
 `build/linux-<SERVER_BUILD_CONFIG>/bin/`; the Qt runtime libraries
 are installed in the web image. Match `CONFIG` to the deployment's
 `SERVER_BUILD_CONFIG` (`debug` locally and `release` in production by default).
@@ -119,7 +126,7 @@ The normal `make server-up` also includes Apache, but does not compile these too
 For production, use `make server-prod-web-up` or the full `make server-prod-up`.
 Build `make linux-cgi CONFIG=release` first for a production source checkout.
 The production archive's `./start.sh` builds the bundled web image along with
-the PostgreSQL image; CI includes both Release executables in that archive.
+the PostgreSQL image; CI includes all four Release executables in that archive.
 
 This is the existing status report output, including its legacy timezone labels
 and player-page links. The scene query still attempts its legacy report-file

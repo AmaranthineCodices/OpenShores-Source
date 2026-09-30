@@ -16,6 +16,7 @@ RUN apt-get update \
 COPY openshores.conf /etc/apache2/sites-available/openshores.conf
 COPY index.php /opt/openshores/www/index.php
 COPY register.html /opt/openshores/www/register.html
+COPY emailchange.html passchange.html /opt/openshores/www/
 COPY reset.html /opt/openshores/www/reset.html
 COPY health.cgi /opt/openshores/cgi-bin/health.cgi
 COPY entrypoint.sh /usr/local/bin/openshores-web

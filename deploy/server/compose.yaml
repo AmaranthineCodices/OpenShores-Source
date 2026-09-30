@@ -55,6 +55,18 @@ services:
         read_only: true
         bind:
           create_host_path: false
+      - type: bind
+        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuAcctEmail
+        target: /opt/openshores/cgi-bin/AuAcctEmail
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuAcctPassword
+        target: /opt/openshores/cgi-bin/AuAcctPassword
+        read_only: true
+        bind:
+          create_host_path: false
     networks:
       - server
     healthcheck:
