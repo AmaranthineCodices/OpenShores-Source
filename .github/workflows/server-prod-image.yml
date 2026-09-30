@@ -109,6 +109,7 @@ jobs:
           mkdir -p "$bundle/deploy/server/postgres"
           mkdir -p "$bundle/deploy/server/environments"
           cp deploy/server/compose.yaml "$bundle/deploy/server/"
+          cp -R deploy/server/web "$bundle/deploy/server/"
           install -m 0644 deploy/server/environments/production.ini \
             "$bundle/deploy/server/environments/production.ini"
           cp deploy/server/postgres/Dockerfile deploy/server/postgres/init.sh \
