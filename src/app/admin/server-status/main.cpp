@@ -143,7 +143,7 @@ void PollLoginServer()
 	quint8 workers = 0;
 
 	QTcpSocket tcpSocket;
-	tcpSocket.connectToHost(AuUtil::LoginMasterName(), AuUtil::LoginMasterPort());
+	tcpSocket.connectToHost(QStringLiteral("login-master"), AuUtil::LoginMasterPort());
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{
@@ -250,7 +250,7 @@ void PollMailServer()
 	quint8 workers = 0;
 
 	QTcpSocket tcpSocket;
-	tcpSocket.connectToHost(AuUtil::MailMasterName(), AuUtil::MailMasterPort());
+	tcpSocket.connectToHost(QStringLiteral("mail-master"), AuUtil::MailMasterPort());
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{
@@ -365,7 +365,7 @@ void PollSceneServer(int dbLoadTime)
 	QStringList msgs;
 
 	QTcpSocket tcpSocket;
-	tcpSocket.connectToHost(AuUtil::SceneMasterName(), AuUtil::SceneMasterPort());
+	tcpSocket.connectToHost(QStringLiteral("scene-master"), AuUtil::SceneMasterPort());
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{
@@ -522,7 +522,7 @@ void PollServerManager(int dbLoadTime)
 	QStringList msgs;
 
 	QTcpSocket tcpSocket;
-	tcpSocket.connectToHost(AuUtil::SceneMasterName(), 16762);
+	tcpSocket.connectToHost(QStringLiteral("scene-master"), 16762);
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{
@@ -727,7 +727,7 @@ void ReportPlayersOnline()
 	AuPlayerOnlineStatusVector playersList;
 
 	QTcpSocket tcpSocket;
-	tcpSocket.connectToHost(AuUtil::SceneMasterName(), AuUtil::SceneMasterPort());
+	tcpSocket.connectToHost(QStringLiteral("scene-master"), AuUtil::SceneMasterPort());
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 	{

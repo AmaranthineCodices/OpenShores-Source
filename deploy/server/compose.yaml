@@ -39,6 +39,12 @@ services:
         protocol: tcp
     volumes:
       - web-reports:/var/lib/openshores/reports:ro
+      - type: bind
+        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuServerStatus
+        target: /opt/openshores/bin/AuServerStatus
+        read_only: true
+        bind:
+          create_host_path: false
     networks:
       - server
     healthcheck:

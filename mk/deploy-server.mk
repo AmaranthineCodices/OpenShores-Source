@@ -41,7 +41,7 @@ server-up: server-image
 	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-web-up: server-config
-	$(LOCAL_COMPOSE) up --build --detach --wait --no-deps web
+	$(LOCAL_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
 
 server-down: server-ensure-config
 	$(LOCAL_COMPOSE) down --remove-orphans
@@ -83,7 +83,7 @@ server-prod-up: server-prod-image
 	$(PRODUCTION_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-prod-web-up: server-prod-config
-	$(PRODUCTION_COMPOSE) up --build --detach --wait --no-deps web
+	$(PRODUCTION_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
 
 server-prod-down: server-prod-ensure-config
 	$(PRODUCTION_COMPOSE) down --remove-orphans
