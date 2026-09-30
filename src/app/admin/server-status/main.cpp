@@ -219,7 +219,7 @@ void PollLoginServer()
 	switch(status)
 	{
 	case 0:
-		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " CDT<br>";
+		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " <br>";
 		if(workers == 0)
 			out << "<span style=\"color: rgb(255, 0, 0);\">No Worker Servers</span>";
 		else if(workers == 1)
@@ -327,7 +327,7 @@ void PollMailServer()
 	switch(status)
 	{
 	case 0:
-		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " CDT<br>";
+		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " <br>";
 		if(workers == 0)
 			out << "<span style=\"color: rgb(255, 0, 0);\">No Worker Servers</span>";
 		else if(workers == 1)
@@ -452,9 +452,9 @@ void PollSceneServer(int dbLoadTime)
 		// During the dbLoadTime, show orange text and an "estimated" ready time.
 		if(tmUp.toLocalTime().secsTo(QDateTime::currentDateTime())/60 < dbLoadTime)
 			out << "<span style=\"color: rgb(255, 128, 0);\">Master Est. Ready At " <<
-				(tmUp.addSecs(dbLoadTime*60)).toLocalTime().toString("M/d/yyyy h:mm") << " CDT</span><br>";
+				(tmUp.addSecs(dbLoadTime*60)).toLocalTime().toString("M/d/yyyy h:mm") << " </span><br>";
 		else
-			out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " CDT<br>";
+			out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " <br>";
 		if(managers == 0)
 			out << "<span style=\"color: rgb(255, 0, 0);\">No Manager Servers</span>";
 		else if(managers == 1)
@@ -622,8 +622,8 @@ void PollServerManager(int dbLoadTime)
 	case 0:	// NotLoaded,		// Database has not been loaded yet.
 		// During the dbLoadTime, show orange text and an "estimated" ready time.
 		out << "<span style=\"color: rgb(255, 128, 0);\">Master Loading Universe Database<br>"
-			"Load Started " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " CDT<br>"
-			"Estimated Ready For Players At " << (tmUp.addSecs(dbLoadTime*60)).toLocalTime().toString("M/d/yyyy h:mm") << " CDT"
+			"Load Started " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " <br>"
+			"Estimated Ready For Players At " << (tmUp.addSecs(dbLoadTime*60)).toLocalTime().toString("M/d/yyyy h:mm") << " "
 			"</span>";
 
 		// Other status may be known.
@@ -658,7 +658,7 @@ void PollServerManager(int dbLoadTime)
 	case 1:	// Loaded,			// Database loaded ok.
 	case 2:	// Storing,		// Database loaded ok and is currently storing.
 		// Master server is up and ready. Manager could still be loading.
-		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " CDT<br>";
+		out << "Master Up " << tmUp.toLocalTime().toString("M/d/yyyy h:mm") << " <br>";
 
 		if(managers == 0)
 			out << "<span style=\"color: rgb(255, 0, 0);\">No Manager Servers</span>";

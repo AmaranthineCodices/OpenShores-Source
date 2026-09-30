@@ -32,6 +32,18 @@ function serverStatus(string $label, string $flag): void
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background-color: #0B0B3B;
+            color: white;
+            text-shadow: 2px 2px black;
+        }
+        #statusdiv {
+            border: 1px solid grey;
+            max-width: 240px;
+            padding: 5px;
+        }
+    </style>
     <title>OpenShores</title>
 </head>
 <body>
@@ -39,11 +51,13 @@ function serverStatus(string $label, string $flag): void
         <h1>OpenShores</h1>
         <h2>Server status</h2>
         <p>Reload this page to check again.</p>
-        <section><?php serverStatus('Login Servers', '-l'); ?></section>
-        <hr>
-        <section><?php serverStatus('Mail Servers', '-m'); ?></section>
-        <hr>
-        <section><?php serverStatus('Scene Servers', '-g'); ?></section>
+        <div id="statusdiv">
+            <section><?php serverStatus('Login Servers', '-l'); ?></section>
+            <hr>
+            <section><?php serverStatus('Mail Servers', '-m'); ?></section>
+            <hr>
+            <section><?php serverStatus('Scene Servers', '-g'); ?></section>
+        </div>
     </main>
 </body>
 </html>
