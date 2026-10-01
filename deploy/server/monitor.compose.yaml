@@ -1,0 +1,12 @@
+services:
+  scene-master:
+    ports:
+      - "127.0.0.1:18062:16762/tcp"
+
+  scene-manager:
+    ports:
+      - "127.0.0.1:18063:16762/tcp"
+
+  scene-worker-1:
+    ports:
+      - "127.0.0.1:18064:16762/tcp"

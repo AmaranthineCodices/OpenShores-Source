@@ -11,10 +11,12 @@ PRODUCTION_SERVER_ENV := $(PRODUCTION_SERVER_DIR)/compose.env
 PRODUCTION_SERVER_WORKERS := $(PRODUCTION_SERVER_DIR)/workers.compose.json
 LOCAL_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
 	--env-file "$(LOCAL_SERVER_ENV)" \
-	-f deploy/server/compose.yaml -f "$(LOCAL_SERVER_WORKERS)"
+	-f deploy/server/compose.yaml -f "$(LOCAL_SERVER_WORKERS)" \
+	-f deploy/server/monitor.compose.yaml
 PRODUCTION_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
 	--env-file "$(PRODUCTION_SERVER_ENV)" \
-	-f deploy/server/compose.yaml -f "$(PRODUCTION_SERVER_WORKERS)"
+	-f deploy/server/compose.yaml -f "$(PRODUCTION_SERVER_WORKERS)" \
+	-f deploy/server/monitor.compose.yaml
 
 .PHONY: server-config server-ensure-config server-image server-up server-down \
         server-web-up server-reports-up server-standings server-avatars server-logs server-status server-reset \
