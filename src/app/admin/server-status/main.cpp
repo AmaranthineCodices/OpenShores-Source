@@ -12,7 +12,6 @@
 #include "dtmcpacket.h"
 #include "dtsspacket.h"
 #include <iostream>
-#include <QColor>
 #include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -28,8 +27,8 @@ void PrintVersion();
 void PollLoginServer();
 void PollMailServer();
 void PollSceneServer(int dbLoadTime);
-void PollServerManager(int dbLoadTime);
-void ReportGalacticChat(const QList<AuTime>& posted, const QList<quint8>& galaxies, const QStringList& senders,
+bool PollServerManager(int dbLoadTime, bool chatOnly = false);
+bool ReportGalacticChat(const QList<AuTime>& posted, const QList<quint8>& galaxies, const QStringList& senders,
 		const QStringList& msgs);
 bool ReportPlayersOnline();
 
@@ -42,6 +41,8 @@ int main(int argc, char** argv)
 	QStringList args = a.arguments();
 
 	// Keep the machine-readable query separate from status HTML output.
+	if(args.contains("-c"))
+		return PollServerManager(60, true) ? 0 : 1;
 	if(args.contains("-p"))
 		return ReportPlayersOnline() ? 0 : 1;
 
@@ -127,11 +128,12 @@ void PrintUsage()
 {
 	QTextStream out(stdout);
 	out << "Shores of Hazeron Server Status\n";
-	out << " Usage: AuServerStatus [-l] [-m] [-s] [-g] [-p] [-v] [-?]\n";
+	out << " Usage: AuServerStatus [-l] [-m] [-s] [-g] [-p] [-c] [-v] [-?]\n";
 	out << "  -l      Poll login master server for status. \n";
 	out << "  -m      Poll mail master server for status. \n";
 	out << "  -s[nn]  Poll scene master server for status on scene channel. 'nn' is estimated database load time in minutes, default 60.\n";
 	out << "  -g[nn]  Poll scene master server for status on manager channel. 'nn' is estimated database load time in minutes, default 60.\n";
+	out << "  -c      Output recent public galactic chat as JSON.\n";
 	out << "  -p      Output the online avatar list as JSON.\n";
 	out << "  -v      Outputs the program version.\n";
 	out << "  -?      Outputs this program usage information.\n";
@@ -508,12 +510,11 @@ void PollSceneServer(int dbLoadTime)
 		break;
 	}
 
-	// Report recent galactic chat.
-	ReportGalacticChat(posted, galaxies, senders, msgs);
 }
 
-void PollServerManager(int dbLoadTime)
+bool PollServerManager(int dbLoadTime, bool chatOnly)
 {
+	bool received = false;
 	// Values we will get from the server on successful status query.
 	quint8 status = 255;
 	QDateTime tmUp;
@@ -599,6 +600,7 @@ void PollServerManager(int dbLoadTime)
 					block >> galaxies;
 					block >> senders;
 					block >> msgs;
+					received = block.status() == QDataStream::Ok;
 					break;
 
 				default:
@@ -618,6 +620,16 @@ void PollServerManager(int dbLoadTime)
 	}
 	else
 		status = 101;		// Could not connect to server.
+
+	if(chatOnly)
+	{
+		if(!received)
+		{
+			qWarning("Galactic chat query failed or returned an invalid response.");
+			return false;
+		}
+		return ReportGalacticChat(posted, galaxies, senders, msgs);
+	}
 
 	// Output the server status.
 	QTextStream out(stdout);
@@ -719,8 +731,7 @@ void PollServerManager(int dbLoadTime)
 		break;
 	}
 
-	// Report recent galactic chat.
-	ReportGalacticChat(posted, galaxies, senders, msgs);
+	return received;
 }
 
 bool ReportPlayersOnline()
@@ -852,200 +863,34 @@ void DoTest()
 	ReportGalacticChat(posted, galaxies, senders, msgs);
 }
 
-void ReportGalacticChat(const QList<AuTime>& posted, const QList<quint8>& galaxies, const QStringList& senders,
+bool ReportGalacticChat(const QList<AuTime>& posted, const QList<quint8>& galaxies, const QStringList& senders,
 		const QStringList& msgs)
 {
-	QMap<AuTime, QString> messages;
-
-	// Load last known messages.
-	QFile msgfile;
-	msgfile.setFileName("/home/webmaster/hazeron/Galactic.msgs");
-	if(msgfile.open(QIODevice::ReadOnly))
+	if(posted.size() != galaxies.size() || posted.size() != senders.size() || posted.size() != msgs.size())
 	{
-		QDataStream ds(&msgfile);
-		ds.setVersion(QDataStream::Qt_4_1);
-
-		ds >> messages;
-
-		msgfile.close();
+		qWarning("Galactic chat response contains mismatched message lists.");
+		return false;
 	}
-
-	// Merge with recently posted messages. There could be duplicates. This gets called every minute and the recent messages data
-	// contains all messages in the past five minutes.
-	if(!posted.isEmpty())
+	QJsonArray messages;
+	for(int i = 0; i < posted.size(); ++i)
 	{
-		// These colors came from the s_Galaxy table in dagalaxy.cpp.
-		QColor galaxyColors[] =
+		const QDateTime timestamp = posted.at(i).UTC().toUTC();
+		if(!timestamp.isValid())
 		{
-			QColor(6, 5, 8),
-			QColor(8, 5, 4),
-			QColor(3, 5, 8),
-			QColor(8, 6, 4),
-			QColor(5, 7, 8),
-			QColor(8, 4, 3),
-			QColor(5, 5, 7),
-			QColor(5, 8, 7),
-			QColor(4, 5, 8),
-			QColor(1, 2, 8),
-			QColor(8, 5, 7),
-			QColor(2, 4, 8),
-			QColor(4, 8, 7),
-			QColor(8, 6, 3),
-			QColor(2, 8, 8),
-			QColor(4, 4, 10),
-			QColor(10, 7, 2),
-			QColor(5, 6, 8),
-			QColor(8, 6, 7),
-			QColor(13, 4, 2)
-		};
-
-		QList<AuTime>::const_iterator pi = posted.cbegin();
-		QList<quint8>::const_iterator gi = galaxies.cbegin();
-		QStringList::const_iterator si = senders.cbegin();
-		QStringList::const_iterator mi = msgs.cbegin();
-		while(pi != posted.cend())
-		{
-			// Expand links in the text of the message.
-			QUrl url = UrlFromString(*mi);
-
-			QString msg(*mi);
-			msg.replace("<", "&lt");
-			msg.replace(">", "&gt");
-
-			QString msgtext;
-			if(url == QUrl())
-			{
-				if((*gi) >= GALAXY_Count)
-				{
-					// System broadcast messages are from galaxy GALAXY_Count.
-					msgtext = QString("<font color=\"#4e961e\"><small>%1 <small>UTC</small><br>"
-							"%3</small></font><br><div style=\"margin-left: 10px;\">"
-							"<font color=\"#80fa32\">%4</font></div>\n")
-						.arg((*pi).UTC().toString("hh:mm"))
-						.arg(*si)
-						.arg(msg);
-
-					// Check for the marker that tells us the servers just came up.
-					if(msgtext.indexOf("Preparing ") >= 0)
-						messages.clear();
-				}
-				else
-				{
-					// Regular player messages.
-					qreal h,s,v;
-					galaxyColors[(*gi)].getHsvF(&h, &s, &v);
-					QColor galcol;
-					galcol.setHsvF(h, s, 1);
-
-					msgtext = QString("<font color=\"#55aaff\"><small>%1 <small>UTC</small> &middot</font>"
-							"<font color=\"%5\"> %2</font><br>"
-							"<font color=\"#55aaff\">%3</small></font><br><div style=\"margin-left: 10px;\">"
-							"%4</div>\n")
-						.arg((*pi).UTC().toString("hh:mm"))
-						.arg(GalaxyName((GALAXY)*gi))
-						.arg(*si)
-						.arg(msg)
-						.arg(galcol.name());
-				}
-			}
-			else
-			{
-				if((*gi) >= GALAXY_Count)
-				{
-					// System broadcast messages are from galaxy GALAXY_Count.
-					msgtext = QString("<font color=\"#4e961e\">"
-							"<small>%1 <small>UTC</small><br>"
-							"%3</small></font><br>"
-							"<div style=\"margin-left: 10px;\">"
-							"<a class=\"glink\" href=\"%6\" rel=\"nofollow\">"
-							"<font color=\"#80fa32\">%4</font>"
-							"</a>"
-							"</div>"
-							"\n")
-						.arg((*pi).UTC().toString("hh:mm"))
-						.arg(*si)
-						.arg(msg)
-						.arg(url.toString());
-
-					// Check for the marker that tells us the servers just came up.
-					if(msgtext.indexOf("Preparing ") >= 0)
-						messages.clear();
-				}
-				else
-				{
-					// Regular player messages.
-					qreal h,s,v;
-					galaxyColors[(*gi)].getHsvF(&h, &s, &v);
-					QColor galcol;
-					galcol.setHsvF(h, s, 1);
-
-					msgtext = QString("<font color=\"#55aaff\">"
-							"<small>%1 <small>UTC</small> &middot"
-							"</font>"
-							"<font color=\"%5\"> %2</font><br>"
-							"<font color=\"#55aaff\">%3</font></small><br>"
-							"<div style=\"margin-left: 10px;\">"
-							"<a class=\"glink\" href=\"%6\" rel=\"nofollow\">"
-							"%4"
-							"</a>"
-							"</div>"
-							"\n")
-						.arg((*pi).UTC().toString("hh:mm"))
-						.arg(GalaxyName((GALAXY)*gi))
-						.arg(*si)
-						.arg(msg)
-						.arg(galcol.name())
-						.arg(url.toString());
-				}
-			}
-
-			messages.insert(*pi, msgtext);
-
-			pi++;
-			gi++;
-			si++;
-			mi++;
+			qWarning("Galactic chat response contains an invalid timestamp.");
+			return false;
 		}
+		const bool broadcast = galaxies.at(i) >= GALAXY_Count;
+		QJsonObject message;
+		message.insert("posted", timestamp.toString(Qt::ISODate));
+		message.insert("galaxy", broadcast ? QString("System broadcast") : GalaxyName(GALAXY(galaxies.at(i))));
+		message.insert("broadcast", broadcast);
+		message.insert("sender", senders.at(i));
+		message.insert("text", msgs.at(i));
+		messages.append(message);
 	}
-
-	// Trim messages to keep only the last ones.
-	while(messages.size() > 16)
-		messages.erase(messages.begin());
-
-	// Output the messages into the file that is loaded by the web page.
-	QFile chatfile;
-	chatfile.setFileName("/home/webmaster/hazeron/galactic.html");
-	if(chatfile.open(QIODevice::WriteOnly))
-	{
-		QTextStream sro(&chatfile);
-		sro.setCodec("UTF-8");
-
-		if(!messages.isEmpty())
-		{
-			AuTime prev = messages.cbegin().key();
-			for(QMap<AuTime, QString>::const_iterator mi = messages.cbegin(); mi != messages.cend(); mi++)
-			{
-				// Leave a blank line when there is a time span.
-				if(prev.MinsTo(mi.key()) > 3)
-					sro << "<br>\n";
-				sro << *mi;
-				prev = mi.key();
-			}
-		}
-		else
-			sro << QString("<font color=\"#55aaff\"><small>No recent chatter.</small></font><br>");
-
-		chatfile.close();
-	}
-
-	// Store last known messages
-	if(msgfile.open(QIODevice::WriteOnly))
-	{
-		QDataStream ds(&msgfile);
-		ds.setVersion(QDataStream::Qt_4_1);
-
-		ds << messages;
-
-		msgfile.close();
-	}
+	QTextStream output(stdout);
+	output.setCodec("UTF-8");
+	output << QString::fromUtf8(QJsonDocument(messages).toJson(QJsonDocument::Compact)) << '\n';
+	return true;
 }

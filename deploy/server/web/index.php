@@ -68,6 +68,7 @@ function getVersion(string $flag)
             <section><?php serverStatus('Scene Servers', '-g'); ?></section>
         </div>
         <div id="links">
+            <a href="/galactic">Galactic chat</a><br>
             <a href="/register">Register account</a><br>
             <a href="/reset">Reset password</a><br>
             <a href="/emailchange">Change E-mail address</a><br>

@@ -20,7 +20,7 @@ context="$repo_root/build/server/web-context-$config"
 
 web_files=(
     Dockerfile openshores.conf
-    index.php playerson.php styles.css register.html reset.html emailchange.html passchange.html
+    index.php playerson.php galactic.php styles.css register.html reset.html emailchange.html passchange.html
     health.cgi entrypoint.sh
 )
 programs=(AuServerStatus AuAcctNew AuAcctEmail AuAcctPassword)

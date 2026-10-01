@@ -142,9 +142,18 @@ AFK markers; failures display an unavailable message rather than an empty list.
 `/playerson.html` redirects to this page. No player report file or history is
 written, and the homepage no longer makes the additional player-list query.
 
-The status output retains its legacy timezone labels. The scene query still
-attempts legacy galactic-chat report writes; those paths are not provisioned by
-this setup. The persistent reports volume is not yet connected to these pages.
+`/galactic` displays recent public galactic chat and system broadcasts. It runs
+`AuServerStatus -c`, which uses the existing scene-master management status query
+and outputs the chat as JSON. PHP renders escaped message text, sender names,
+galaxies, and UTC timestamps in chronological order. Reload the page to refresh.
+`/galactic.html` redirects to this page; `/galactic.php` also works directly.
+Failures display an unavailable message, separately from an empty chat result.
+
+The scene master retains approximately five minutes of recent chat. This page
+is read-only and does not archive older messages. Neither the chat query nor the
+homepage writes the old `Galactic.msgs` or `galactic.html` report files. No extra
+volume is required. The status output retains its legacy timezone labels;
+the persistent reports volume is not yet connected to these pages.
 
 `WEB_PORT` defaults to `80`. `WEB_BIND_ADDRESS` defaults to `127.0.0.1` locally
 and `0.0.0.0` in production, independently of the game's `BIND_ADDRESS`.

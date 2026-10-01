@@ -14,7 +14,7 @@ RUN apt-get update \
     && install -d -o 1000 -g 1000 /var/lib/openshores/reports
 
 COPY openshores.conf /etc/apache2/sites-available/openshores.conf
-COPY index.php playerson.php styles.css /opt/openshores/www/
+COPY index.php playerson.php galactic.php styles.css /opt/openshores/www/
 COPY register.html reset.html emailchange.html passchange.html /opt/openshores/www/
 COPY health.cgi /opt/openshores/cgi-bin/health.cgi
 COPY entrypoint.sh /usr/local/bin/openshores-web
@@ -26,6 +26,7 @@ RUN chmod 0755 /usr/local/bin/openshores-web /opt/openshores/bin/AuServerStatus 
     && a2ensite openshores \
     && php-cgi -l /opt/openshores/www/index.php \
     && php-cgi -l /opt/openshores/www/playerson.php \
+    && php-cgi -l /opt/openshores/www/galactic.php \
     && apache2ctl -t
 
 EXPOSE 80
