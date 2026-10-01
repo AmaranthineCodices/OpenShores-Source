@@ -21,6 +21,7 @@ COMMON_DEFAULTS = {
     "PUBLIC_HOST": "127.0.0.1",
     "WEB_BIND_ADDRESS": "127.0.0.1",
     "WEB_PORT": "80",
+    "REPORT_INTERVAL_MINUTES": "20",
     "LOGIN_WORKER_PORT": "16767",
     "MAIL_WORKER_PORT": "16768",
     "SCENE_MANAGER_PORT": "16769",
@@ -134,6 +135,7 @@ def main() -> None:
     scene_manager_port = integer(settings, "SCENE_MANAGER_PORT", 1024, 65535)
     worker_port_base = integer(settings, "SCENE_WORKER_PORT_BASE", 1024, 65534)
     web_port = integer(settings, "WEB_PORT", 1, 65535)
+    settings["REPORT_INTERVAL_MINUTES"] = str(integer(settings, "REPORT_INTERVAL_MINUTES", 1, 525600))
     create_local_player = boolean(settings, "CREATE_LOCAL_PLAYER")
 
     config = settings["SERVER_BUILD_CONFIG"].lower()

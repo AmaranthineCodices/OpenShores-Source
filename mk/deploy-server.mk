@@ -17,9 +17,9 @@ PRODUCTION_COMPOSE = BUILDX_NO_DEFAULT_ATTESTATIONS=1 docker compose \
 	-f deploy/server/compose.yaml -f "$(PRODUCTION_SERVER_WORKERS)"
 
 .PHONY: server-config server-ensure-config server-image server-up server-down \
-        server-web-up server-logs server-status server-reset \
+        server-web-up server-reports-up server-standings server-avatars server-logs server-status server-reset \
         server-prod-config server-prod-ensure-config server-prod-image \
-        server-prod-up server-prod-web-up server-prod-down server-prod-logs server-prod-status
+        server-prod-up server-prod-web-up server-prod-reports-up server-prod-standings server-prod-avatars server-prod-down server-prod-logs server-prod-status
 
 server-config:
 	python3 deploy/server/configure.py --environment local \
@@ -45,7 +45,16 @@ server-web-up: server-config
 	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" HAZERON_BUILD_CONFIG="$$config" \
 		bash docker/linux/build.sh web-tools && \
 	bash deploy/server/web/stage.sh "$$config"
-	$(LOCAL_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
+	$(LOCAL_COMPOSE) up --build --detach --wait --no-deps --force-recreate web empire-standings avatar-reports
+
+server-reports-up: server-config
+	$(LOCAL_COMPOSE) up --detach --wait --no-deps --force-recreate empire-standings avatar-reports
+
+server-standings: server-ensure-config
+	$(LOCAL_COMPOSE) run --rm --no-deps empire-standings --once
+
+server-avatars: server-ensure-config
+	$(LOCAL_COMPOSE) run --rm --no-deps avatar-reports --once
 
 server-down: server-ensure-config
 	$(LOCAL_COMPOSE) down --remove-orphans
@@ -91,7 +100,16 @@ server-prod-web-up: server-prod-config
 	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" HAZERON_BUILD_CONFIG="$$config" \
 		bash docker/linux/build.sh web-tools && \
 	bash deploy/server/web/stage.sh "$$config"
-	$(PRODUCTION_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
+	$(PRODUCTION_COMPOSE) up --build --detach --wait --no-deps --force-recreate web empire-standings avatar-reports
+
+server-prod-reports-up: server-prod-config
+	$(PRODUCTION_COMPOSE) up --detach --wait --no-deps --force-recreate empire-standings avatar-reports
+
+server-prod-standings: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) run --rm --no-deps empire-standings --once
+
+server-prod-avatars: server-prod-ensure-config
+	$(PRODUCTION_COMPOSE) run --rm --no-deps avatar-reports --once
 
 server-prod-down: server-prod-ensure-config
 	$(PRODUCTION_COMPOSE) down --remove-orphans

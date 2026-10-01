@@ -26,6 +26,9 @@ help:
 		"$${heading}Local server deployment$${reset}" \
 		'  make server-up            Build and start the local stack' \
 		'  make server-web-up        Compile web tools and start local Apache' \
+		'  make server-reports-up    Apply report interval and restart report schedulers' \
+		'  make server-standings     Refresh local empire standings (no build)' \
+		'  make server-avatars       Refresh local avatar pages (no build)' \
 		'  make server-down          Stop it, preserving data' \
 		'  make server-logs          Follow logs' \
 		'  make server-status        Show container and health status' \
@@ -34,6 +37,9 @@ help:
 		"$${heading}Production server deployment$${reset}" \
 		'  make server-prod-up       Build and start production' \
 		'  make server-prod-web-up   Compile web tools and start production Apache' \
+		'  make server-prod-reports-up Apply production report interval and restart schedulers' \
+		'  make server-prod-standings Refresh production empire standings (no build)' \
+		'  make server-prod-avatars  Refresh production avatar pages (no build)' \
 		'  make server-prod-down     Stop production, preserving data' \
 		'  make server-prod-logs     Follow production logs' \
 		'  make server-prod-status   Show container and health status' \

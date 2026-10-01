@@ -46,8 +46,10 @@
 #include "dzspecies.h"
 #include "hashpack.h"
 #include <iostream>
+#include <utility>
 #include <QCoreApplication>
 #include <QFile>
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -269,7 +271,7 @@ public:
 	void ReportLostShips(QSqlDatabase& dbUniverse, AuIdList& limboRescueMe);
 	void ReportManufacturingProcesses(QSqlDatabase& dbUniverse);
 	void ReportMultiplePrimaries(QSqlDatabase& dbUniverse);
-	void ReportPlayers(QSqlDatabase& dbUniverse);
+	bool ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages = false);
 	void ReportBadSectorCoords(QSqlDatabase& dbUniverse);
 	void ReportScDesigns(QSqlDatabase& dbUniverse, bool sizeCheckOnly, bool fixEm);
 	void ReportScPref(QSqlDatabase& dbUniverse, const QString& empireName);
@@ -379,7 +381,7 @@ QString s_UniTotals("<b>Universe Totals</b>"
 	"%L12<br>"
 	"%L13<br>"
 	"%L14<br>"
-	"20<br>"
+	"%L15<br>"
 	"1"
 	"</small></td></tr>"
 	"</tbody></table>"
@@ -687,7 +689,7 @@ int main(int argc, char** argv)
 	if(args.contains("-?") || args.contains("-help"))
 	{
 usage:
-		qDebug() << "Usage: auempirereport [-?] [-help] [-report] [-atom id] [-limbo] [-person name]";
+		qDebug() << "Usage: auempirereport [-?] [-help] [-standings] [-avatars] [-report] [-atom id] [-limbo] [-person name]";
 		qDebug() << "  Specify only one database operation to perform.";
 		qDebug() << "  -? or -help - Displays this helpful information.";
 		qDebug() << "  -db - Displays the host name of the auUniverse SQL server.";
@@ -704,7 +706,7 @@ usage:
 		qDebug() << "  -GD - Creates the GD? game data file in" << g_Au.CacheGame() << ".";
 		qDebug() << "  -gear - Reports gear for subsequent people, e.g. -gear -person.";
 		qDebug() << "  -ceru - Reports gear saved in table ceruleas.";
-		qDebug() << "  -huey - Query database on Huey instead of UniverseDb.Hazeron.net.";
+		qDebug() << "  -huey - Override the configured universe database host with Huey.";
 		qDebug() << "  -id atomId|stringId - Shows the string and numeric versions of an atom id.";
 		qDebug() << "  -industries - Shows all known industries.";
 		qDebug() << "  -industriesWiki - Shows all known industries.";
@@ -716,6 +718,10 @@ usage:
 		qDebug() << "  -q - Shows the quality boost progression.";
 		qDebug() << "  -report - Produces empire standings report, avatar pages and blueprint exchange for web page. Check usage for";
 		qDebug() << "            how this works.";
+		qDebug() << "  -standings - Produces only empire standings on stdout and flag images in the current folder.";
+		qDebug() << "  -avatars - Produces static avatar indexes, profiles and images in the current folder.";
+		qDebug() << "            Database hosts: AU_UNIVERSE_DB_HOST and AU_LOGIN_DB_HOST (default postgres).";
+		qDebug() << "            Database user: audog; password: AU_DB_PASSWORD (default Gold).";
 		qDebug() << "  -saveempire empireId - Saves an empire record to a file in the current folder, named empireId.emp.";
 		qDebug() << "  -saveitems atomId|stringId - Saves all item atoms subordinate to atomId, to a file in the current folder.";
 		qDebug() << "  -solo - Saves the data used to init the solo game.";
@@ -790,32 +796,23 @@ usage:
 	{
 		QSqlDatabase dbUniverse = QSqlDatabase::addDatabase("QPSQL7", "AuUniverse");
 		if(!dbUniverse.isValid())
-			exit(0);
-		// auUniverse database
-		//   Owner: aumaster
-		//   Password: Light
-		//   User: aumaster
-		//   Password: Light
+			exit(1);
 		dbUniverse.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
 		if(args.contains("-huey"))
 		{
-			if(args.contains("-db"))
-				qDebug() << "dbUniverse hostName Huey";
 			dbUniverse.setHostName("Huey");
 		}
 		else if(args.contains("-u0"))
 		{
-			if(args.contains("-db"))
-				qDebug() << "dbUniverse hostName u0.Hazeron.net";
 			dbUniverse.setHostName("u0.Hazeron.net");
 		}
 		else
 		{
-			if(args.contains("-db"))
-				qDebug() << "dbUniverse hostName UniverseDb.Hazeron.net";
-			dbUniverse.setHostName("UniverseDb.Hazeron.net");
+			dbUniverse.setHostName(qEnvironmentVariable("AU_UNIVERSE_DB_HOST", "postgres"));
 		}
-		if(!dbUniverse.open("aumaster","Light"))
+		if(args.contains("-db"))
+			qDebug() << "dbUniverse hostName" << dbUniverse.hostName();
+		if(!dbUniverse.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 		{
 			QSqlError er = dbUniverse.lastError();
 			QString sdv = er.driverText();
@@ -831,7 +828,7 @@ usage:
 		if(!dbLogin.isValid())
 			exit(1);
 		dbLogin.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-		dbLogin.setHostName("LoginDb.Hazeron.net");
+		dbLogin.setHostName(qEnvironmentVariable("AU_LOGIN_DB_HOST", "postgres"));
 		//qDebug() << "Databases opened.";
 
 		bool didSomething = false;
@@ -846,7 +843,7 @@ usage:
 		}
 		else if(args.contains("-acct"))
 		{
-			if(!dbLogin.open("aumaster","Light"))
+			if(!dbLogin.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 			{
 				QSqlError er = dbLogin.lastError();
 				QString sdv = er.driverText();
@@ -1402,6 +1399,17 @@ usage:
 				report.ReportLimboAtoms(dbUniverse);
 				didSomething = true;
 			}
+			else if(args.contains("-standings"))
+			{
+				report.EmpireReport(dbUniverse, false, false);
+				didSomething = true;
+			}
+			else if(args.contains("-avatars"))
+			{
+				if(!report.ReportPlayers(dbUniverse, true))
+					return 1;
+				didSomething = true;
+			}
 			else if(args.contains("-report"))
 			{
 				// Generate the universe empire standings report for the web site.
@@ -1629,6 +1637,7 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 	quint32 avatarCount = 0;
 	quint32 bdCount = 0;
 	quint32 crewCount = 0;
+	quint32 galaxyCount = 0;
 	quint32 indCount = 0;
 	quint32 officerCount = 0;
 	quint32 passengerCount = 0;
@@ -1663,6 +1672,10 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 		QSqlQuery qsec("SELECT count(id) FROM a_Sector WHERE idp > 0 AND id IN (SELECT idp FROM a_Atom);", dbUniverse);
 		if(qsec.first())
 			sectorCount = qsec.value(0).toUInt();
+
+		QSqlQuery qgal("SELECT count(id) FROM a_Galaxy;", dbUniverse);
+		if(qgal.first())
+			galaxyCount = qgal.value(0).toUInt();
 
 		QSqlQuery qoff(QString("SELECT count(id) FROM a_Npc WHERE idp > 0 AND role=%1;").arg(ROLE_Officer), dbUniverse);
 		if(qoff.first())
@@ -1710,13 +1723,17 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 		AuEmpireReportItem item;
 		item.m_EmpireId = (*ehi).second.m_id;
 		item.m_Name = (*ehi).second.Name();
-		item.m_Emperor = QString("<a class=\"ll\" href=\"https://hazeron.com/EmpireStandings/p%1.php\">%2</a>").arg(emperorId.StringId()).arg(emperorName);
+		item.m_Emperor = reportPlayers
+			? QString("<a class=\"ll\" href=\"p%1.php\">%2</a>").arg(emperorId.StringId(), emperorName.toHtmlEscaped())
+			: emperorName.toHtmlEscaped();
 
 		QMultiMap<QString, AuId> heirs;	// key is vice president name and value is their atom id.
 		(*ehi).second.VicePresidents(heirs);
 		for(QMultiMap<QString, AuId>::const_iterator hi = heirs.cbegin(); hi != heirs.cend(); hi++)
 		{
-			QString haddr = QString("<a class=\"ll\" href=\"https://hazeron.com/EmpireStandings/p%1.php\">%2</a>").arg((*hi).StringId()).arg(hi.key());
+			QString haddr = reportPlayers
+				? QString("<a class=\"ll\" href=\"p%1.php\">%2</a>").arg((*hi).StringId(), hi.key().toHtmlEscaped())
+				: hi.key().toHtmlEscaped();
 			if(item.m_Heirs.isEmpty())
 				item.m_Heirs = haddr;
 			else
@@ -1982,17 +1999,26 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 	so << s_htmlHeader;
 
 	QString title = QString("Empire Standings");
-	so << s_titleBar.arg(title);
+	QString titleBar = s_titleBar;
+	if(!reportPlayers && !reportExchange)
+		titleBar.replace("<head>", "<head><base href=\"/reports/standings/\">");
+	so << titleBar.arg(title);
 
 	int topLevelEmpires = 0;
 	for(QList<AuEmpireReportItem>::const_iterator ri = reportItems.cbegin(); ri != reportItems.cend(); ri++)
 		if((*ri).IsTopLevelEmpire())
 			topLevelEmpires++;
 
-	so << s_bodyStart;
+	QString bodyStart = s_bodyStart;
+	QString pageTitle = s_PageTitle;
+	if(!reportPlayers && !reportExchange)
+	{
+		bodyStart.remove("<?php include(\"../sohpageheader.html\"); ?><br>");
+		pageTitle.remove(" &middot Updated Every 20 Minutes");
+	}
+	so << bodyStart;
 	QDateTime now = QDateTime::currentDateTimeUtc();
-	so << s_PageTitle
-		.arg(now.toString());
+	so << pageTitle.arg(now.toString());
 
 	so << "<table><tbody>";
 	so << "<tr>";
@@ -2044,7 +2070,8 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 		.arg(bdCount)
 		.arg(roidCount)
 		.arg(systemCount)
-		.arg(sectorCount);
+		.arg(sectorCount)
+		.arg(galaxyCount);
 
 	so << "</td>";
 	so << "</tr>";
@@ -2091,13 +2118,13 @@ void AuEmpireReport::ReportItem(QTextStream& so, const AuEmpireReportItem& item,
 			name += "+ ";
 			bgColor = "rgb(32,8,2)";
 		}
-		name += item.m_Name;
+		name += item.m_Name.toHtmlEscaped();
 		scoreColor = bgColor;
 	}
 	else
 	{
 		// Top level names are bold
-		name = QString("<b>%1</b>").arg(item.m_Name);
+		name = QString("<b>%1</b>").arg(item.m_Name.toHtmlEscaped());
 		bgColor = "rgb(64,16,4)";
 		scoreColor = "rgb(100, 32, 16)";
 	}
@@ -2206,15 +2233,60 @@ QString AuEmpireReport::MakeSafeKey(const QString& key)
 	return safekey;
 }
 
-void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
+bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 {
 	bool traceReport = false;
+	const QString extension = staticPages ? "html" : "php";
+	const QString avatarsFile = "Avatars." + extension;
+	const QString avatarsByEmpireFile = "AvatarsByEmpire." + extension;
+	const auto playerFile = [&extension](const AuId& id)
+	{
+		return QString("p%1.%2").arg(id.StringId(), extension);
+	};
+	const auto finishFile = [](QTextStream& stream, QFile& output)
+	{
+		stream.flush();
+		if(stream.status() != QTextStream::Ok || !output.flush())
+		{
+			qWarning() << "Failed to write avatar report" << output.fileName() << output.errorString();
+			return false;
+		}
+		output.close();
+		return true;
+	};
+	QString htmlHeader = s_htmlHeader;
+	QString titleBar = s_titleBar;
+	QString bodyStart = s_bodyStart;
+	if(staticPages)
+	{
+		htmlHeader.remove("background-image: url(../images/hazBlackbutton.png); ");
+		titleBar.replace("<head>", "<head><base href=\"/reports/avatars/\">");
+		titleBar.remove("<link rel=\"shortcut icon\" href=\"https://hazeron.com/favicon.png\" type=\"image/png\">\n");
+		bodyStart.remove("<?php include(\"../sohpageheader.html\"); ?><br>");
+		bodyStart += "<p><a class=\"ll\" href=\"/\">Home</a> | <a class=\"ll\" href=\"/avatars\">Avatars</a></p>\n";
+	}
 
 	if(traceReport)
 		qDebug() << "ReportPlayers Started" << QDateTime::currentDateTime();
 	// Load specie names table.
 	DzSpeciesHash species;
-	species.Load();
+	QSqlQuery speciesQuery(dbUniverse);
+	if(!speciesQuery.exec("SELECT species, name, whoNamed FROM g_Species;"))
+	{
+		qWarning() << "Failed to query avatar species" << speciesQuery.lastError();
+		return false;
+	}
+	while(speciesQuery.next())
+	{
+		const AuSpecies dna(speciesQuery.value(0).toByteArray());
+		species.insert(std::make_pair(dna, DzSpecies(dna, speciesQuery.value(1).toString(),
+			AuId(speciesQuery.value(2).toUInt()))));
+	}
+	if(speciesQuery.lastError().isValid())
+	{
+		qWarning() << "Failed to read avatar species" << speciesQuery.lastError();
+		return false;
+	}
 
 	// Select avatars data from the database.
 	AuIdList personIds;
@@ -2222,12 +2294,21 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 	sq = QString("SELECT id FROM a_Person WHERE idp >= 0;");	// include idp=0 for agent limbo detection, idp<0 is deleted char
 	QSqlQuery qry(QString(), dbUniverse);
 	qry.prepare(sq);
-	qry.exec();
+	if(!qry.exec())
+	{
+		qWarning() << "Failed to query avatars" << qry.lastError();
+		return false;
+	}
 	while(qry.next())
 	{
 		// Read the fields from the query.
 		AuId personId = AuId(qry.value(0).toUInt());
 		personIds.append(personId);
+	}
+	if(qry.lastError().isValid())
+	{
+		qWarning() << "Failed to read avatar IDs" << qry.lastError();
+		return false;
 	}
 	if(traceReport)
 		qDebug() << "personIds" << personIds.count() << QDateTime::currentDateTime();
@@ -2257,32 +2338,44 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 			QString sortname = person->Name().toUpper();
 			players.insert(sortname, person);
 		}
+		else
+		{
+			qWarning() << "Failed to load avatar" << pii->StringId();
+			return false;
+		}
 	}
 
-	// Add a dummy person for Silverwill.
-	AuDNA dnaHuman;
-	dnaHuman.InitDefaultHuman();
-	DaPerson* silverwill = new DaPerson(dnaHuman, AuDNABase::Alpha, RightHanded, "Silverwill", Mature, 0);
-	silverwill->SetId(AuId::Silverwill());
-	players.insert("SILVERWILL", silverwill);
+	// Keep the original website's synthetic character out of local avatar reports.
+	if(!staticPages)
+	{
+		AuDNA dnaHuman;
+		dnaHuman.InitDefaultHuman();
+		DaPerson* silverwill = new DaPerson(dnaHuman, AuDNABase::Alpha, RightHanded, "Silverwill", Mature, 0);
+		silverwill->SetId(AuId::Silverwill());
+		players.insert("SILVERWILL", silverwill);
+	}
 
 	if(traceReport)
 		qDebug() << "players" << players.count() << QDateTime::currentDateTime();
 
 	QMap<QString, quint32> empireNames;	// Sorted list of empire names.
+	QSet<AuId> publishedPlayers;
+	for(auto pi = players.cbegin(); pi != players.cend(); ++pi)
+		publishedPlayers.insert((*pi)->Id());
+	QSet<quint32> savedFlags;
 
-	QFile file("Avatars.php");
+	QFile file(avatarsFile);
 	if(file.open(QIODevice::WriteOnly))
 	{
 		QTextStream so(&file);
 		so.setCodec("UTF-8");
-		so << s_htmlHeader;
-		so << s_titleBar.arg("Avatars");
-		so << s_bodyStart;
+		so << htmlHeader;
+		so << titleBar.arg("Avatars");
+		so << bodyStart;
 		so << QString("<div style=\"text-align: center; font-family: sans-serif;\"><big style=\"color: #ffffff; font-weight: bold; "
 				"font-family: sans-serif\"><br>%1</big><br>\n"
-				"<small>By Name | </small><a class=\"a1\" href=\"AvatarsByEmpire.php\">By Empire</a></div><br>\n")
-			.arg("Shores of Hazeron Avatars");
+				"<small>By Name | </small><a class=\"a1\" href=\"%2\">By Empire</a></div><br>\n")
+			.arg("Shores of Hazeron Avatars", avatarsByEmpireFile);
 
 		// Make a link for each avatar in the map.
 		so << "<div style=\"margin-left: 10px;\">\n";
@@ -2301,17 +2394,26 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 				g_Au.UnlockData();
 				if(!empireNames.contains(empireName))
 					empireNames.insert(empireName, (*pi)->EmpireId());
+				if(staticPages && !flag.isNull() && !savedFlags.contains((*pi)->EmpireId()))
+				{
+					if(!flag.save(QString("%1.png").arg((*pi)->EmpireId())))
+					{
+						qWarning() << "Failed to save avatar empire flag" << (*pi)->EmpireId();
+						return false;
+					}
+					savedFlags.insert((*pi)->EmpireId());
+				}
 
 				int flagHt = flag.height();
 				int flagWid = flag.width();
-				if(flagHt >= flagWid)
+				if(flagHt > 0 && flagWid > 0 && flagHt >= flagWid)
 				{
 					flagWid = 32 * flagWid / flagHt;
 					if(flagWid < 1)
 						flagWid = 1;
 					flagHt = 32;
 				}
-				else
+				else if(flagHt > 0 && flagWid > 0)
 				{
 					flagHt = 32 * flagHt / flagWid;
 					if(flagHt < 1)
@@ -2320,11 +2422,9 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 				}
 
 				so << "<td align=\"right\">";
-				so << QString("<img title=\"%2\" style=\"width: %3px; height: %4px;\" alt=\"\" src=\"%1.png\"><br>")
-					.arg((*pi)->EmpireId())
-					.arg(empireName)
-					.arg(flagWid)
-					.arg(flagHt);
+				if(!flag.isNull())
+					so << QString("<img title=\"%4\" style=\"width: %2px; height: %3px;\" alt=\"\" src=\"%1.png\"><br>")
+						.arg((*pi)->EmpireId()).arg(flagWid).arg(flagHt).arg(empireName.toHtmlEscaped());
 				so << "</td>";
 			}
 			else
@@ -2333,16 +2433,10 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 				so << "</td>";
 			}
 
-			// Some wise guy named their avatar Athena%1. :/
-			// All % characters are replaced with _.
-			QString personName((*pi)->Name());
-			personName.replace("%","_");
-
 			so << "<td>";
-			so << QString("<a class=\"ll\" href=\"p%1.php\">"
+			so << QString("<a class=\"ll\" href=\"%1\">"
 					"<span style=\"font-family: sans-serif;\">%2</span></a><br>")
-				.arg((*pi)->Id().StringId())
-				.arg(personName);
+				.arg(playerFile((*pi)->Id()), (*pi)->Name().toHtmlEscaped());
 
 			so << "</td>";
 			if((*pi)->IsLineageHighborn())
@@ -2375,21 +2469,27 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 		so << "</div>\n";
 
 		so << "</body></html>\n";
-		file.close();
+		if(!finishFile(so, file))
+			return false;
+	}
+	else
+	{
+		qWarning() << "Failed to open avatar index" << file.fileName() << file.errorString();
+		return false;
 	}
 
-	file.setFileName("AvatarsByEmpire.php");
+	file.setFileName(avatarsByEmpireFile);
 	if(file.open(QIODevice::WriteOnly))
 	{
 		QTextStream so(&file);
 		so.setCodec("UTF-8");
-		so << s_htmlHeader;
-		so << s_titleBar.arg("Avatars");
-		so << s_bodyStart;
+		so << htmlHeader;
+		so << titleBar.arg("Avatars");
+		so << bodyStart;
 		so << QString("<div style=\"text-align: center; font-family: sans-serif;\"><big style=\"color: #ffffff; font-weight: bold; "
 				"font-family: sans-serif\"><br>%1</big><br>\n"
-				"<a class=\"a1\" href=\"Avatars.php\">By Name</a><small> | By Empire</small></div><br>\n")
-			.arg("Shores of Hazeron Avatars");
+				"<a class=\"a1\" href=\"%2\">By Name</a><small> | By Empire</small></div><br>\n")
+			.arg("Shores of Hazeron Avatars", avatarsFile);
 
 		// Make a link for each avatar in the map.
 		so << "<div style=\"margin-left: 10px;\">\n";
@@ -2404,14 +2504,14 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 
 			int flagHt = flag.height();
 			int flagWid = flag.width();
-			if(flagHt >= flagWid)
+			if(flagHt > 0 && flagWid > 0 && flagHt >= flagWid)
 			{
 				flagWid = 128 * flagWid / flagHt;
 				if(flagWid < 1)
 					flagWid = 1;
 				flagHt = 128;
 			}
-			else
+			else if(flagHt > 0 && flagWid > 0)
 			{
 				flagHt = 128 * flagHt / flagWid;
 				if(flagHt < 1)
@@ -2422,15 +2522,13 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 			// Empire name row.
 			so << "<tr>";
 			so << "<td align=\"right\">";
-			so << QString("<img title=\"%2\" style=\"width: %3px; height: %4px;\" alt=\"\" src=\"%1.png\"><br>")
-				.arg(*ei)
-				.arg(ei.key())
-				.arg(flagWid)
-				.arg(flagHt);
+			if(!flag.isNull())
+				so << QString("<img title=\"%4\" style=\"width: %2px; height: %3px;\" alt=\"\" src=\"%1.png\"><br>")
+					.arg(*ei).arg(flagWid).arg(flagHt).arg(ei.key().toHtmlEscaped());
 			so << "</td>";
 			so << "<td valign=\"middle\">";
 			so << QString("<span style=\"font-family: sans-serif;\"><big><b>%1</b></big></span>")
-				.arg(ei.key());
+				.arg(ei.key().toHtmlEscaped());
 			so << "</td>";
 			so << "<td>";
 			so << "</td>";
@@ -2441,19 +2539,13 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 				if((*pi)->EmpireId() != *ei)
 					continue;
 
-				// Some wise guy named their avatar Athena%1. :/
-				// All % characters are replaced with _.
-				QString personName((*pi)->Name());
-				personName.replace("%","_");
-
 				so << "<tr>";
 				so << "<td>";
 				so << "</td>";
 				so << "<td>";
-				so << QString("<a class=\"ll\" href=\"p%1.php\">"
+				so << QString("<a class=\"ll\" href=\"%1\">"
 						"<span style=\"font-family: sans-serif;\">%2</span></a><br>")
-					.arg((*pi)->Id().StringId())
-					.arg(personName);
+					.arg(playerFile((*pi)->Id()), (*pi)->Name().toHtmlEscaped());
 
 				so << "</td>";
 				if((*pi)->IsLineageHighborn())
@@ -2487,7 +2579,13 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 		so << "</div>\n";
 
 		so << "</body></html>\n";
-		file.close();
+		if(!finishFile(so, file))
+			return false;
+	}
+	else
+	{
+		qWarning() << "Failed to open avatar empire index" << file.fileName() << file.errorString();
+		return false;
 	}
 
 	// Now make the individual avatar pages.
@@ -2502,11 +2600,15 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 		if(!person->SelfieNoLock().isNull())
 		{
 			selfieFile = QString("p%1.png").arg(person->Id().StringId());
-			person->SelfieNoLock().save(selfieFile);
+			if(!person->SelfieNoLock().save(selfieFile))
+			{
+				qWarning() << "Failed to save avatar portrait" << selfieFile;
+				return false;
+			}
 		}
 
 		// Save their html page.
-		file.setFileName(QString("p%1.php").arg(person->Id().StringId()));
+		file.setFileName(playerFile(person->Id()));
 		if(file.open(QIODevice::WriteOnly))
 		{
 			int imgWidth, imgHeight;
@@ -2556,9 +2658,9 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 
 			QTextStream so(&file);
 			so.setCodec("UTF-8");
-			so << s_htmlHeader;
-			so << s_titleBar.arg((*pi)->Name());
-			so << s_bodyStart;
+			so << htmlHeader;
+			so << titleBar.arg((*pi)->Name().toHtmlEscaped());
+			so << bodyStart;
 			/*
 			so << QString("<div style=\"text-align: center; font-family: sans-serif;\">"
 					"<big style=\"font-weight: bold; font-family: sans-serif\"><br>%1</big></div>").arg((*pi)->Name());
@@ -2588,17 +2690,14 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 
 				// Link to selfie if we saved one.
 				if(!selfieFile.isEmpty())
-					so << QString("<img alt=\"\" src=\"p%1.png\" align=\"right\" width: 512px;>").arg(person->Id().StringId());
+					so << QString("<img alt=\"\" src=\"%1\" align=\"right\" style=\"max-width: 512px; width: 100%;\">")
+						.arg(selfieFile);
 
-				// Some wise guy named their avatar Athena%1. :/
-				// All % characters are replaced with _.
-				nameWithTitle.replace("%","_");
 				so << QString("<span style=\"color: rgb(255, 255, 255);\"><big><b>%1</b></big> <i>%2</i></span><br>")
-					.arg(nameWithTitle)
-					.arg(person->Id().StringId());
+					.arg(nameWithTitle.toHtmlEscaped(), person->Id().StringId());
 
 				if(!person->SpawnShipName().isEmpty())
-					so << QString("Berthed Aboard <b>%1</b><br>").arg(person->SpawnShipName());
+					so << QString("Berthed Aboard <b>%1</b><br>").arg(person->SpawnShipName().toHtmlEscaped());
 
 				/*
 				if(!person->SpawnCityName().isEmpty())
@@ -2726,10 +2825,7 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 					}
 					if(person->Stats().m_BountyGrants)
 					{
-						// Some wise guy named their avatar Athena%1. :/
-						// All % characters are replaced with _.
-						QString personName(person->Name());
-						personName.replace("%","_");
+						QString personName(person->Name().toHtmlEscaped());
 
 						so << QString("%2 Heads Redeemed by Others <b>%L1</b><br>")
 							.arg(person->Stats().m_BountyGrants)
@@ -2756,25 +2852,21 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 						so << "</tr>";
 						for(QMultiMap<AuTime, AuBountyOnItem>::const_iterator bri = bounties.constBegin(); bri != bounties.constEnd(); bri++)
 						{
-							// Some wise guy named their avatar Athena%1. :/
-							// All % characters are replaced with _.
-							QString posterName((*bri).PosterName());
-							posterName.replace("%","_");
-
 							QString amount = QString("%L1%2").arg((*bri).Amount(), 0,'f',0).arg(AuGlobal::CurrencySymbol());
-							QString reason = (*bri).Reason();
+							QString reason = (*bri).Reason().toHtmlEscaped();
 							QString byWho = QString("%1 <i><small>%2</small></i>")
-								.arg(posterName)
-								.arg((*bri).PosterId().StringId());
+								.arg((*bri).PosterName().toHtmlEscaped(), (*bri).PosterId().StringId());
+							if(!staticPages || publishedPlayers.contains((*bri).PosterId()))
+								byWho = QString("<a class=\"ll\" href=\"%1\">%2</a>")
+									.arg(playerFile((*bri).PosterId()), byWho);
 							QString when = bri.key().UTC().toString();
 
 							so << "<tr>";
 							so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%1</small></td>")
 								.arg(amount);
 							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>").arg(reason);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><a class=\"ll\" href=\"p%2.php\"><small>%1</small></a></td>")
-								.arg(byWho)
-								.arg((*bri).PosterId().StringId());
+							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>")
+								.arg(byWho);
 							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>").arg(when);
 							so << "</tr>";
 						}
@@ -2816,10 +2908,10 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 				QString dnadesc = personSpecies.Description();
 
 				so << QString("<big><b><span style=\"color: rgb(255, 255, 255);\">%1</span></b></big><br>")
-					.arg(dnadesc);
+					.arg(dnadesc.toHtmlEscaped());
 
 				if(!speciesName.isEmpty())
-					so << QString("Species <b>%1</b><br>").arg(speciesName);
+					so << QString("Species <b>%1</b><br>").arg(speciesName.toHtmlEscaped());
 
 				QString lineage;
 				if(person->IsLineageHighborn())
@@ -2838,7 +2930,7 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 
 				QString gender = person->FemaleMale(true);
 
-				so << QString("Gender <b>%1</b><br>").arg(gender);
+				so << QString("Gender <b>%1</b><br>").arg(gender.toHtmlEscaped());
 
 				QString handed;
 				if(person->IsLeftHanded())
@@ -2893,21 +2985,21 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 					so << semp + "<br>";
 
 					if(imgWidth > 0 && imgHeight > 0)
-						so << QString("<img alt=\"%2 Flag\" src=\"%1.png\" align=\"right\" style=\"width: %3px; height: %4px;\">")
-							.arg(person->EmpireId()).arg(empireName).arg(imgWidth).arg(imgHeight);
-					else
-						so << QString("<img alt=\"%2 Flag\" src=\"%1.png\" align=\"right\">")
-							.arg(person->EmpireId()).arg(empireName);
+						so << QString("<img alt=\"%4 Flag\" src=\"%1.png\" align=\"right\" style=\"width: %2px; height: %3px;\">")
+							.arg(person->EmpireId()).arg(imgWidth).arg(imgHeight).arg(empireName.toHtmlEscaped());
 
 					AuId emperorId = (*ei).second.EmperorId();
 					QString sempr;
 					if(emperorId.IsNull())
 						sempr = QString("Leader <b>-</b>");
 					else
-						sempr = QString("Leader <b><a class=\"ll\" href=\"p%3.php\">%1 %2</a></b>")
-							.arg((*ei).second.CitizenTitle(emperorId))
-							.arg((*ei).second.CitizenName(emperorId))
-							.arg(emperorId.StringId());
+					{
+						QString leader = ((*ei).second.CitizenTitle(emperorId) + " "
+							+ (*ei).second.CitizenName(emperorId)).toHtmlEscaped();
+						if(!staticPages || publishedPlayers.contains(emperorId))
+							leader = QString("<a class=\"ll\" href=\"%1\">%2</a>").arg(playerFile(emperorId), leader);
+						sempr = "Leader <b>" + leader + "</b>";
+					}
 					so << sempr + "<br>";
 				}
 				g_Au.UnlockData();
@@ -2919,11 +3011,18 @@ void AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse)
 
 			so << "</span>";
 			so << "</body></html>";
-			file.close();
+			if(!finishFile(so, file))
+				return false;
+		}
+		else
+		{
+			qWarning() << "Failed to open avatar profile" << file.fileName() << file.errorString();
+			return false;
 		}
 	}
 	if(traceReport)
 		qDebug() << "ReportPlayers Finished" << QDateTime::currentDateTime();
+	return true;
 }
 
 void AuEmpireReport::ReportDesignExchange(QSqlDatabase& dbUniverse)
@@ -8919,4 +9018,3 @@ void AuEmpireReport::FixNpcPassengers(QSqlDatabase& dbUniverse)
 	qDebug() << QString("Stored %L1 DaNpc records into the db.").arg(npcs.size());
 }
 */
-

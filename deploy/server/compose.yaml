@@ -43,6 +43,11 @@ services:
         protocol: tcp
     volumes:
       - web-reports:/var/lib/openshores/reports:ro
+    depends_on:
+      empire-standings:
+        condition: service_started
+      avatar-reports:
+        condition: service_started
     networks:
       - server
     healthcheck:
@@ -56,6 +61,40 @@ services:
       options:
         max-size: 20m
         max-file: "3"
+
+  empire-standings: &web-report
+    image: ${WEB_IMAGE:-openshores-web:local}
+    pull_policy: never
+    build:
+      context: ${WEB_BUILD_CONTEXT:-./web}
+    restart: unless-stopped
+    entrypoint: ["/opt/openshores/bin/report-scheduler", "standings"]
+    user: "1000:1000"
+    working_dir: /var/lib/openshores
+    stop_signal: SIGTERM
+    environment:
+      AU_UNIVERSE_DB_HOST: postgres
+      AU_LOGIN_DB_HOST: postgres
+      AU_DB_PASSWORD: ${AU_DB_PASSWORD}
+      HOME: /home/openshores
+      QT_QPA_PLATFORM: offscreen
+      REPORT_INTERVAL_MINUTES: ${REPORT_INTERVAL_MINUTES:-20}
+    networks:
+      - server
+    volumes:
+      - web-reports:/var/lib/openshores/reports
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging:
+      driver: local
+      options:
+        max-size: 20m
+        max-file: "3"
+
+  avatar-reports:
+    <<: *web-report
+    entrypoint: ["/opt/openshores/bin/report-scheduler", "avatars"]
 
   postgres:
     image: ${POSTGRES_IMAGE}

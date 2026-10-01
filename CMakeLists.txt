@@ -97,7 +97,7 @@ add_custom_target(clients DEPENDS
     AuSceneClient AuMailClient AuChatClient AuLauncher
 )
 add_custom_target(servers DEPENDS AuLoginServer AuMailServer AuSceneServer)
-add_custom_target(web-tools DEPENDS AuServerStatus AuAcctNew AuAcctEmail AuAcctPassword)
+add_custom_target(web-tools DEPENDS AuServerStatus AuAcctNew AuAcctEmail AuAcctPassword AuEmpireReport)
 add_custom_target(server-deployment DEPENDS servers web-tools)
 add_custom_target(cgi DEPENDS
     AuAcctEmail AuAcctExpire AuAcctNew AuAcctPassword

@@ -22,8 +22,8 @@ Containers use Docker service names for private traffic. Native clients use the 
 
 Server compilation reuses the repository's existing named Docker volumes (`hazeron-linux-<config>-cache`). The build exports `build/linux-<config>/bin` and `lib`; the deployment then packages those artifacts into the runtime image. There is no second CMake cache inside the image build.
 
-The `server-deployment` build target compiles the game servers and the four web
-tools together. Deployment containers use no bind mounts: executables, web files,
+The `server-deployment` build target compiles the game servers and the five web
+tools (including `AuEmpireReport`) together. Deployment containers use no bind mounts: executables, web files,
 and INI configuration are copied into images. Only database data and generated
 reports use named Docker volumes. The release archive includes every local input
 needed to assemble those images, with paths relative to the extracted archive.
@@ -120,9 +120,10 @@ The page refreshes its results when reloaded; it does not poll in the background
 Each status command has a 12-second timeout, after which the page shows an error
 for that service. Command failures also go to the Apache error log.
 
-The Apache image copies `AuServerStatus`, `AuAcctNew`, `AuAcctEmail`, and
-`AuAcctPassword` from the `bin/` directory inside its own build context. After
-compilation, `deploy/server/web/stage.sh` assembles the web files and executables
+The Apache image copies `AuServerStatus`, `AuAcctNew`, `AuAcctEmail`,
+`AuAcctPassword`, and `AuEmpireReport` from the `bin/` directory inside its own
+build context, along with reporting libraries from `lib/`. After
+compilation, `deploy/server/web/stage.sh` assembles the web files, executables, and libraries
 into `build/server/web-context-<config>/` for development. The generated Compose
 settings select that context. The web-up targets compile `web-tools` and stage
 the context before rebuilding the image. The container has no executable mounts.
@@ -130,7 +131,8 @@ the context before rebuilding the image. The container has no executable mounts.
 The normal `make server-up` compiles and packages both the servers and web tools.
 For production, use `make server-prod-web-up` or the full `make server-prod-up`.
 The production archive includes this complete context as `deploy/server/web/`,
-with the four Release executables in `deploy/server/web/bin/`. Its Compose
+with the five Release executables in `deploy/server/web/bin/` and their shared
+libraries in `deploy/server/web/lib/`. Its Compose
 settings use `WEB_BUILD_CONTEXT=./web`, relative to `deploy/server/compose.yaml`.
 The archive needs no `build/` directory, source checkout, or C++ compiler.
 Running `./start.sh` builds Apache from that packaged context alongside
@@ -178,11 +180,118 @@ Apache configuration, static site files, and CGI executables live in the image.
 Generated reports have their own named volume,
 `${COMPOSE_PROJECT_NAME}-web-reports`, mounted at
 `/var/lib/openshores/reports` and served under `/reports/`. Apache mounts it
-read-only; a future report generator can mount the same volume read-write.
-New volumes are initialized with owner UID/GID `1000:1000`, matching the game
+read-only; the `empire-standings` and `avatar-reports` services mount the same
+volume read-write, publishing into separate subdirectories.
+New volumes are initialized with owner UID/GID `1000:1000`, matching the web
 image's `openshores` user. Directory listings and script execution are disabled
-for reports, and PHP/script files are denied. Legacy PHP report output will need
-adaptation when report generation is integrated.
+for reports, and PHP/script files are denied. Standings-only output is static HTML;
+the legacy combined report still needs adaptation before it can be published.
+
+The web image includes `/opt/openshores/bin/AuEmpireReport` and the report
+runners. The `empire-standings` container uses this same image with the report
+scheduler as its entrypoint and user `1000:1000`; it does not start Apache. The
+Apache container keeps its read-only report mount, while this container writes
+to the existing named volume. Reporting executables are not packaged in the
+game-server image.
+
+The executable's `-standings`
+option generates only empire standings on stdout and flag images in the current
+working directory; `-report` retains the legacy combined standings, avatar pages,
+and blueprint exchange output. Database connections use `AU_UNIVERSE_DB_HOST`
+and `AU_LOGIN_DB_HOST` (both default to `postgres`), with user `audog` and
+`AU_DB_PASSWORD` (default `Gold`), matching the game servers' deployment settings.
+The legacy `-huey` and `-u0` flags override the universe database host when supplied.
+The `empire-standings` service generates a report immediately after PostgreSQL
+is healthy, then refreshes it periodically. Apache can start while reports are
+being generated; on first deployment, report pages are available after the first
+successful refresh. It publishes
+`/reports/standings/index.html`, linked from the homepage as `/standings`.
+Generation has a five-minute timeout and a lock to prevent overlapping refreshes;
+the published page is replaced only after the generator succeeds and produces
+nonempty output. The generator's existing layout is retained, but standings-only
+output omits the old PHP header include and unavailable avatar links.
+
+Both report services default to waiting **20 minutes after each run finishes**
+before starting the next run. Change the shared interval in
+`deploy/server/environments/local.env` or `deploy/server/environments/production.env`:
+
+```dotenv
+REPORT_INTERVAL_MINUTES=20
+```
+
+The value must be a whole number from 1 to 525600. After changing it, run
+`make server-reports-up` or `make server-prod-reports-up` with the stack already
+running. These targets regenerate configuration and restart only the report
+schedulers; they do not build or restart the game servers or Apache. An interval
+change takes effect when the report containers are recreated. Existing configs
+that omit the setting default to 20 minutes.
+
+For a packaged release, edit `REPORT_INTERVAL_MINUTES` in the extracted
+`compose.env`, then apply it without rebuilding:
+
+```sh
+docker compose --env-file compose.env -f deploy/server/compose.yaml \
+  -f workers.compose.json up --detach --no-deps --force-recreate empire-standings avatar-reports
+```
+
+Each service retries after its configured interval if generation fails, logging
+the failure and continuing to serve the previous published report. Runs do not
+overlap; the existing locks also guard against simultaneous manual refreshes.
+Stopping a report container interrupts its current job or wait.
+
+With the stack running and the updated web image installed, refresh manually
+(these commands run once and do not build):
+
+```sh
+make server-standings
+# Production:
+make server-prod-standings
+```
+
+From an extracted release directory, the equivalent is:
+
+```sh
+docker compose --env-file compose.env -f deploy/server/compose.yaml \
+  -f workers.compose.json run --rm --no-deps empire-standings --once
+```
+
+To rebuild reporting changes and publish fresh standings without restarting game
+servers, use `make server-web-up` (production: `make server-prod-web-up
+SERVER_CONFIG=release`). The web-up target rebuilds the shared image and recreates
+Apache and both report schedulers, which begin an immediate refresh. Full-stack
+`server-up` targets also build the web image and start the report services.
+On a newly initialized universe, refresh again after the scene server has created
+the galaxy and players have established empires.
+
+The homepage's `/avatars` link opens a static avatar directory with views by
+name and empire. Each avatar links to its profile, including its selfie when
+present. `AuEmpireReport -avatars` generates these pages and their flag images
+independently of standings or blueprint exchange. The current legacy profile
+layout is retained; deleted avatars and pirate-empire avatars are excluded, and
+the old synthetic Silverwill entry is not added.
+
+The `avatar-reports` service uses the same web image and begins on stack
+startup after PostgreSQL is healthy, then uses the same configurable interval.
+It publishes under `/reports/avatars/`, with a five-minute timeout and a separate
+lock. A failed generation leaves the previous published pages in place. After a
+successful generation, obsolete profiles and images are removed from this
+subdirectory.
+
+To build and publish avatar changes while the stack is running:
+
+```sh
+make server-web-up
+# Production:
+make server-prod-web-up SERVER_CONFIG=release
+```
+
+For an additional immediate refresh, `make server-avatars` and
+`make server-prod-avatars` run once without building. From an extracted release directory:
+
+```sh
+docker compose --env-file compose.env -f deploy/server/compose.yaml \
+  -f workers.compose.json run --rm --no-deps avatar-reports --once
+```
 
 The report volume survives image rebuilds, container replacement, and normal
 `server-down`/`server-prod-down`. `server-reset` and Compose `down --volumes`
