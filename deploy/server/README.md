@@ -1,6 +1,6 @@
 # Docker server deployment
 
-The deployment runs every server process in its own container. The login, mail, and scene roles reuse one game-server image; PostgreSQL and Apache each use their own image and container.
+The deployment runs every server process in its own container. The login, mail, and scene roles share a game-server base image; the scene master adds its INI in a small derived image. PostgreSQL and Apache each use their own image and container.
 
 This deployment targets one Docker host. Scene workers scale across containers on that host. Multi-host scheduling is not included.
 
@@ -21,6 +21,12 @@ scene-worker-1 ... scene-worker-N
 Containers use Docker service names for private traffic. Native clients use the configured public host and published ports. PostgreSQL is never published.
 
 Server compilation reuses the repository's existing named Docker volumes (`hazeron-linux-<config>-cache`). The build exports `build/linux-<config>/bin` and `lib`; the deployment then packages those artifacts into the runtime image. There is no second CMake cache inside the image build.
+
+The `server-deployment` build target compiles the game servers and the four web
+tools together. Deployment containers use no bind mounts: executables, web files,
+and INI configuration are copied into images. Only database data and generated
+reports use named Docker volumes. The release archive includes every local input
+needed to assemble those images, with paths relative to the extracted archive.
 
 The image build uses a unique temporary context under `build/server/` and removes it when the script exits, including on failure. Set `HAZERON_KEEP_STAGING=1` to retain the context for inspection; its path is printed when the script exits.
 
@@ -101,11 +107,10 @@ or email delivery. The handlers return their existing result pages. The legacy
 change protocol does not acknowledge database updates, so verify changes by
 logging in with the new password or inspecting the account record.
 
-For this testing setup, build the CGI tools first, then build and start Apache
-without rebuilding or restarting the game servers:
+To compile the web tools, rebuild the Apache image and start it without
+rebuilding or restarting the game servers:
 
 ```bash
-make linux-cgi CONFIG=debug
 make server-web-up
 make server-logs SERVICE=web
 ```
@@ -115,18 +120,21 @@ The page refreshes its results when reloaded; it does not poll in the background
 Each status command has a 12-second timeout, after which the page shows an error
 for that service. Command failures also go to the Apache error log.
 
-The `AuServerStatus`, `AuAcctNew`, `AuAcctEmail`, and `AuAcctPassword` executables are mounted read-only from
-`build/linux-<SERVER_BUILD_CONFIG>/bin/`; the Qt runtime libraries
-are installed in the web image. Match `CONFIG` to the deployment's
-`SERVER_BUILD_CONFIG` (`debug` locally and `release` in production by default).
-After rebuilding the executable, rerun the web-up target. It recreates the web
-container so Docker remounts the new file if the linker replaced it.
+The Apache image copies `AuServerStatus`, `AuAcctNew`, `AuAcctEmail`, and
+`AuAcctPassword` from the `bin/` directory inside its own build context. After
+compilation, `deploy/server/web/stage.sh` assembles the web files and executables
+into `build/server/web-context-<config>/` for development. The generated Compose
+settings select that context. The web-up targets compile `web-tools` and stage
+the context before rebuilding the image. The container has no executable mounts.
 
-The normal `make server-up` also includes Apache, but does not compile these tools.
+The normal `make server-up` compiles and packages both the servers and web tools.
 For production, use `make server-prod-web-up` or the full `make server-prod-up`.
-Build `make linux-cgi CONFIG=release` first for a production source checkout.
-The production archive's `./start.sh` builds the bundled web image along with
-the PostgreSQL image; CI includes all four Release executables in that archive.
+The production archive includes this complete context as `deploy/server/web/`,
+with the four Release executables in `deploy/server/web/bin/`. Its Compose
+settings use `WEB_BUILD_CONTEXT=./web`, relative to `deploy/server/compose.yaml`.
+The archive needs no `build/` directory, source checkout, or C++ compiler.
+Running `./start.sh` builds Apache from that packaged context alongside
+PostgreSQL and the scene-master configuration image.
 
 The avatar count links to `/playerson.php`, which runs `AuServerStatus -p` to
 query the scene master for a fresh JSON list. PHP renders the avatar names and
@@ -314,10 +322,10 @@ Application defaults remain compatible with the original deployment. Docker supp
 
 ### Scene-master INI file
 
-The scene master reads an editable host file mounted read-only at
-`/etc/openshores/scene-master.ini`:
+The scene-master image copies an editable deployment file to
+`/etc/openshores/scene-master.ini`. This file does not use a volume or a bind mount:
 
-| Stack | Host file | Initial setting |
+| Stack | Deployment file | Initial setting |
 | --- | --- | --- |
 | Local | `deploy/server/environments/local.ini` | `galaxyGen=1galaxy` |
 | Production | `deploy/server/environments/production.ini` | `galaxyGen=all` |
@@ -334,17 +342,22 @@ changing the setting does not reduce an existing universe to one galaxy.
 Managers and workers load the galaxies from the database and do not need this INI.
 
 Compose passes `=/etc/openshores/scene-master` to `AuSceneServer`; the application
-appends `.ini`. The mount requires the host file to exist. The INI is read at
-startup, and changes take effect after recreating the scene-master container.
-The first deployment of this feature also requires an updated server image;
-run `make server-up` locally or `make server-prod-up` for production to build and
-apply the changes. Subsequent INI-only edits do not require an image rebuild.
+appends `.ini`. At launch, Compose builds a small image derived from the game
+server image, using `environments/scene-master.Dockerfile` and the selected INI.
+The build context is relative to the deployment's Compose file, so it works
+from either the repository or an extracted release archive. An INI change
+rebuilds this configuration layer and recreates the scene-master container when
+you rerun `make server-up`, `make server-prod-up`, or the release's `./start.sh`.
+The prebuilt game server executable is reused. A plain container restart keeps
+the INI that was copied into its image.
 
 These INI files are maintained directly, not generated by `configure.py`.
 Keep deployment credentials and network settings in the existing `.env` files:
 INI settings override command-line arguments when both specify the same key.
-The production deployment archive includes `deploy/server/environments/production.ini`,
-which can be edited after extraction and before running `./start.sh`.
+The production deployment archive includes
+`deploy/server/environments/scene-master.Dockerfile` and
+`deploy/server/environments/production.ini`, which can be edited after extraction
+and before running `./start.sh`.
 
 ## Logs and data
 

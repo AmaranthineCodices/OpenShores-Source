@@ -195,6 +195,7 @@ def main() -> None:
             "SERVER_IMAGE": f"openshores-server:{environment}-{config}",
             "POSTGRES_IMAGE": f"openshores-postgres:{environment}",
             "WEB_IMAGE": f"openshores-web:{environment}",
+            "WEB_BUILD_CONTEXT": f"../../build/server/web-context-{config}",
             "WEB_PORT": str(web_port),
             "SCENE_WORKERS": str(workers),
             "ATOM_MANAGERS": str(atom_managers),
@@ -277,6 +278,7 @@ def main() -> None:
         "SERVER_IMAGE",
         "POSTGRES_IMAGE",
         "WEB_IMAGE",
+        "WEB_BUILD_CONTEXT",
     ]
     env_order = list(COMMON_DEFAULTS) + generated_names
     env_lines = [f"{name}={settings[name]}" for name in env_order]

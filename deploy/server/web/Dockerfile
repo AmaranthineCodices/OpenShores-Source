@@ -14,15 +14,15 @@ RUN apt-get update \
     && install -d -o 1000 -g 1000 /var/lib/openshores/reports
 
 COPY openshores.conf /etc/apache2/sites-available/openshores.conf
-COPY index.php /opt/openshores/www/index.php
-COPY playerson.php /opt/openshores/www/playerson.php
-COPY register.html /opt/openshores/www/register.html
-COPY emailchange.html passchange.html /opt/openshores/www/
-COPY reset.html /opt/openshores/www/reset.html
+COPY index.php playerson.php styles.css /opt/openshores/www/
+COPY register.html reset.html emailchange.html passchange.html /opt/openshores/www/
 COPY health.cgi /opt/openshores/cgi-bin/health.cgi
 COPY entrypoint.sh /usr/local/bin/openshores-web
+COPY bin/AuServerStatus /opt/openshores/bin/AuServerStatus
+COPY bin/AuAcctNew bin/AuAcctEmail bin/AuAcctPassword /opt/openshores/cgi-bin/
 
-RUN chmod 0755 /usr/local/bin/openshores-web /opt/openshores/cgi-bin/health.cgi \
+RUN chmod 0755 /usr/local/bin/openshores-web /opt/openshores/bin/AuServerStatus \
+        /opt/openshores/cgi-bin/health.cgi /opt/openshores/cgi-bin/AuAcct* \
     && a2ensite openshores \
     && php-cgi -l /opt/openshores/www/index.php \
     && php-cgi -l /opt/openshores/www/playerson.php \

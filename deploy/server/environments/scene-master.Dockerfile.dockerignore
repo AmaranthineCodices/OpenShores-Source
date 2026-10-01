@@ -1,0 +1,5 @@
+# Only INI configuration is needed; exclude deployment credentials.
+**
+!*.ini
+!scene-master.Dockerfile
+!scene-master.Dockerfile.dockerignore

@@ -41,6 +41,10 @@ server-up: server-image
 	$(LOCAL_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-web-up: server-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(LOCAL_SERVER_ENV)"); \
+	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" HAZERON_BUILD_CONFIG="$$config" \
+		bash docker/linux/build.sh web-tools && \
+	bash deploy/server/web/stage.sh "$$config"
 	$(LOCAL_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
 
 server-down: server-ensure-config
@@ -83,6 +87,10 @@ server-prod-up: server-prod-image
 	$(PRODUCTION_COMPOSE) up --build --detach --remove-orphans --wait
 
 server-prod-web-up: server-prod-config
+	@config=$$(awk -F= '$$1 == "SERVER_BUILD_CONFIG" { print $$2 }' "$(PRODUCTION_SERVER_ENV)"); \
+	HAZERON_LINUX_IMAGE="$(LINUX_IMAGE)" HAZERON_BUILD_CONFIG="$$config" \
+		bash docker/linux/build.sh web-tools && \
+	bash deploy/server/web/stage.sh "$$config"
 	$(PRODUCTION_COMPOSE) up --build --detach --wait --no-deps --force-recreate web
 
 server-prod-down: server-prod-ensure-config

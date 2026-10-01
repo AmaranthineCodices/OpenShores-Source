@@ -28,7 +28,9 @@ artifacts="$repo_root/build/linux-$config"
 HAZERON_LINUX_IMAGE="$toolchain_image" \
 HAZERON_LINUX_CACHE_VOLUME="$cache_volume" \
 HAZERON_BUILD_CONFIG="$config" \
-    bash "$repo_root/docker/linux/build.sh" servers
+    bash "$repo_root/docker/linux/build.sh" server-deployment
+
+bash "$repo_root/deploy/server/web/stage.sh" "$config"
 
 create_staging_directory "$repo_root/build/server" "image-context-$config"
 context=$staging_dir

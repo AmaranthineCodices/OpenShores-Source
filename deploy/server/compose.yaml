@@ -29,7 +29,7 @@ services:
     image: ${WEB_IMAGE:-openshores-web:local}
     pull_policy: never
     build:
-      context: ./web
+      context: ${WEB_BUILD_CONTEXT:-./web}
     restart: unless-stopped
     stop_grace_period: 30s
     environment:
@@ -43,30 +43,6 @@ services:
         protocol: tcp
     volumes:
       - web-reports:/var/lib/openshores/reports:ro
-      - type: bind
-        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuServerStatus
-        target: /opt/openshores/bin/AuServerStatus
-        read_only: true
-        bind:
-          create_host_path: false
-      - type: bind
-        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuAcctNew
-        target: /opt/openshores/cgi-bin/AuAcctNew
-        read_only: true
-        bind:
-          create_host_path: false
-      - type: bind
-        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuAcctEmail
-        target: /opt/openshores/cgi-bin/AuAcctEmail
-        read_only: true
-        bind:
-          create_host_path: false
-      - type: bind
-        source: ../../build/linux-${SERVER_BUILD_CONFIG:-debug}/bin/AuAcctPassword
-        target: /opt/openshores/cgi-bin/AuAcctPassword
-        read_only: true
-        bind:
-          create_host_path: false
     networks:
       - server
     healthcheck:
@@ -190,6 +166,13 @@ services:
 
   scene-master:
     <<: *server
+    image: ${COMPOSE_PROJECT_NAME}-scene-master:${SERVER_BUILD_CONFIG:-debug}
+    build:
+      context: ./environments
+      dockerfile: scene-master.Dockerfile
+      args:
+        SERVER_IMAGE: ${SERVER_IMAGE}
+        DEPLOY_ENVIRONMENT: ${DEPLOY_ENVIRONMENT:?DEPLOY_ENVIRONMENT must be local or production}
     command:
       - /opt/openshores/bin/AuSceneServer
       - =/etc/openshores/scene-master
@@ -197,13 +180,6 @@ services:
       - -m16762
       - -lu1s0
       - -w${SERVER_LOGIN_PASSWORD}
-    volumes:
-      - type: bind
-        source: ./environments/${DEPLOY_ENVIRONMENT:?DEPLOY_ENVIRONMENT must be local or production}.ini
-        target: /etc/openshores/scene-master.ini
-        read_only: true
-        bind:
-          create_host_path: false
     depends_on:
       postgres:
         condition: service_healthy

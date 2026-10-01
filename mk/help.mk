@@ -25,7 +25,7 @@ help:
 		'' \
 		"$${heading}Local server deployment$${reset}" \
 		'  make server-up            Build and start the local stack' \
-		'  make server-web-up        Build and start only local Apache' \
+		'  make server-web-up        Compile web tools and start local Apache' \
 		'  make server-down          Stop it, preserving data' \
 		'  make server-logs          Follow logs' \
 		'  make server-status        Show container and health status' \
@@ -33,7 +33,7 @@ help:
 		'' \
 		"$${heading}Production server deployment$${reset}" \
 		'  make server-prod-up       Build and start production' \
-		'  make server-prod-web-up   Build and start only production Apache' \
+		'  make server-prod-web-up   Compile web tools and start production Apache' \
 		'  make server-prod-down     Stop production, preserving data' \
 		'  make server-prod-logs     Follow production logs' \
 		'  make server-prod-status   Show container and health status' \

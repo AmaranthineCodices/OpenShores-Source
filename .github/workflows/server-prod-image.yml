@@ -72,10 +72,6 @@ jobs:
           umask 077
           printf '%s\n' "$PRODUCTION_ENV_CONTENT" > "$RUNNER_TEMP/server-production.env"
           make server-prod-image SERVER_PRODUCTION_ENV="$RUNNER_TEMP/server-production.env" SERVER_CONFIG=release
-          HAZERON_BUILD_CONFIG=release bash docker/linux/build.sh AuServerStatus
-          HAZERON_BUILD_CONFIG=release bash docker/linux/build.sh AuAcctNew
-          HAZERON_BUILD_CONFIG=release bash docker/linux/build.sh AuAcctEmail
-          HAZERON_BUILD_CONFIG=release bash docker/linux/build.sh AuAcctPassword
 
       - name: Tag and push server image
         shell: bash
@@ -105,7 +101,8 @@ jobs:
           env_path = path.with_name("compose.env")
           lines = env_path.read_text().splitlines()
           env_path.write_text("\n".join(
-              f"SERVER_IMAGE={image}" if line.startswith("SERVER_IMAGE=") else line
+              f"SERVER_IMAGE={image}" if line.startswith("SERVER_IMAGE=") else
+              "WEB_BUILD_CONTEXT=./web" if line.startswith("WEB_BUILD_CONTEXT=") else line
               for line in lines
           ) + "\n")
           PY
@@ -113,17 +110,14 @@ jobs:
           mkdir -p "$bundle/deploy/server/postgres"
           mkdir -p "$bundle/deploy/server/environments"
           cp deploy/server/compose.yaml "$bundle/deploy/server/"
-          cp -R deploy/server/web "$bundle/deploy/server/"
-          install -D -m 0755 build/linux-release/bin/AuServerStatus \
-            "$bundle/build/linux-release/bin/AuServerStatus"
-          install -D -m 0755 build/linux-release/bin/AuAcctNew \
-            "$bundle/build/linux-release/bin/AuAcctNew"
-          install -D -m 0755 build/linux-release/bin/AuAcctEmail \
-            "$bundle/build/linux-release/bin/AuAcctEmail"
-          install -D -m 0755 build/linux-release/bin/AuAcctPassword \
-            "$bundle/build/linux-release/bin/AuAcctPassword"
+          mkdir -p "$bundle/deploy/server/web"
+          cp -R build/server/web-context-release/. "$bundle/deploy/server/web/"
           install -m 0644 deploy/server/environments/production.ini \
             "$bundle/deploy/server/environments/production.ini"
+          install -m 0644 deploy/server/environments/scene-master.Dockerfile \
+            "$bundle/deploy/server/environments/scene-master.Dockerfile"
+          install -m 0644 deploy/server/environments/scene-master.Dockerfile.dockerignore \
+            "$bundle/deploy/server/environments/scene-master.Dockerfile.dockerignore"
           cp deploy/server/postgres/Dockerfile deploy/server/postgres/init.sh \
             "$bundle/deploy/server/postgres/"
           cp -R deploy/server/postgres/schema "$bundle/deploy/server/postgres/"
@@ -131,7 +125,7 @@ jobs:
           install -m 0755 deploy/server/scripts/stop-production.sh "$bundle/stop.sh"
           chmod 0600 "$bundle/compose.env" "$bundle/workers.compose.json"
           tar -cf build/server/server-production-compose.tar \
-            -C "$bundle" start.sh stop.sh compose.env workers.compose.json deploy build
+            -C "$bundle" start.sh stop.sh compose.env workers.compose.json deploy
 
       - name: Upload Compose archive
         uses: actions/upload-artifact@v7

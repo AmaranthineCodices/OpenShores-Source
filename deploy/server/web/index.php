@@ -52,27 +52,7 @@ function getVersion(string $flag)
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            background-color: #0B0B3B;
-            color: white;
-            text-shadow: 2px 2px black;
-        }
-        #statusdiv {
-            border: 1px solid grey;
-            max-width: 240px;
-            padding: 5px;
-        }
-        #links {
-            padding: 5px;
-            border: 1px solid grey;
-            max-width: 240px;
-            margin-top: 10px;
-        }
-        a:visited {
-            color: #6078ac;
-        }
-    </style>
+    <link rel="stylesheet" href="/styles.css">
     <title>OpenShores</title>
 </head>
 <body>
