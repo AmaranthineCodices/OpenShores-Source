@@ -216,6 +216,7 @@ static bool s_SightTarget = true;		// Ctrl+9 - SightTarget
 // Tuning parameters.
 #define d_AtomControlTime				10						// Msec between atom control updates.
 #define d_FrameRate						60						// Target frame rate, in frames per second.
+static const bool s_WaitScreenOld = true;
 #define d_SubtitleWordWrap				128						// Line length of narrative text.
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
@@ -1819,6 +1820,12 @@ AuDesignerView::AuDesignerView(QWidget* parent) : QOpenGLWidget(parent), m_Scene
 	m_texWarpSides = 0;
 	m_texWormholeSides = 0;
 	m_texWormholeSpace = 0;
+	m_texWaitSpaceOld = 0;
+	m_texWaitStarsOld = 0;
+	m_WaitSpaceAngle = 0;
+	m_WaitBeamAngle = 0;
+	m_WaitSeed = (quint32)g_Au.Dice().Roll(1, 0x7fffffff, 0);
+	m_WaitStepAt = -1;
 
 	m_RenderPaused = false;
 
@@ -2062,6 +2069,14 @@ void AuDesignerView::initializeGL()
 		m_texWormholeSpace = m_RenderInfo->re->CreateTextureFromBitmap(STATIC_TEXTURE_ID, "WormholeSpace",
 				":data/WormholeSpace.png", GL_LINEAR, GL_LINEAR, true);
 
+	if(!m_texWaitSpaceOld)
+		m_texWaitSpaceOld = m_RenderInfo->re->CreateTextureFromBitmap(STATIC_TEXTURE_ID, "WormholeSpaceOld",
+				":data/WormholeSpaceOld.png", GL_LINEAR, GL_LINEAR, false, 2);
+
+	if(!m_texWaitStarsOld)
+		m_texWaitStarsOld = m_RenderInfo->re->CreateTextureFromBitmap(STATIC_TEXTURE_ID, "WaitIndOld",
+				":data/ServerHandoff.png", GL_LINEAR, GL_LINEAR, false, 2);
+
 	// Create thread to do the rendering work.
 	if(false && context()->supportsThreadedOpenGL())
 	{
@@ -2104,10 +2119,12 @@ void AuDesignerView::paintGL()
 
 		// Do not hold onto the mouse when waiting.
 		ReleaseMouse();
-		if(m_IsWarping)
-			ShowWarpIndicator();
-		else
+		if(!m_IsWarping)
 			ShowWormholeIndicator();
+		else if(s_WaitScreenOld)
+			ShowServerHandoffWait();
+		else
+			ShowWarpIndicator();
 
 		// Reset full fade so we fade-in after showing the wait indicator.
 		m_Fade = 0;
@@ -3507,6 +3524,183 @@ void AuDesignerView::ShowMouseThumbTwiddleInstruction()
 }
 
 // Display a visual cue suggestive of warp travel.
+int AuDesignerView::WaitRandom(int n)
+{
+	m_WaitSeed = m_WaitSeed * 0x41c64e6du + 0x3039u;
+	return (int)(m_WaitSeed / 4294967296.0 * n);
+}
+
+bool AuDesignerView::MoveWaitParticle(WaitParticle& star) const
+{
+	const float out = ((float)(star.frame / 3) + 1.f) / 25.f + 1.f;
+	star.x *= out;
+	star.y *= out;
+	const float spin = (float)(10 - star.frame);
+	if(star.frame & 1)
+	{
+		star.angle += spin;
+		if(star.angle >= 360)
+			star.angle -= 360;
+	}
+	else
+	{
+		star.angle -= spin;
+		if(star.angle < 0)
+			star.angle += 360;
+	}
+	return fabs(star.x) <= 1 && fabs(star.y) <= 1;
+}
+
+void AuDesignerView::StepServerHandoffWait(bool first)
+{
+	if(!first)
+	{
+		QVector<WaitParticle>::iterator it = m_WaitParticles.begin();
+		while(it != m_WaitParticles.end())
+		{
+			if(MoveWaitParticle(*it) && MoveWaitParticle(*it))
+				it++;
+			else
+				it = m_WaitParticles.erase(it);
+		}
+	}
+
+	if(m_WaitParticles.count() < 1000)
+	{
+		WaitParticle star;
+		int roll = 1 + WaitRandom(256);
+		star.frame = roll < 2 ? 7 : roll < 4 ? 6 : roll < 8 ? 5 : roll < 16 ? 4 : roll < 32 ? 3 : roll < 64 ? 2 : roll < 128 ? 1 : 0;
+		star.angle = (float)WaitRandom(360);
+		do
+		{
+			star.x = (float)(WaitRandom(101) - 50) / 5000.f;
+			star.y = (float)(WaitRandom(101) - 50) / 5000.f;
+		} while(star.x == 0 && star.y == 0);
+		m_WaitParticles.append(star);
+	}
+
+	m_WaitSpaceAngle += .5f;
+	m_WaitBeamAngle += (float)(WaitRandom(7) - 3);
+}
+
+void AuDesignerView::ShowServerHandoffWait()
+{
+	AuGLEffects& re = *m_RenderInfo->re;
+	AuGLSLTexture& shader = re.GLSL().TextureShader();
+
+	const qint64 step = 33;
+	if(!m_WaitClock.isValid())
+		m_WaitClock.start();
+	const qint64 now = m_WaitClock.elapsed();
+	if(m_WaitStepAt < 0 || now - m_WaitStepAt > 1000)
+	{
+		StepServerHandoffWait(m_WaitStepAt < 0);
+		m_WaitStepAt = now;
+	}
+	else
+	{
+		while(now - m_WaitStepAt >= step)
+		{
+			StepServerHandoffWait(false);
+			m_WaitStepAt += step;
+		}
+	}
+
+	re.glDisable(GL_DEPTH_TEST);
+	re.glDisable(GL_BLEND);
+
+	AuMatrix4x4 screen;
+	screen.RotateZ(m_WaitSpaceAngle*DEG2RAD);
+	shader.Select();
+	shader.SetProjectionModelView(screen);
+	shader.SetColor(1,1,1,1);
+	shader.SetTexture(m_texWaitSpaceOld);
+
+	const float xy = 1.4142f;
+	QList<AuTriTex> tris;
+	tris << AuTriTex(AuPointTex(-xy, -xy, 0, 0,0),
+			AuPointTex(-xy, xy, 0, 0,1),
+			AuPointTex(xy, xy, 0, 1,1));
+	tris << AuTriTex(AuPointTex(xy, xy, 0, 1,1),
+			AuPointTex(xy, -xy, 0, 1,0),
+			AuPointTex(-xy, -xy, 0, 0,0));
+	AuGLVAO vao;
+	vao.CreateForTexture(re, tris, GL_STREAM_DRAW);
+	if(vao.VAO())
+	{
+		vao.SelectGL();
+		vao.DrawGL();
+		vao.DeselectGL();
+		vao.DeleteGL();
+	}
+
+	re.glEnable(GL_BLEND);
+	re.glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	shader.SetTexture(m_texWaitStarsOld);
+	const float passAlpha[3] = {.2f, .6f, 1.f};
+	const float starTop = .6666667f;
+	QVector<WaitParticle> stars = m_WaitParticles;
+	for(int pass = 0; pass < 3; pass++)
+	{
+		tris.clear();
+		QVector<WaitParticle>::iterator it = stars.begin();
+		while(it != stars.end())
+		{
+			WaitParticle& star = *it;
+			const float size = (1.f + star.frame) / 24.f * sqrtf(star.x*star.x + star.y*star.y) * 5.f;
+			const float s0 = star.frame * .125f;
+			const float s1 = (star.frame + 1) * .125f;
+			const double turn = star.angle*DEG2RAD;
+			const AuPoint at(star.x, star.y, 0);
+			AuPoint v0 = at + AuPoint(-size, -size, 0).RotateZ(turn);
+			AuPoint v1 = at + AuPoint(-size, size, 0).RotateZ(turn);
+			AuPoint v2 = at + AuPoint(size, size, 0).RotateZ(turn);
+			AuPoint v3 = at + AuPoint(size, -size, 0).RotateZ(turn);
+			tris << AuTriTex(AuPointTex(v0, s0,0),
+					AuPointTex(v1, s0,starTop),
+					AuPointTex(v2, s1,starTop));
+			tris << AuTriTex(AuPointTex(v2, s1,starTop),
+					AuPointTex(v3, s1,0),
+					AuPointTex(v0, s0,0));
+			if(pass == 2 || MoveWaitParticle(star))
+				it++;
+			else
+				it = stars.erase(it);
+		}
+		shader.SetColor(1,1,1, passAlpha[pass]);
+		vao.CreateForTexture(re, tris, GL_STREAM_DRAW);
+		if(vao.VAO())
+		{
+			vao.SelectGL();
+			vao.DrawGL();
+			vao.DeselectGL();
+			vao.DeleteGL();
+		}
+	}
+
+	AuMatrix4x4 beam = screen;
+	beam.RotateZ(m_WaitBeamAngle*DEG2RAD);
+	shader.SetProjectionModelView(beam);
+	shader.SetColor(1,1,1,1);
+	tris.clear();
+	tris << AuTriTex(AuPointTex(-.005f, -.005f, 0, 0,starTop),
+			AuPointTex(-.005f, .005f, 0, 0,1),
+			AuPointTex(1.5f, .04f, 0, 1,1));
+	tris << AuTriTex(AuPointTex(1.5f, .04f, 0, 1,1),
+			AuPointTex(1.5f, -.04f, 0, 1,starTop),
+			AuPointTex(-.005f, -.005f, 0, 0,starTop));
+	vao.CreateForTexture(re, tris, GL_STREAM_DRAW);
+	if(vao.VAO())
+	{
+		vao.SelectGL();
+		vao.DrawGL();
+		vao.DeselectGL();
+		vao.DeleteGL();
+	}
+
+	re.glDisable(GL_BLEND);
+}
+
 void AuDesignerView::ShowWarpIndicator()
 {
 	m_RenderInfo->re->glDisable(GL_DEPTH_TEST);
