@@ -52,3 +52,97 @@ a:visited {
     font-weight: bold;
     color: #ffd580;
 }
+
+/* Shared presentation for generated pages; page-* classes are shared helpers. */
+body.generated-page {
+    background-color: #000;
+    color: rgb(112, 127, 255);
+    font-family: Helvetica, Arial, sans-serif;
+    text-shadow: none;
+}
+.generated-page a:link { color: #a0b3f9; }
+.generated-page a:visited { color: #a0a0a0; }
+.generated-page a:active { color: #fff; }
+.generated-page .ll { text-decoration: none; }
+.generated-page .ll:hover {
+    transition-duration: 0.4s;
+    color: #fff;
+}
+.generated-page .a1 {
+    border: 3px solid #000;
+    border-radius: 8px;
+    background-color: #000;
+    padding: 4px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+}
+.generated-page .a1:hover {
+    transition-duration: 0.4s;
+    border-color: #fffcb9 #a3772f #7a4f0c #fedc69;
+}
+.generated-page .page-title {
+    text-align: center;
+    font-family: sans-serif;
+}
+.generated-page .page-title-text {
+    font-weight: bold;
+    font-family: sans-serif;
+}
+.generated-page .page-highlight { color: #fff; }
+.generated-page .page-font { font-family: sans-serif; }
+.generated-page .page-indent { margin-left: 10px; }
+.generated-page .page-align-right { text-align: right; }
+.generated-page .page-align-center { text-align: center; }
+.generated-page .page-align-top { vertical-align: top; }
+.generated-page .page-align-middle { vertical-align: middle; }
+/* Empire standings only. */
+.standings-page .standings-main {
+    vertical-align: top;
+    width: 75%;
+}
+.standings-page .standings-table {
+    text-align: left;
+    width: 100%;
+    background-color: #0a1533;
+    font-family: sans-serif;
+    border: 0;
+    border-spacing: 2px;
+}
+.standings-page .standings-table td { padding: 2px; }
+.standings-page .standings-column-heading {
+    vertical-align: top;
+    background-color: #193680;
+}
+.standings-page .standings-flag-column { width: 66px; }
+.standings-page .standings-score-heading { background-color: rgb(100, 32, 16); }
+.standings-page .standings-score { vertical-align: top; }
+.standings-page .standings-score-empire { background-color: rgb(64, 16, 4); }
+.standings-page .standings-score-vassal { background-color: rgb(16, 4, 1); }
+.standings-page .standings-score-ally { background-color: rgb(32, 8, 2); }
+/* Avatar directories and profiles only. */
+.avatars-page .avatar-list {
+    width: 80%;
+    border: 0;
+    border-spacing: 6px;
+}
+.avatars-page .avatar-list td { padding: 2px; }
+.avatars-page .avatar-highborn { color: #fc0; }
+.avatars-page .avatar-demiavatar { color: #0038b8; }
+.avatars-page .avatar-selfie {
+    float: right;
+    max-width: 512px;
+    width: 100%;
+}
+.avatars-page .avatar-rule {
+    width: 100%;
+    height: 1px;
+}
+.avatars-page .avatar-section-title {
+    font-family: sans-serif;
+    font-weight: bold;
+    color: rgb(128, 128, 128);
+}
+.avatars-page .avatar-detail-heading { background-color: rgb(32, 32, 32); }
+.avatars-page .avatar-detail-cell { background-color: rgb(0, 0, 32); }

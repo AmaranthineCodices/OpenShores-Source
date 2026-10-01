@@ -298,55 +298,18 @@ const QString hazBlue2("#0a1533");
 const QString hazBlue1("#050a19");
 
 // Commonly used HTML fragments.
-QString s_htmlHeader = "<html>\n"
-	"<style>\n"
-	".ll "
-	"{ "
-	" text-decoration: none; "
-	"} "
-	""
-	".ll:hover "
-	"{ "
-	" -webkit-transition-duration: .4s; "
-	" transition-duration: .4s; "
-	" color: #ffffff; "
-	"} "
+QString s_htmlHeader = "<!doctype html>\n<html lang=\"en\">\n";
 
-	".a1 "
-	"{ "
-		"border-style: solid; "
-		"border-color: #000000; "
-		"border-radius: 8px; "
-		"background-color: #000000; "
-		"background-image: url(../images/hazBlackbutton.png); "
-		"background-size: cover; "
-		"padding: 4px 32px; "
-		"text-align: center; "
-		"text-decoration: none; "
-		"display: inline-block; "
-		"font-size: 12px; "
-	"}\n"
-
-	".a1:hover "
-	"{ "
-		"-webkit-transition-duration: .4s; "
-		"transition-duration: .4s; "
-		"border-style: solid; "
-		"border-color: #fffcb9 #a3772f #7a4f0c #fedc69; "
-	"}\n"
-	"</style>\n";
-
-QString s_bodyStart("<body style=\"color: rgb(112, 127, 255); background-color: rgb(0, 0, 0); font-family: Helvetica, Arial, "
-"sans-serif;\" alink=\"#ffffff\" lang=\"EN-US\" link=\"#a0b3f9\" vlink=\"#a0a0a0\">\n"
+QString s_bodyStart("<body class=\"generated-page\">\n"
 "<?php include(\"../sohpageheader.html\"); ?><br>");
 
 QString s_htmlFooter("</body></html>\n");
-QString s_titleBar("<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><title>Shores of Hazeron - %1</title></head>\n"
+QString s_titleBar("<head><link rel=\"stylesheet\" href=\"/styles.css\"><meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"><title>Shores of Hazeron - %1</title></head>\n"
 		"<link rel=\"shortcut icon\" href=\"https://hazeron.com/favicon.png\" type=\"image/png\">\n");
-QString s_PageTitle("<div style=\"text-align: center; font-family: sans-serif;\"><big style=\"font-weight: bold; font-family: sans-serif\">"
-	"<br><span style=\"color: #ffffff;\">Empire Standings</span></big><br><small><small>%1 &middot Updated Every 20 Minutes</small></small></div>");
+QString s_PageTitle("<div class=\"page-title\"><big class=\"page-title-text\">"
+	"<br><span class=\"page-highlight\">Empire Standings</span></big><br><small><small>%1 &middot Updated Every 20 Minutes</small></small></div>");
 QString s_UniTotals("<b>Universe Totals</b>"
-	"<div style=\"margin-left: 10px;\">"
+	"<div class=\"page-indent\">"
 	"<table><tbody>"
 	"<tr><td><small>"
 	"Avatars<br>"
@@ -366,7 +329,7 @@ QString s_UniTotals("<b>Universe Totals</b>"
 	"Galaxies<br>"
 	"Universe"
 	"</small></td>"
-	"<td style=\"text-align: right;\"><small>"
+	"<td class=\"page-align-right\"><small>"
 	"%L1<br>"
 	"%L2<br>"
 	"%L3<br>"
@@ -395,29 +358,28 @@ QString s_RankSummary("<p><b>%L1 Ranked Empires<br>%L2 Total Empires</b><br>"
 	"Allies (+) and vassals (-) are indented beneath their sworn empire to show their contribution. "
 	"The score is not necessarily the sum of the system counts because systems can be shared by more than one empire. "
 	"</small></p>");
-QString s_tableStart = QString("<table style=\"text-align: left; width: 100%; background-color: %1; font-family: "
-		"sans-serif;\" border=\"0\" cellpadding=\"2\" cellspacing=\"2\">\n<tbody>").arg(hazBlue2);
+QString s_tableStart = QString("<table class=\"standings-table\">\n<tbody>");
 QString s_tableHeader = QString("<tr>"
-	"<td style=\"vertical-align: top; background-color: %1;\"><small><b></b></small><br></td>"
-	"<td style=\"vertical-align: top; background-color: %1; width: 66px;\"><small><b>Flag</b></small><br></td>"
-	"<td style=\"vertical-align: top; background-color: %1;\"><small><b>Name</b></small><br></td>"
-	"<td style=\"vertical-align: top; background-color: %1;\"><small><b>Leadership</b></small><br></td>"
-	"<td style=\"vertical-align: top; background-color: rgb(100,32,16);\"><small><b>Solar Systems</b></small><br></td>"
-	"</tr>\n").arg(hazBlue5);
+	"<td class=\"standings-column-heading\"><small><b></b></small><br></td>"
+	"<td class=\"standings-column-heading standings-flag-column\"><small><b>Flag</b></small><br></td>"
+	"<td class=\"standings-column-heading\"><small><b>Name</b></small><br></td>"
+	"<td class=\"standings-column-heading\"><small><b>Leadership</b></small><br></td>"
+	"<td class=\"standings-column-heading standings-score-heading\"><small><b>Solar Systems</b></small><br></td>"
+	"</tr>\n");
 QString s_tableEnd("</tbody>\n</table>\n");
 QString s_tableRow = "<tr>"
-	"<td style=\"vertical-align: top;\"><small>%50</small><br></td>"	// rank
-	"<td style=\"vertical-align: top; \"><img height=\"%5\" width=\"%6\" src=\"%1\"><br></td>"	// flag
-	"<td style=\"vertical-align: top;\"><small>%2</small><br></td>"	// name
-	"<td style=\"vertical-align: top;\"><small>%3<br>%4</small><br></td>"	// emperor and heir
-	"<td style=\"vertical-align: top; background-color: %30;\"><small>%L15</small><br></td>"	// systems
+	"<td class=\"page-align-top\"><small>%50</small><br></td>"	// rank
+	"<td class=\"page-align-top\"><img height=\"%5\" width=\"%6\" src=\"%1\"><br></td>"	// flag
+	"<td class=\"page-align-top\"><small>%2</small><br></td>"	// name
+	"<td class=\"page-align-top\"><small>%3<br>%4</small><br></td>"	// emperor and heir
+	"<td class=\"standings-score %30\"><small>%L15</small><br></td>"	// systems
 	"</tr>\n";
 QString s_tableRowVassal = "<tr>"
-	"<td style=\"vertical-align: top;\"><small><small>%50</small></small><br></td>"	// rank
-	"<td style=\"align: right; vertical-align: top; \"><img height=\"%5\" width=\"%6\" src=\"%1\"><br></td>"	// flag
-	"<td style=\"vertical-align: top;\"><small><small>%2</small></small><br></td>"	// name
-	"<td style=\"vertical-align: top;\"><small><small>%3<br>%4</small></small><br></td>"	// emperor and heir
-	"<td style=\"vertical-align: top; background-color: %30;\"><small><small>%L15</small></small><br></td>"	// systems
+	"<td class=\"page-align-top\"><small><small>%50</small></small><br></td>"	// rank
+	"<td class=\"page-align-top page-align-right\"><img height=\"%5\" width=\"%6\" src=\"%1\"><br></td>"	// flag
+	"<td class=\"page-align-top\"><small><small>%2</small></small><br></td>"	// name
+	"<td class=\"page-align-top\"><small><small>%3<br>%4</small></small><br></td>"	// emperor and heir
+	"<td class=\"standings-score %30\"><small><small>%L15</small></small><br></td>"	// systems
 	"</tr>\n";
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
@@ -2010,6 +1972,7 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 			topLevelEmpires++;
 
 	QString bodyStart = s_bodyStart;
+	bodyStart.replace("generated-page", "generated-page standings-page");
 	QString pageTitle = s_PageTitle;
 	if(!reportPlayers && !reportExchange)
 	{
@@ -2022,7 +1985,7 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 
 	so << "<table><tbody>";
 	so << "<tr>";
-	so << "<td valign=\"top\" width=\"75%\">";
+	so << "<td class=\"standings-main\">";
 
 	// Output the report so items are grouped by overlord/vassal.
 	so << s_tableStart;
@@ -2050,7 +2013,7 @@ void AuEmpireReport::EmpireReport(QSqlDatabase& dbUniverse, bool reportPlayers, 
 	so << s_tableEnd;
 
 	so << "</td>";
-	so << "<td valign=\"top\">";
+	so << "<td class=\"page-align-top\">";
 
 	so << s_RankSummary
 		.arg(topLevelEmpires)
@@ -2094,8 +2057,7 @@ void AuEmpireReport::ReportItem(QTextStream& so, const AuEmpireReportItem& item,
 		rankField = QString("%1").arg(itemRank);
 
 	QString name;
-	QString bgColor;
-	QString scoreColor;
+	QString scoreClass;
 	QString scoreIndent;
 	if(treeDepth)
 	{
@@ -2110,23 +2072,21 @@ void AuEmpireReport::ReportItem(QTextStream& so, const AuEmpireReportItem& item,
 		{
 			// Vassal
 			name += "- ";
-			bgColor = "rgb(16,4,1)";
+			scoreClass = "standings-score-vassal";
 		}
 		else
 		{
 			// Ally
 			name += "+ ";
-			bgColor = "rgb(32,8,2)";
+			scoreClass = "standings-score-ally";
 		}
 		name += item.m_Name.toHtmlEscaped();
-		scoreColor = bgColor;
 	}
 	else
 	{
 		// Top level names are bold
 		name = QString("<b>%1</b>").arg(item.m_Name.toHtmlEscaped());
-		bgColor = "rgb(64,16,4)";
-		scoreColor = "rgb(100, 32, 16)";
+		scoreClass = "standings-score-empire";
 	}
 	QString scoreSystems;
 	if(item.m_Vassals.isEmpty() || item.m_ScoreSystems.count() == item.m_Systems.count())
@@ -2185,7 +2145,7 @@ void AuEmpireReport::ReportItem(QTextStream& so, const AuEmpireReportItem& item,
 		.arg(flagHt)
 		.arg(flagWid)
 		.arg(scoreSystems)
-		.arg(bgColor)
+		.arg(scoreClass)
 		.arg(rankField);
 
 	// Output all items that are subordinate to the current item. This is recursive.
@@ -2257,9 +2217,9 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 	QString htmlHeader = s_htmlHeader;
 	QString titleBar = s_titleBar;
 	QString bodyStart = s_bodyStart;
+	bodyStart.replace("generated-page", "generated-page avatars-page");
 	if(staticPages)
 	{
-		htmlHeader.remove("background-image: url(../images/hazBlackbutton.png); ");
 		titleBar.replace("<head>", "<head><base href=\"/reports/avatars/\">");
 		titleBar.remove("<link rel=\"shortcut icon\" href=\"https://hazeron.com/favicon.png\" type=\"image/png\">\n");
 		bodyStart.remove("<?php include(\"../sohpageheader.html\"); ?><br>");
@@ -2372,14 +2332,13 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 		so << htmlHeader;
 		so << titleBar.arg("Avatars");
 		so << bodyStart;
-		so << QString("<div style=\"text-align: center; font-family: sans-serif;\"><big style=\"color: #ffffff; font-weight: bold; "
-				"font-family: sans-serif\"><br>%1</big><br>\n"
+		so << QString("<div class=\"page-title\"><big class=\"page-title-text page-highlight\"><br>%1</big><br>\n"
 				"<small>By Name | </small><a class=\"a1\" href=\"%2\">By Empire</a></div><br>\n")
 			.arg("Shores of Hazeron Avatars", avatarsByEmpireFile);
 
 		// Make a link for each avatar in the map.
-		so << "<div style=\"margin-left: 10px;\">\n";
-		so << "<table cellpadding=\"2\" cellspacing=\"6\" border=\"0\" width=\"80%\"><tbody>\n";
+		so << "<div class=\"page-indent\">\n";
+		so << "<table class=\"avatar-list\"><tbody>\n";
 		for(QMultiMap<QString, DaPerson*>::const_iterator pi = players.cbegin(); pi != players.cend(); pi++)
 		{
 			so << "<tr>";
@@ -2421,9 +2380,9 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					flagWid = 32;
 				}
 
-				so << "<td align=\"right\">";
+				so << "<td class=\"page-align-right\">";
 				if(!flag.isNull())
-					so << QString("<img title=\"%4\" style=\"width: %2px; height: %3px;\" alt=\"\" src=\"%1.png\"><br>")
+					so << QString("<img title=\"%4\" width=\"%2\" height=\"%3\" alt=\"\" src=\"%1.png\"><br>")
 						.arg((*pi)->EmpireId()).arg(flagWid).arg(flagHt).arg(empireName.toHtmlEscaped());
 				so << "</td>";
 			}
@@ -2435,29 +2394,29 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 
 			so << "<td>";
 			so << QString("<a class=\"ll\" href=\"%1\">"
-					"<span style=\"font-family: sans-serif;\">%2</span></a><br>")
+					"<span class=\"page-font\">%2</span></a><br>")
 				.arg(playerFile((*pi)->Id()), (*pi)->Name().toHtmlEscaped());
 
 			so << "</td>";
 			if((*pi)->IsLineageHighborn())
 			{
-				so << "<td align=\"right\">";
-				so << "<small><font color=\"#ffcc00\">";
+				so << "<td class=\"page-align-right\">";
+				so << "<small><span class=\"avatar-highborn\">";
 				so << (*pi)->Id().StringId();
-				so << "</font></small>";
+				so << "</span></small>";
 				so << "</td>";
 			}
 			else if((*pi)->IsLineageDemiavatar())
 			{
-				so << "<td align=\"right\">";
-				so << "<small><font color=\"#0038b8\">";
+				so << "<td class=\"page-align-right\">";
+				so << "<small><span class=\"avatar-demiavatar\">";
 				so << (*pi)->Id().StringId();
-				so << "</font></small>";
+				so << "</span></small>";
 				so << "</td>";
 			}
 			else
 			{
-				so << "<td align=\"right\">";
+				so << "<td class=\"page-align-right\">";
 				so << "<small>";
 				so << (*pi)->Id().StringId();
 				so << "</small>";
@@ -2486,14 +2445,13 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 		so << htmlHeader;
 		so << titleBar.arg("Avatars");
 		so << bodyStart;
-		so << QString("<div style=\"text-align: center; font-family: sans-serif;\"><big style=\"color: #ffffff; font-weight: bold; "
-				"font-family: sans-serif\"><br>%1</big><br>\n"
+		so << QString("<div class=\"page-title\"><big class=\"page-title-text page-highlight\"><br>%1</big><br>\n"
 				"<a class=\"a1\" href=\"%2\">By Name</a><small> | By Empire</small></div><br>\n")
 			.arg("Shores of Hazeron Avatars", avatarsFile);
 
 		// Make a link for each avatar in the map.
-		so << "<div style=\"margin-left: 10px;\">\n";
-		so << "<table cellpadding=\"2\" cellspacing=\"6\" border=\"0\" width=\"80%\"><tbody>\n";
+		so << "<div class=\"page-indent\">\n";
+		so << "<table class=\"avatar-list\"><tbody>\n";
 		for(QMap<QString, quint32>::const_iterator ei = empireNames.cbegin(); ei != empireNames.cend(); ei++)
 		{
 			// Flag dimensions.
@@ -2521,13 +2479,13 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 
 			// Empire name row.
 			so << "<tr>";
-			so << "<td align=\"right\">";
+			so << "<td class=\"page-align-right\">";
 			if(!flag.isNull())
-				so << QString("<img title=\"%4\" style=\"width: %2px; height: %3px;\" alt=\"\" src=\"%1.png\"><br>")
+				so << QString("<img title=\"%4\" width=\"%2\" height=\"%3\" alt=\"\" src=\"%1.png\"><br>")
 					.arg(*ei).arg(flagWid).arg(flagHt).arg(ei.key().toHtmlEscaped());
 			so << "</td>";
-			so << "<td valign=\"middle\">";
-			so << QString("<span style=\"font-family: sans-serif;\"><big><b>%1</b></big></span>")
+			so << "<td class=\"page-align-middle\">";
+			so << QString("<span class=\"page-font\"><big><b>%1</b></big></span>")
 				.arg(ei.key().toHtmlEscaped());
 			so << "</td>";
 			so << "<td>";
@@ -2544,29 +2502,29 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 				so << "</td>";
 				so << "<td>";
 				so << QString("<a class=\"ll\" href=\"%1\">"
-						"<span style=\"font-family: sans-serif;\">%2</span></a><br>")
+						"<span class=\"page-font\">%2</span></a><br>")
 					.arg(playerFile((*pi)->Id()), (*pi)->Name().toHtmlEscaped());
 
 				so << "</td>";
 				if((*pi)->IsLineageHighborn())
 				{
-					so << "<td align=\"right\">";
-					so << "<small><font color=\"#ffcc00\">";
+					so << "<td class=\"page-align-right\">";
+					so << "<small><span class=\"avatar-highborn\">";
 					so << (*pi)->Id().StringId();
-					so << "</font></small>";
+					so << "</span></small>";
 					so << "</td>";
 				}
 				else if((*pi)->IsLineageDemiavatar())
 				{
-					so << "<td align=\"right\">";
-					so << "<small><font color=\"#0038b8\">";
+					so << "<td class=\"page-align-right\">";
+					so << "<small><span class=\"avatar-demiavatar\">";
 					so << (*pi)->Id().StringId();
-					so << "</font></small>";
+					so << "</span></small>";
 					so << "</td>";
 				}
 				else
 				{
-					so << "<td align=\"right\">";
+					so << "<td class=\"page-align-right\">";
 					so << "<small>";
 					so << (*pi)->Id().StringId();
 					so << "</small>";
@@ -2662,38 +2620,38 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 			so << titleBar.arg((*pi)->Name().toHtmlEscaped());
 			so << bodyStart;
 			/*
-			so << QString("<div style=\"text-align: center; font-family: sans-serif;\">"
-					"<big style=\"font-weight: bold; font-family: sans-serif\"><br>%1</big></div>").arg((*pi)->Name());
+			so << QString("<div class=\"page-title\">"
+					"<big class=\"page-title-text\"><br>%1</big></div>").arg((*pi)->Name());
 
 			if(person->EmpireId())
 			{
 				if(imgWidth > 0 && imgHeight > 0)
-					so << QString("<br><div style=\"text-align: center;\">"
-							"<img title=\"%4\" style=\"width: %2px; height: %3px;\" alt=\"%4 Flag\" src=\"%1.png\"></div>")
+					so << QString("<br><div class=\"page-align-center\">"
+							"<img title=\"%4\" width=\"%2\" height=\"%3\" alt=\"%4 Flag\" src=\"%1.png\"></div>")
 						.arg(person->EmpireId()).arg(imgWidth).arg(imgHeight).arg(empireName);
 				else
-					so << QString("<br><div title=\"%4\" style=\"text-align: center;\"><img alt=\"%4 Flag\" src=\"%1.png\"></div>")
+					so << QString("<br><div title=\"%4\" class=\"page-align-center\"><img alt=\"%4 Flag\" src=\"%1.png\"></div>")
 						.arg(person->EmpireId()).arg(empireName);
 			}
 			*/
 
-			so << "<span style=\"font-family: sans-serif;\">";
+			so << "<span class=\"page-font\">";
 
 			// Fill the page with information about the person similar to the Bio window in the game.
 
 			// Bio
 			{
 				// Identification
-				so << "<hr style=\"width: 100%; height: 1px;\">";
-				so << "<div style=\"text-align: right;\"><span style=\"font-family: sans-serif; font-weight: bold; color: rgb(128,128,128);\">"
+				so << "<hr class=\"avatar-rule\">";
+				so << "<div class=\"page-align-right\"><span class=\"avatar-section-title\">"
 					"Avatar</span><br></div>";
 
 				// Link to selfie if we saved one.
 				if(!selfieFile.isEmpty())
-					so << QString("<img alt=\"\" src=\"%1\" align=\"right\" style=\"max-width: 512px; width: 100%;\">")
+					so << QString("<img alt=\"\" src=\"%1\" class=\"avatar-selfie\">")
 						.arg(selfieFile);
 
-				so << QString("<span style=\"color: rgb(255, 255, 255);\"><big><b>%1</b></big> <i>%2</i></span><br>")
+				so << QString("<span class=\"page-highlight\"><big><b>%1</b></big> <i>%2</i></span><br>")
 					.arg(nameWithTitle.toHtmlEscaped(), person->Id().StringId());
 
 				if(!person->SpawnShipName().isEmpty())
@@ -2755,15 +2713,15 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					{
 						// One column
 						so << "<tr>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Skill</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Level</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Skill</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Level</small></b></td>";
 						so << "</tr>";
 						for(QMap<QString, quint32>::const_iterator si = sorted.cbegin(); si != sorted.cend(); si++)
 						{
 							so << "<tr>";
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</td>")
+							so << QString("<td class=\"avatar-detail-cell\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</td>")
 								.arg(si.key()).arg(sortedImgs[si.key()]);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%L1</td>").arg(si.value());
+							so << QString("<td class=\"avatar-detail-cell page-align-right\"><small>%L1</td>").arg(si.value());
 							so << "</tr>";
 						}
 					}
@@ -2771,18 +2729,18 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					{
 						// Two columns
 						so << "<tr>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Skill</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Level</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small> </small></b></td>";	// Gutter
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Skill</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Level</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Skill</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Level</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small> </small></b></td>";	// Gutter
+						so << "<td class=\"avatar-detail-heading\"><b><small>Skill</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Level</small></b></td>";
 						so << "</tr>";
 						for(QMap<QString, quint32>::const_iterator si = sorted.cbegin(); si != sorted.cend(); si++)
 						{
 							so << "<tr>";
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</small></td>")
+							so << QString("<td class=\"avatar-detail-cell\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</small></td>")
 								.arg(si.key()).arg(sortedImgs[si.key()]);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%L1</small></td>").arg(si.value());
+							so << QString("<td class=\"avatar-detail-cell page-align-right\"><small>%L1</small></td>").arg(si.value());
 
 							so << QString("<td> </td>");	// Gutter
 
@@ -2797,9 +2755,9 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 							}
 							else
 							{
-								so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</small></td>")
+								so << QString("<td class=\"avatar-detail-cell\"><img alt=\"\" src=\"../images/%2\" height=\"16\"><small> %1</small></td>")
 									.arg(si.key()).arg(sortedImgs[si.key()]);
-								so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%L1</small></td>").arg(si.value());
+								so << QString("<td class=\"avatar-detail-cell page-align-right\"><small>%L1</small></td>").arg(si.value());
 								so << "</tr>";
 							}
 						}
@@ -2845,10 +2803,10 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					{
 						so << "<table><tbody>";
 						so << "<tr>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Amount</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>Reason</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>By Who</small></b></td>";
-						so << "<td style=\"background-color: rgb(32, 32, 32);\"><b><small>When</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Amount</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>Reason</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>By Who</small></b></td>";
+						so << "<td class=\"avatar-detail-heading\"><b><small>When</small></b></td>";
 						so << "</tr>";
 						for(QMultiMap<AuTime, AuBountyOnItem>::const_iterator bri = bounties.constBegin(); bri != bounties.constEnd(); bri++)
 						{
@@ -2862,29 +2820,29 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 							QString when = bri.key().UTC().toString();
 
 							so << "<tr>";
-							so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%1</small></td>")
+							so << QString("<td class=\"avatar-detail-cell page-align-right\"><small>%1</small></td>")
 								.arg(amount);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>").arg(reason);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>")
+							so << QString("<td class=\"avatar-detail-cell\"><small>%1</small></td>").arg(reason);
+							so << QString("<td class=\"avatar-detail-cell\"><small>%1</small></td>")
 								.arg(byWho);
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><small>%1</small></td>").arg(when);
+							so << QString("<td class=\"avatar-detail-cell\"><small>%1</small></td>").arg(when);
 							so << "</tr>";
 						}
 
 						if(bounties.size() > 1)
 						{
 							so << "<tr>";
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"><hr></td>");
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"></td>");
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"></td>");
+							so << QString("<td class=\"avatar-detail-cell\"><hr></td>");
+							so << QString("<td class=\"avatar-detail-cell\"></td>");
+							so << QString("<td class=\"avatar-detail-cell\"></td>");
 							so << "</tr>";
 
 							so << "<tr>";
-							so << QString("<td style=\"background-color: rgb(0, 0, 32); text-align: right;\"><small>%L1%2</small></td>")
+							so << QString("<td class=\"avatar-detail-cell page-align-right\"><small>%L1%2</small></td>")
 								.arg(person->Bounty(), 0,'f',0)
 								.arg(AuGlobal::CurrencySymbol());
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"></td>");
-							so << QString("<td style=\"background-color: rgb(0, 0, 32);\"></td>");
+							so << QString("<td class=\"avatar-detail-cell\"></td>");
+							so << QString("<td class=\"avatar-detail-cell\"></td>");
 							so << "</tr>";
 						}
 
@@ -2896,8 +2854,8 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 			// Biology
 			{
 				// Identification
-				so << "<br><hr style=\"width: 100%; height: 1px;\">";
-				so << "<div style=\"text-align: right;\"><span style=\"font-family: sans-serif; font-weight: bold; color: rgb(128,128,128);\">"
+				so << "<br><hr class=\"avatar-rule\">";
+				so << "<div class=\"page-align-right\"><span class=\"avatar-section-title\">"
 					"Biology</span><br></div>";
 
 				AuSpecies personSpecies(person->Species());
@@ -2907,7 +2865,7 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					speciesName = (*si).second.Name();
 				QString dnadesc = personSpecies.Description();
 
-				so << QString("<big><b><span style=\"color: rgb(255, 255, 255);\">%1</span></b></big><br>")
+				so << QString("<big><b><span class=\"page-highlight\">%1</span></b></big><br>")
 					.arg(dnadesc.toHtmlEscaped());
 
 				if(!speciesName.isEmpty())
@@ -2915,9 +2873,9 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 
 				QString lineage;
 				if(person->IsLineageHighborn())
-					lineage = QString("<font color=\"#ffcc00\">Highborn</font>");
+					lineage = QString("<span class=\"avatar-highborn\">Highborn</span>");
 				else if(person->IsLineageDemiavatar())
-					lineage = QString("<font color=\"#0038b8\">Demiavatar</font>");
+					lineage = QString("<span class=\"avatar-demiavatar\">Demiavatar</span>");
 				else
 					lineage = QString("Avatar");
 
@@ -2967,8 +2925,8 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 			if(person->EmpireId())
 			{
 				// Identification
-				so << "<br><hr style=\"width: 100%; height: 1px;\">";
-				so << "<div style=\"text-align: right;\"><span style=\"font-family: sans-serif; font-weight: bold; color: rgb(128,128,128);\">"
+				so << "<br><hr class=\"avatar-rule\">";
+				so << "<div class=\"page-align-right\"><span class=\"avatar-section-title\">"
 					"Empire</span><br></div>";
 
 				bool hasOffice = false;
@@ -2981,11 +2939,11 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 					if(hasOffice)
 						office = (*ei).second.CitizenOffice(person->Id());
 
-					QString semp = QString("<big><b><span style=\"color: rgb(255, 255, 255);\">%1</span></b></big>").arg((*ei).second.HtmlName());
+					QString semp = QString("<big><b><span class=\"page-highlight\">%1</span></b></big>").arg((*ei).second.HtmlName());
 					so << semp + "<br>";
 
 					if(imgWidth > 0 && imgHeight > 0)
-						so << QString("<img alt=\"%4 Flag\" src=\"%1.png\" align=\"right\" style=\"width: %2px; height: %3px;\">")
+						so << QString("<img alt=\"%4 Flag\" src=\"%1.png\" align=\"right\" width=\"%2\" height=\"%3\">")
 							.arg(person->EmpireId()).arg(imgWidth).arg(imgHeight).arg(empireName.toHtmlEscaped());
 
 					AuId emperorId = (*ei).second.EmperorId();

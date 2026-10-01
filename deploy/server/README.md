@@ -298,6 +298,24 @@ The report volume survives image rebuilds, container replacement, and normal
 delete it along with the database. Back up reports separately from PostgreSQL.
 Apache access/error logs go to Docker's bounded logs rather than this volume.
 
+Standings and avatar pages load `/styles.css`, shared with the homepage. Their
+shared rules are scoped under `.generated-page` in `deploy/server/web/styles.css`.
+Empire standings use the body class `.standings-page` and `standings-*` classes;
+avatar directories and profiles use `.avatars-page` and `avatar-*` classes.
+The `page-*` classes are shared helpers: for example, `.standings-page .page-title`
+and `.avatars-page .page-title` let you style their titles independently. These
+selectors keep generated page styling separate from the homepage and chat. Generated markup
+uses classes for colours, typography, spacing and tables; flag dimensions remain
+HTML attributes based on each image. The absolute stylesheet URL works with the
+reports' `<base>` URLs and the `/standings` and `/avatars` aliases.
+
+After installing this change, regenerate both reports once to pick up the class
+names and stylesheet link. `make server-web-up` (or `make server-prod-web-up`)
+rebuilds the shared image and restarts the schedulers, which regenerate immediately.
+Later CSS-only changes need the updated web image; existing report HTML will use
+the new stylesheet without requiring regeneration. Refresh the browser if it
+has cached the old stylesheet.
+
 ### Connect a local client
 
 Linux:
