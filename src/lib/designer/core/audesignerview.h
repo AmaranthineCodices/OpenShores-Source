@@ -17,6 +17,7 @@
 #include "auselectedunit.h"
 #include "auview.h"
 #include "dadesignbase.h"
+#include <QElapsedTimer>
 #include <QPoint>
 
 class AuAtomRenderInfo;
@@ -811,6 +812,22 @@ private:
 	GLuint								m_texWarpSides;
 	GLuint								m_texWormholeSides;
 	GLuint								m_texWormholeSpace;
+
+	struct WaitParticle
+	{
+		int								frame;
+		float							angle;
+		float							x;
+		float							y;
+	};
+	GLuint								m_texWaitSpace2011;
+	GLuint								m_texWaitStars2011;
+	QVector<WaitParticle>				m_WaitParticles;
+	float								m_WaitSpaceAngle;
+	float								m_WaitBeamAngle;
+	quint32								m_WaitSeed;
+	QElapsedTimer						m_WaitClock;
+	qint64								m_WaitStepAt;
 
 	float								m_BusyAngle;
 	bool								m_IsWarping;			// true for warp effect, otherwise wormhole effect for wait anim
@@ -1890,6 +1907,10 @@ private:
 	void ShowScreenFadeEffect();
 	void ShowSpawnRecallWait();
 	void ShowSpawnTieEffect();
+	void ShowServerHandoffWait();
+	int WaitRandom(int n);
+	void StepServerHandoffWait(bool first);
+	bool MoveWaitParticle(WaitParticle& star) const;
 	void ShowWarpIndicator();
 	void ShowWormholeIndicator();
 
