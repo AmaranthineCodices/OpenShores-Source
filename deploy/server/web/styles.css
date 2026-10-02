@@ -198,6 +198,11 @@ body.generated-page {
 .avatars-page .avatar-detail-heading { background-color: rgb(32, 32, 32); }
 .avatars-page .avatar-detail-cell { background-color: rgb(0, 0, 32); }
 
+form > label {
+    display: block;
+    margin: 1em 0;
+}
+
 h1, h2, span, a, p {
     font-family: "Trebuchet MS", Arial, sans-serif;
 }
