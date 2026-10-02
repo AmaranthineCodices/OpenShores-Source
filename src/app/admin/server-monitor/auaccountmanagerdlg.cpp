@@ -10,6 +10,7 @@
 #include "auid.h"
 #include "aupushbutton.h"
 #include "auservermonapp.h"
+#include "aumonitordatabase.h"
 #include "autime.h"
 #include <QComboBox>
 #include <QDateTime>
@@ -174,29 +175,22 @@ void AuAccountManagerDlg::ListAccounts()
 {
 	// Create a scope so the databases are destructed before we call removeDatabase.
 	{
-		QSqlDatabase dbLogin = QSqlDatabase::addDatabase("QPSQL7", "AuLogin");
-		if(!dbLogin.isValid())
-		{
-			qWarning() << "error: AuAccountManagerDlg::ListAccounts unable to addDatabase AuLogin";
-			return;
-		}
+		AuMonitorDatabase connectionLogin;
+		QSqlDatabase& dbLogin = connectionLogin.Database();
 
 		dbLogin.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
 		//dbLogin.setHostName("LoginDb.Hazeron.net");
-		dbLogin.setHostName("u0.Hazeron.net");
 
-		if(!dbLogin.open("aumaster","Light"))
+		if(!connectionLogin.Open())
 		{
-			QSqlError er = dbLogin.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			qWarning() << "error: AuAccountManagerDlg::ListAccounts Failed to open auLogin database" << sdv << sdb;
+			QString sdb = connectionLogin.ErrorString();
+			qWarning() << "error: AuAccountManagerDlg::ListAccounts Failed to open auLogin database" << sdb;
+			QMessageBox::warning(this, tr("Database connection failed"), sdb);
 			return;
 		}
 
 		ListAccounts(dbLogin);
 	}
-	QSqlDatabase::removeDatabase("AuLogin");
 }
 
 void AuAccountManagerDlg::ListAccounts(QSqlDatabase& dbLogin)
@@ -329,23 +323,17 @@ void AuAccountManagerDlg::AccountChanged(int acctIndex)
 		QString unitName[6];
 		quint8 unitSex[6];
 		{
-			QSqlDatabase dbUniverse = QSqlDatabase::addDatabase("QPSQL7", "AuUniverse");
-			if(!dbUniverse.isValid())
-			{
-				qWarning() << "error: AuAccountManagerDlg::AccountChanged unable to addDatabase AuUniverse";
-				return;
-			}
+			AuMonitorDatabase connectionUniverse;
+			QSqlDatabase& dbUniverse = connectionUniverse.Database();
 
 			dbUniverse.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
 			//dbUniverse.setHostName("UniverseDb.Hazeron.net");
-			dbUniverse.setHostName("u0.Hazeron.net");
 
-			if(!dbUniverse.open("aumaster","Light"))
+			if(!connectionUniverse.Open())
 			{
-				QSqlError er = dbUniverse.lastError();
-				QString sdv = er.driverText();
-				QString sdb = er.databaseText();
-				qWarning() << "error: AuAccountManagerDlg::AccountChanged Failed to open auUniverse database" << sdv << sdb;
+				QString sdb = connectionUniverse.ErrorString();
+				qWarning() << "error: AuAccountManagerDlg::AccountChanged Failed to open auUniverse database" << sdb;
+				QMessageBox::warning(this, tr("Database connection failed"), sdb);
 				return;
 			}
 
@@ -383,7 +371,6 @@ void AuAccountManagerDlg::AccountChanged(int acctIndex)
 				}
 			}
 		}
-		QSqlDatabase::removeDatabase("AuUniverse");
 
 		m_Id->setText(QVariant(id).toString());
 		if(days)
@@ -459,23 +446,18 @@ void AuAccountManagerDlg::FindAvatarName()
 	int selIndex = -1;
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	{
-		QSqlDatabase dbUniverse = QSqlDatabase::addDatabase("QPSQL7", "AuUniverse");
-		if(!dbUniverse.isValid())
-		{
-			qWarning() << "error: AuAccountManagerDlg::FindAvatarName unable to addDatabase AuUniverse";
-			return;
-		}
+		AuMonitorDatabase connectionUniverse;
+		QSqlDatabase& dbUniverse = connectionUniverse.Database();
 
 		dbUniverse.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
 		//dbUniverse.setHostName("UniverseDb.Hazeron.net");
-		dbUniverse.setHostName("u0.Hazeron.net");
 
-		if(!dbUniverse.open("aumaster","Light"))
+		if(!connectionUniverse.Open())
 		{
-			QSqlError er = dbUniverse.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			qWarning() << "error: AuAccountManagerDlg::FindAvatarName Failed to open auUniverse database" << sdv << sdb;
+			QString sdb = connectionUniverse.ErrorString();
+			qWarning() << "error: AuAccountManagerDlg::FindAvatarName Failed to open auUniverse database" << sdb;
+			QApplication::restoreOverrideCursor();
+			QMessageBox::warning(this, tr("Database connection failed"), sdb);
 			return;
 		}
 
@@ -528,7 +510,6 @@ void AuAccountManagerDlg::FindAvatarName()
 			}
 		}
 	}
-	QSqlDatabase::removeDatabase("AuUniverse");
 	QApplication::restoreOverrideCursor();
 
 	m_Accounts->setCurrentIndex(selIndex);
@@ -645,23 +626,17 @@ void AuAccountManagerDlg::ChangeUnitAccount(int unitIndex)
 
 	// Create a scope so the database is destructed before we call removeDatabase.
 	{
-		QSqlDatabase dbLogin = QSqlDatabase::addDatabase("QPSQL7", "AuLogin");
-		if(!dbLogin.isValid())
-		{
-			qWarning() << "error: AuAccountManagerDlg::ChangeUnitAccount unable to addDatabase";
-			return;
-		}
+		AuMonitorDatabase connectionLogin;
+		QSqlDatabase& dbLogin = connectionLogin.Database();
 
 		dbLogin.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
 		//dbLogin.setHostName("LoginDb.Hazeron.net");
-		dbLogin.setHostName("u0.Hazeron.net");
 
-		if(!dbLogin.open("aumaster","Light"))
+		if(!connectionLogin.Open())
 		{
-			QSqlError er = dbLogin.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			qWarning() << "error: AuAccountManagerDlg::ChangeUnitAccount Failed to open database" << sdv << sdb;
+			QString sdb = connectionLogin.ErrorString();
+			qWarning() << "error: AuAccountManagerDlg::ChangeUnitAccount Failed to open database" << sdb;
+			QMessageBox::warning(this, tr("Database connection failed"), sdb);
 			return;
 		}
 
@@ -710,7 +685,6 @@ void AuAccountManagerDlg::ChangeUnitAccount(int unitIndex)
 				qWarning() << "error: Failed to remove avatar from old account. ";
 		}
 	}
-	QSqlDatabase::removeDatabase("AuLogin");
 
 	ListAccounts();
 }

@@ -19,6 +19,7 @@
 #include "aureportdialog.h"
 #include "aureportwidget.h"
 #include "auservermonapp.h"
+#include "aumonitordatabase.h"
 #include "auservermonframe.h"
 #include "aushutdowndlg.h"
 #include "ausound.h"
@@ -519,7 +520,7 @@ void AuServerCon::ShowMenu(const QList<int>& rows)
 
 void AuServerCon::TimerUpdate()
 {
-	if(!m_GdLoaded)
+	if(!m_GdLoaded && !m_DbFailed)
 	{
 		//qDebug() << "AuServerCon::TimerUpdate loading game data";
 		UniverseDbQuery(Q_GameData, AuId(0), "");
@@ -1389,31 +1390,23 @@ QStringList AuServerCon::UniverseDbQuery(UNIVERSE_DB_QUERY q, const AuId& atomId
 	//qDebug() << "AuServerCon::UniverseDbQuery" << q;
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	QStringList textLines;
-	if(!m_DbFailed)
+	if(!m_DbFailed || q != Q_GameData)
 	{
-		QSqlDatabase dbUniverse = QSqlDatabase::addDatabase("QPSQL7", "AuUniverse");
-		if(!dbUniverse.isValid())
-		{
-			textLines << "error: AuServerCon::UniverseDbQuery unable to addDatabase";
-			QApplication::restoreOverrideCursor();
-			m_DbFailed = true;
-			return textLines;
-		}
+		AuMonitorDatabase connectionUniverse("AuUniverse");
+		QSqlDatabase& dbUniverse = connectionUniverse.Database();
 
 		dbUniverse.setDatabaseName("auUniverse");				// NOTE: Name is case sensitive.
-		dbUniverse.setHostName("u1.Hazeron.net");
 
-		if(!dbUniverse.open("aumaster","Light"))
+		if(!connectionUniverse.Open())
 		{
-			QSqlError er = dbUniverse.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			textLines << "error: AuServerCon::UniverseDbQuery Failed to open database" << sdv << sdb;
+			QString sdb = connectionUniverse.ErrorString();
+			textLines << "error: AuServerCon::UniverseDbQuery Failed to open database" << sdb;
 			QApplication::restoreOverrideCursor();
 			m_DbFailed = true;
 			qDebug() << "error:" << textLines;
 			return textLines;
 		}
+		m_DbFailed = false;
 		//qDebug() << "AuServerCon::UniverseDbQuery Universe database opened";
 
 		if(!m_GdLoaded)
@@ -1459,7 +1452,6 @@ QStringList AuServerCon::UniverseDbQuery(UNIVERSE_DB_QUERY q, const AuId& atomId
 		}
 		//qDebug() << "AuServerCon::UniverseDbQuery query complete";
 	}
-	QSqlDatabase::removeDatabase("AuUniverse");
 	QApplication::restoreOverrideCursor();
 	//qDebug() << "AuServerCon::UniverseDbQuery" << q << "done";
 	return textLines;
@@ -1583,6 +1575,7 @@ void AuServerCon::ConnectLocalServer()
 
 void AuServerCon::ReloadGameData()
 {
+	m_DbFailed = false;
 	//qDebug() << "AuServerCon::ReloadGameData";
 	m_GdLoaded = false;
 }

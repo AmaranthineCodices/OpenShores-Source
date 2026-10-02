@@ -9,6 +9,7 @@
 #include "audnabase.h"
 #include "auid.h"
 #include "auservermonapp.h"
+#include "aumonitordatabase.h"
 #include "autime.h"
 #include <QComboBox>
 #include <QDateTime>
@@ -159,49 +160,36 @@ void AuAccountChooseDlg::ListAccounts()
 {
 	// Create a scope so the database is destructed before we call removeDatabase.
 	{
-		QSqlDatabase dbLogin = QSqlDatabase::addDatabase("QPSQL7", "AuLogin");
-		if(!dbLogin.isValid())
-		{
-			qWarning() << "error: AuAccountChooseDlg::ListAccounts unable to addDatabase AuLogin";
-			return;
-		}
+		AuMonitorDatabase connectionLogin;
+		QSqlDatabase& dbLogin = connectionLogin.Database();
 
-		QSqlDatabase dbUniverse = QSqlDatabase::addDatabase("QPSQL7", "AuUniverse");
-		if(!dbUniverse.isValid())
-		{
-			qWarning() << "error: AuAccountChooseDlg::ListAccounts unable to addDatabase AuUniverse";
-			return;
-		}
+		AuMonitorDatabase connectionUniverse;
+		QSqlDatabase& dbUniverse = connectionUniverse.Database();
 
 		dbLogin.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
 		//dbLogin.setHostName("LoginDb.Hazeron.net");
-		dbLogin.setHostName("u0.Hazeron.net");
 
-		if(!dbLogin.open("aumaster","Light"))
+		if(!connectionLogin.Open())
 		{
-			QSqlError er = dbLogin.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			qWarning() << "error: AuAccountChooseDlg::ListAccounts Failed to open login database" << sdv << sdb;
+			QString sdb = connectionLogin.ErrorString();
+			qWarning() << "error: AuAccountChooseDlg::ListAccounts Failed to open login database" << sdb;
+			QMessageBox::warning(this, tr("Database connection failed"), sdb);
 			return;
 		}
 
 		dbUniverse.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
 		//dbUniverse.setHostName("LoginDb.Hazeron.net");
-		dbUniverse.setHostName("u0.Hazeron.net");
 
-		if(!dbUniverse.open("aumaster","Light"))
+		if(!connectionUniverse.Open())
 		{
-			QSqlError er = dbUniverse.lastError();
-			QString sdv = er.driverText();
-			QString sdb = er.databaseText();
-			qWarning() << "error: AuAccountChooseDlg::ListAccounts Failed to open universe database" << sdv << sdb;
+			QString sdb = connectionUniverse.ErrorString();
+			qWarning() << "error: AuAccountChooseDlg::ListAccounts Failed to open universe database" << sdb;
+			QMessageBox::warning(this, tr("Database connection failed"), sdb);
 			return;
 		}
 
 		ListAccounts(dbLogin, dbUniverse);
 	}
-	QSqlDatabase::removeDatabase("AuLogin");
 }
 
 void AuAccountChooseDlg::ListAccounts(QSqlDatabase& dbLogin, QSqlDatabase& dbUniverse)
@@ -470,4 +458,3 @@ int AuAccountChooseDlg::EmptyUnitIndex() const
 			return unit;
 	return -1;
 }
-

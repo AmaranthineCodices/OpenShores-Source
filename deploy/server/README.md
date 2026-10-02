@@ -358,9 +358,59 @@ are already connected or awaiting a connection.
 
 Run the monitor on the Docker host, or forward these same local ports through
 SSH when running it remotely. These built-in choices cover the three published
-management endpoints; they do not discover additional workers. Database-backed
-tools and the legacy system-reassignment address mapping still require separate
-updates.
+management endpoints; they do not discover additional workers. The legacy
+system-reassignment address mapping still requires a separate update.
+
+AuServerMon's account manager and universe queries connect directly to PostgreSQL.
+The monitor override publishes PostgreSQL only on `127.0.0.1:5432`. Apply this
+mapping to an existing local deployment from the repository root, without a build:
+
+```bash
+docker compose \
+  --env-file build/server/local/compose.env \
+  -f deploy/server/compose.yaml \
+  -f build/server/local/workers.compose.json \
+  -f deploy/server/monitor.compose.yaml \
+  up -d --no-build --no-deps --pull never postgres
+```
+
+This recreates PostgreSQL and briefly interrupts database access; its named data
+volume is retained. For a production deployment, replace both `build/server/local`
+paths with `build/server/production`. Future server Make commands include the
+mapping automatically. Port 5432 must be available on the Docker host.
+
+The monitor reads the following environment variables from the process that
+launches it, independently of any repository or deployment files:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `AU_LOGIN_DB_HOST` | `127.0.0.1` | Host of `auLogin` |
+| `AU_UNIVERSE_DB_HOST` | `127.0.0.1` | Host of `auUniverse` |
+| `AU_DB_PORT` | `5432` | PostgreSQL port for both databases |
+| `AU_DB_USER` | `audog` | Existing application database role |
+| `AU_DB_PASSWORD` | `Gold` | Password for that role |
+
+Defaults match a local deployment with unchanged database credentials. For a
+custom or production deployment, use the `AU_DB_PASSWORD` used when initializing
+that database, not the PostgreSQL administrator or database-owner password.
+For example, in Bash, enter it without displaying it or putting it in shell history:
+
+```bash
+read -r -s -p 'Application database password: ' AU_DB_PASSWORD
+printf '\n'
+export AU_DB_PASSWORD
+./build/linux-release/bin/AuServerMon
+unset AU_DB_PASSWORD
+```
+
+The monitor does not save credentials in Qt settings. Account connection errors
+appear in a dialog; universe-query errors appear in the query report. Explicit
+queries can be retried after a connection failure. A failed background game-data
+load pauses until **Reload Empire Data** is requested or an explicit query succeeds.
+When using SSH for remote monitoring, also forward local port 5432 to the server's
+`127.0.0.1:5432` (or use another local port and set `AU_DB_PORT` to match). Keep the
+Docker mapping bound to loopback. Linux needs the Qt PostgreSQL plugin, typically
+provided by the `libqt5sql5-psql` package.
 
 ### Windows clients with Docker Engine inside WSL 2
 
