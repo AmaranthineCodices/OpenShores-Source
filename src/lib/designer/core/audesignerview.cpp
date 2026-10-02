@@ -216,7 +216,6 @@ static bool s_SightTarget = true;		// Ctrl+9 - SightTarget
 // Tuning parameters.
 #define d_AtomControlTime				10						// Msec between atom control updates.
 #define d_FrameRate						60						// Target frame rate, in frames per second.
-static const bool s_WaitScreenOld = true;
 #define d_SubtitleWordWrap				128						// Line length of narrative text.
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
@@ -2121,7 +2120,7 @@ void AuDesignerView::paintGL()
 		ReleaseMouse();
 		if(!m_IsWarping)
 			ShowWormholeIndicator();
-		else if(s_WaitScreenOld)
+		else if(g_Au.UseClassicLoadingAnimation())
 			ShowServerHandoffWait();
 		else
 			ShowWarpIndicator();

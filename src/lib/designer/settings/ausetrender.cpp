@@ -131,6 +131,13 @@ AuSetRender::AuSetRender(bool glContextOk, QWidget *parent) : QWidget(parent)
 		"When unchecked, the helmet HUD is not drawn when scene elements are hidden.</html>"));
 	connect(ckdrawhelmethud, SIGNAL(stateChanged(int)), SLOT(SetDrawHelmetHUDAlways(int)));
 
+	QCheckBox* classicLoadingAnimation = new QCheckBox(tr("Use classic loading animation"));
+	classicLoadingAnimation->setChecked(g_Au.UseClassicLoadingAnimation());
+	classicLoadingAnimation->setToolTip(tr("<html>Use the classic star animation during loading and warp travel.<br>"
+			"Uncheck to use the modern tunnel animation. Wormhole travel keeps its own animation.<br>"
+			"Changes take effect immediately.</html>"));
+	connect(classicLoadingAnimation, SIGNAL(stateChanged(int)), SLOT(SetUseClassicLoadingAnimation(int)));
+
 	m_SkyBoxMipmap = new QCheckBox(tr("Mipmap Sky Box Texture"));
 	m_SkyBoxMipmap->setCheckState(g_Au.SkyBoxMipMap()?Qt::Checked:Qt::Unchecked);
 	m_SkyBoxMipmap->setToolTip(tr("<html>Mipmapping helps eliminate sparkling when a texture image gets reduced in size. "
@@ -598,6 +605,7 @@ AuSetRender::AuSetRender(bool glContextOk, QWidget *parent) : QWidget(parent)
 	cklay->addWidget(ckdrawspecks);
 	cklay->addWidget(ckdrawprecip);
 	cklay->addWidget(ckdrawhelmethud);
+	cklay->addWidget(classicLoadingAnimation);
 
 	QVBoxLayout* infolay = new QVBoxLayout;
 	if(queryVers)
@@ -687,6 +695,11 @@ void AuSetRender::SetDrawWeatherEffects(int value)
 void AuSetRender::SetDrawHelmetHUDAlways(int value)
 {
 	g_Au.SetDrawHelmetHUDAlways(value ? true : false);
+}
+
+void AuSetRender::SetUseClassicLoadingAnimation(int value)
+{
+	g_Au.SetUseClassicLoadingAnimation(value ? true : false);
 }
 
 void AuSetRender::GroundTextureSizeChanged(int value)

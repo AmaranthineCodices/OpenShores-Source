@@ -820,8 +820,8 @@ private:
 		float							x;
 		float							y;
 	};
-	GLuint								m_texWaitSpace2011;
-	GLuint								m_texWaitStars2011;
+	GLuint								m_texWaitSpaceOld;
+	GLuint								m_texWaitStarsOld;
 	QVector<WaitParticle>				m_WaitParticles;
 	float								m_WaitSpaceAngle;
 	float								m_WaitBeamAngle;

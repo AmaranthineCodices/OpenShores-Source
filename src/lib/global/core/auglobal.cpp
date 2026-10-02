@@ -264,6 +264,7 @@ void AuGlobal::Init(MODE mode, const QString& appName, const QString& company, D
 	if(m_SkyBoxPaneSize < 256 || m_SkyBoxPaneSize > 4096)
 		m_SkyBoxPaneSize = 1024;
 	m_DrawWeatherEffects = m_Settings.readBoolEntry("/Settings/DrawWeatherEffects", true);
+	m_UseClassicLoadingAnimation = m_Settings.readBoolEntry("/Settings/UseClassicLoadingAnimation", false);
 
 	m_FramedPictureSize = m_Settings.readNumEntry("/Settings/FramedPictureSize", 512);
 	if(m_FramedPictureSize < 64 || m_FramedPictureSize > 2048)
@@ -2674,6 +2675,12 @@ void AuGlobal::SetDrawWeatherEffects(bool drawWeatherEffects)
 {
 	m_DrawWeatherEffects = drawWeatherEffects;
 	m_Settings.writeEntry("/Settings/DrawWeatherEffects", m_DrawWeatherEffects);
+}
+
+void AuGlobal::SetUseClassicLoadingAnimation(bool useClassicLoadingAnimation)
+{
+	m_UseClassicLoadingAnimation = useClassicLoadingAnimation;
+	m_Settings.writeEntry("/Settings/UseClassicLoadingAnimation", m_UseClassicLoadingAnimation);
 }
 
 void AuGlobal::SetFramedPictureSize(int framedPictureSize)

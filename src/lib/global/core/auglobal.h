@@ -522,6 +522,7 @@ private:
 	bool								m_SkyBoxMipMap;
 	unsigned int						m_SkyBoxPaneSize;		// Pixel edge size of sky box panes.
 	bool								m_DrawWeatherEffects;
+	bool								m_UseClassicLoadingAnimation;
 	int									m_FramedPictureSize;	// Maximum size of a framed picture.
 	int									m_ResourceIconSize;		// modifier for the top down view sprite sizes. Percentage of size.
 	int									m_BodyStatSize;			// modifier for the body/vehicle status bar sizes. % of max size.
@@ -1770,6 +1771,11 @@ public:
 		return m_DrawWeatherEffects;
 	}
 
+	inline bool UseClassicLoadingAnimation() const
+	{
+		return m_UseClassicLoadingAnimation;
+	}
+
 	inline double FieldOfViewXCos() const
 	{
 		return m_FieldOfViewXCos;
@@ -2690,6 +2696,8 @@ public:
 	void SetSkyBoxPaneSize(unsigned int paneSize);
 
 	void SetDrawWeatherEffects(bool drawWeatherEffects);
+
+	void SetUseClassicLoadingAnimation(bool useClassicLoadingAnimation);
 
 	void SetFramedPictureSize(int framedPictureSize);
 

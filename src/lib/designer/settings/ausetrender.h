@@ -101,6 +101,7 @@ protected slots:
 	void SetSkyBoxMipmap(int value);
 	void SetSkyBoxSize(int value);
 	void SetTreeViewRange(int value);
+	void SetUseClassicLoadingAnimation(int value);
 	void TreeTrunkMinDiaChanged(const QString& value);
 	void TreeTrunkFacesChanged(int value);
 	void TreeTrunkMaxSegsChanged(int value);
