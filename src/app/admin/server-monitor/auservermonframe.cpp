@@ -134,13 +134,9 @@ void AuServerMonFrame::CreateMenuBar()
 		return;
 
 	QMenu* mConnect = mbar->addMenu(tr("&Connect"));
-	mConnect->addAction(tr("&Public"), m_ServerCon, SLOT(ConnectGrid()));
-	mConnect->addAction(tr("P&ublic Workers"), m_ServerCon, SLOT(ConnectSceneWorkers()));
-	mConnect->addAction(tr("Pu&blic Worker..."), m_ServerCon, SLOT(ConnectPublicWorker()));
-	mConnect->addSeparator();
-	mConnect->addAction(tr("&Debug"), m_ServerCon, SLOT(ConnectDebugGrid()));
-	mConnect->addAction(tr("D&ebug Workers"), m_ServerCon, SLOT(ConnectDebugSceneWorkers()));
-	mConnect->addAction(tr("Debug &Worker..."), m_ServerCon, SLOT(ConnectDebugWorker()));
+	mConnect->addAction(tr("&Local Servers"), m_ServerCon, SLOT(ConnectLocalServers()));
+	mConnect->addAction(tr("Local &Workers"), m_ServerCon, SLOT(ConnectLocalWorkers()));
+	mConnect->addAction(tr("Local &Server..."), m_ServerCon, SLOT(ConnectLocalServer()));
 
 	QMenu* mConnections = mbar->addMenu(tr("&Servers"));
 
@@ -296,4 +292,3 @@ void AuServerMonFrame::CreateMenuBar()
 	mUniverse->addSeparator();
 	mUniverse->addAction(tr("&Reload Empire Data"), m_ServerCon, SLOT(ReloadGameData()));
 }
-

@@ -113,6 +113,8 @@ void DtMgrClient::run()
 	tcpSocket.waitForConnected(10000);
 	if(tcpSocket.state() != QAbstractSocket::ConnectedState)
 	{
+		emit ConnectionFailed(tr("Could not connect to %1:%2: %3")
+			.arg(m_ConnectionName).arg(m_ConnectionPort).arg(tcpSocket.errorString()));
 		// The connection attempt failed. The server or the network is probably not up.
 		//qWarning("DtMgrClient::run - tcp connection attempt failed");
 		return;
@@ -1051,4 +1053,3 @@ void DtMgrClient::Broadcast(QString mgrServerName, quint16 mgrServerPort, QStrin
 	out << message;
 	QueuePacket(ba);
 }
-

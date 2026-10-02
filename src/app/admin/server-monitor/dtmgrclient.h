@@ -644,6 +644,7 @@ public slots:
 
 signals:
 	void Connected();
+	void ConnectionFailed(QString message);
 	void MemoryUsageReport(QString serverName, quint16 serverPort, QStringList report);
 	void MonitorAnswered(QString serverName, quint16 serverPort, unsigned int avgCycleMs, float atomLoad, int etheriumLock,
 			unsigned int systemsDeadlocked, bool bdLock, bool dataLock, bool itLock, bool scLock, bool trashLock);

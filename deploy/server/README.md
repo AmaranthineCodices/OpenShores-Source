@@ -336,6 +336,32 @@ Pop-Location
 
 VS Code includes local Debug client launches for Linux and Windows. Launch targets do not start or restart the stack; run `make server-up` first. The Linux-only `Linux Server: Attach scene-worker-1` launch attaches GDB to the first scene worker. The local Debug worker receives ptrace permissions; production workers do not.
 
+### AuServerMon
+
+In AuServerMon, choose **Connect > Local Servers** to connect to the scene master,
+manager, and first worker. **Local Workers** connects just the first worker;
+**Local Server...** lets you select one of the three endpoints.
+
+| Scene service | Management endpoint |
+| --- | --- |
+| Master | `127.0.0.1:18062` |
+| Manager | `127.0.0.1:18063` |
+| Worker 1 | `127.0.0.1:18064` |
+
+These match `monitor.compose.yaml`, included by the local and production server
+Make commands. AuServerMon uses the same addresses in either environment, with
+no dependency on a checkout, deployment paths, or Docker container names. It
+does not connect automatically on startup. After connecting, use **Servers >
+Start Monitoring** to select a polling interval. Failed connections show the
+endpoint and socket error, and repeated connection requests skip endpoints that
+are already connected or awaiting a connection.
+
+Run the monitor on the Docker host, or forward these same local ports through
+SSH when running it remotely. These built-in choices cover the three published
+management endpoints; they do not discover additional workers. Database-backed
+tools and the legacy system-reassignment address mapping still require separate
+updates.
+
 ### Windows clients with Docker Engine inside WSL 2
 
 When Docker Engine runs directly inside WSL 2 in NAT mode, Windows `localhost`

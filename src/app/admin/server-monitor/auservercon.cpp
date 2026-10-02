@@ -98,50 +98,15 @@ AuServerCon::AuServerCon(AuReportWidget* report, AuPlayersTable* playersOn, QWid
 	m_PlayersOn = playersOn;
 	m_Report = report;
 
-	int splitServers = true;	// true to split the 64 core computers into multiple server processes, false for one big process.
-	m_PublicServers.append(AuServerChoice(AuGlobal::SceneMaster, "Master u5", "u5.Hazeron.net", 16762));
-	m_PublicServers.append(AuServerChoice(AuGlobal::SceneManager, "Manager u6", "u6.Hazeron.net", 16762));
+	m_PublicServers.append(AuServerChoice(AuGlobal::SceneMaster, "Scene master", "127.0.0.1", 18062));
+	m_PublicServers.append(AuServerChoice(AuGlobal::SceneManager, "Scene manager", "127.0.0.1", 18063));
+	m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "Scene worker 1", "127.0.0.1", 18064));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u1", "u1.Hazeron.net", 16763));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u2", "u2.Hazeron.net", 16763));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u3", "u3.Hazeron.net", 16763));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u4", "u4.Hazeron.net", 16763));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u5", "u5.Hazeron.net", 16763));
 	//m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u6", "u6.Hazeron.net", 16763));
-	m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u7", "u7.Hazeron.net", 16763));
-	if(!splitServers)
-	{
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u8", "u8.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u9", "u9.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u10", "u10.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u11", "u11.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u12", "u12.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u13", "u13.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u14", "u14.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u15", "u15.Hazeron.net", 16763));
-	}
-	else
-	{
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u8a", "u8.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u8b", "u8b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u9a", "u9.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u9b", "u9b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u10a", "u10.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u10b", "u10b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u11a", "u11.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u11b", "u11b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u12a", "u12.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u12b", "u12b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u13a", "u13.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u13b", "u13b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u14a", "u14.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u14b", "u14b.Hazeron.net", 16767));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u15a", "u15.Hazeron.net", 16763));
-		m_PublicServers.append(AuServerChoice(AuGlobal::SceneWorker, "u15b", "u15b.Hazeron.net", 16767));
-	}
-	m_DebugServers.append(AuServerChoice(AuGlobal::SceneMaster, "Master Huey", "u0d.Hazeron.net", 16762));
-	m_DebugServers.append(AuServerChoice(AuGlobal::SceneManager, "Manager Dewey", "u1d.Hazeron.net", 16762));
-	m_DebugServers.append(AuServerChoice(AuGlobal::SceneWorker, "Dewey", "u1d.Hazeron.net", 16763));
-	m_DebugServers.append(AuServerChoice(AuGlobal::SceneWorker, "Louie", "u2d.Hazeron.net", 16763));
 
 	/* I let this run for almost an hour and it still wasn't done. Takes 30 seconds on the server.
 	QPushButton* pblimbo = new QPushButton("Limbo Check");
@@ -216,8 +181,6 @@ int AuServerCon::ConnectToServer(int serverMode, const QString& listName, const 
 	m_ConnectionsLock.lock();
 	for(QList<DtMgrClient*>::const_iterator cit = m_Connections.constBegin(); cit != m_Connections.constEnd(); cit++)
 	{
-		if(!(*cit)->IsConnected())
-			continue;
 		if((*cit)->ConnectionName() == netName && (*cit)->ConnectionPort() == netPort)
 		{
 			m_ConnectionsLock.unlock();
@@ -235,6 +198,12 @@ int AuServerCon::ConnectToServer(int serverMode, const QString& listName, const 
 		mgrConnection->SetConnectionInfo(netName, netPort, serverMode);
 		mgrConnection->SetConnectDelay(msConnectDelay);
 		connect(mgrConnection, SIGNAL(finished()), SLOT(ConnectionClosed()));
+		connect(mgrConnection, &DtMgrClient::ConnectionFailed, this, [this](const QString& message) {
+			QMessageBox* box = new QMessageBox(QMessageBox::Warning, tr("Connection failed"),
+				message, QMessageBox::Ok, this);
+			box->setAttribute(Qt::WA_DeleteOnClose);
+			box->open();
+		});
 		connect(this, SIGNAL(Broadcast(QString, quint16, QString)),
 				mgrConnection, SLOT(Broadcast(QString, quint16, QString)));
 		connect(this, SIGNAL(CreateSectorAt(QString, quint16, quint8, double,double,double)),
@@ -749,14 +718,14 @@ void AuServerCon::TimerUpdate()
 	}
 }
 
-void AuServerCon::ConnectGrid()
+void AuServerCon::ConnectLocalServers()
 {
 	int server = 0;
 	for(QList<AuServerChoice>::const_iterator si = m_PublicServers.cbegin(); si != m_PublicServers.cend(); si++, server++)
 		ConnectToServer((*si).ServerMode(), (*si).ListName(), (*si).NetName(), (*si).NetPort(), server, server*50);
 }
 
-void AuServerCon::ConnectSceneWorkers()
+void AuServerCon::ConnectLocalWorkers()
 {
 	int server = 0;
 	for(QList<AuServerChoice>::const_iterator si = m_PublicServers.cbegin(); si != m_PublicServers.cend(); si++, server++)
@@ -1595,9 +1564,21 @@ void AuServerCon::ConnectDebugWorker()
 	qDebug() << "AuServerCon::ConnectDebugWorker";
 }
 
-void AuServerCon::ConnectPublicWorker()
+void AuServerCon::ConnectLocalServer()
 {
-	qDebug() << "AuServerCon::ConnectPublicWorker";
+	QStringList choices;
+	for(const AuServerChoice& server : m_PublicServers)
+		choices << QString("%1 (%2:%3)").arg(server.ListName(), server.NetName()).arg(server.NetPort());
+	bool ok = false;
+	QString choice = QInputDialog::getItem(this, tr("Connect to local server"), tr("Server:"),
+		choices, 0, false, &ok);
+	if(!ok)
+		return;
+	int index = choices.indexOf(choice);
+	if(index < 0)
+		return;
+	const AuServerChoice& server = m_PublicServers.at(index);
+	ConnectToServer(server.ServerMode(), server.ListName(), server.NetName(), server.NetPort(), index, 0);
 }
 
 void AuServerCon::ReloadGameData()
@@ -3391,4 +3372,3 @@ void AuServerCon::ServerDisableTockTransactions()
 	for(int selIdx=0; selIdx<serverTitles.count(); selIdx++)
 		emit DebugSwitch(serverNames[selIdx], serverPorts[selIdx], 17, 0, 0);
 }
-

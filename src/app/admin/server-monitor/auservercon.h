@@ -171,9 +171,9 @@ protected slots:
 	void ConnectDebugGrid();
 	void ConnectDebugSceneWorkers();
 	void ConnectDebugWorker();
-	void ConnectGrid();
-	void ConnectPublicWorker();
-	void ConnectSceneWorkers();
+	void ConnectLocalServers();
+	void ConnectLocalServer();
+	void ConnectLocalWorkers();
 	void ConnectionClicked(QListWidgetItem* item);
 	void ConnectionClosed();
 	void CreateSectorAt();
