@@ -79,8 +79,9 @@ Change the credentials in `local.env` before the first initialization, or run `m
 ### Apache web service
 
 The `web` service installs Apache 2 with the `event` MPM and `mod_cgid` in a
-separate Ubuntu image. Its PHP homepage executes `AuServerStatus` with `-l`,
-`-m`, and `-g` on each page load and embeds the resulting HTML fragments.
+separate Ubuntu image. Its homepage loads immediately with “Loading server status...”,
+then JavaScript fetches `/server-status.php`. This endpoint executes `AuServerStatus`
+with `-l`, `-m`, and `-g` and returns HTML fragments for the status panel.
 The scene status uses the management channel, which recognizes the database states.
 The tool connects to the masters by service name on the private Docker network.
 Apache runs PHP through `mod_actions` and `mod_cgid`, keeping the `event` MPM;
@@ -116,7 +117,13 @@ make server-logs SERVICE=web
 ```
 
 Open `http://localhost/`. `/index.html` redirects to the PHP homepage.
-The page refreshes its results when reloaded; it does not poll in the background.
+The page loads status once, then refreshes it only when **Refresh status** is
+clicked. It does not poll in the background. The button is disabled while a request
+is pending. HTTP/network failures leave any previous results visible with an error
+message and allow another attempt. Requests have a 45-second browser timeout.
+Version information is fetched separately once from `/server-status.php?version=1`,
+so no executable is run during the initial homepage render. With JavaScript disabled,
+the page provides a link to view status directly.
 Each status command has a 12-second timeout, after which the page shows an error
 for that service. Command failures also go to the Apache error log.
 
@@ -144,12 +151,20 @@ AFK markers; failures display an unavailable message rather than an empty list.
 `/playerson.html` redirects to this page. No player report file or history is
 written, and the homepage no longer makes the additional player-list query.
 
-`/galactic` displays recent public galactic chat and system broadcasts. It runs
+The homepage displays recent public galactic chat and system broadcasts beside
+the server status, stacking the panels on narrow screens. Both panels share the
+same border, padding, and refresh icon styling. The chat border remains visible
+while loading, when there are no recent messages, and when a request fails.
+Each panel loads once and has its own refresh button; refreshing one does not
+refresh the other. Neither panel polls automatically.
+
+`/galactic.php` serves only the chat HTML fragment. It runs
 `AuServerStatus -c`, which uses the existing scene-master management status query
 and outputs the chat as JSON. PHP renders escaped message text, sender names,
-galaxies, and UTC timestamps in chronological order. Reload the page to refresh.
-`/galactic.html` redirects to this page; `/galactic.php` also works directly.
-Failures display an unavailable message, separately from an empty chat result.
+galaxies, and UTC timestamps in chronological order. `/galactic` and
+`/galactic.html` redirect to the homepage chat panel. An empty result displays
+“No recent chatter.” Failed refreshes preserve any previously loaded messages
+and show an error; a failed initial request displays an unavailable message.
 
 The scene master retains approximately five minutes of recent chat. This page
 is read-only and does not archive older messages. Neither the chat query nor the

@@ -1,18 +1,58 @@
 body {
+    background-image: url("/images/star_background.svg");
     background-color: #0B0B3B;
     color: white;
     text-shadow: 2px 2px black;
+    color-scheme: dark;
+}
+.home-panels {
+    display: grid;
+    grid-template-columns: minmax(0, 252px) minmax(0, 512px);
+    gap: 16px;
+    align-items: start;
+}
+@media (max-width: 600px) {
+    .home-panels {
+        grid-template-columns: minmax(0, 512px);
+    }
+}
+.live-panel {
+    position: relative;
+    border: 1px solid grey;
+    padding: 5px;
+    min-height: 24px;
 }
 #statusdiv {
-    border: 1px solid grey;
     max-width: 240px;
-    padding: 5px;
+    background-color: #0B0B3B;
 }
+.refresh-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    z-index: 1;
+    filter: invert(1);
+}
+.refresh-button img {
+    display: block;
+}
+.refresh-button:disabled {
+    opacity: 0.2;
+    cursor: wait;
+}
+
 #links {
     padding: 5px;
     border: 1px solid grey;
     max-width: 240px;
     margin-top: 10px;
+    background-color: #0B0B3B;
 }
 a:visited {
     color: #6078ac;
@@ -40,12 +80,23 @@ a:visited {
 }
 
 #chatdiv {
-    max-width: 500px;
-    border: 1px solid grey;
-    padding: 5px;
+    max-width: 400px;
+    background-color: #0B0B3B;
+}
+#chat-content {
+    padding-right: 52px;
+    max-height: 40vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+#refresh-chat {
+    right: 28px;
+}
+.chat-empty {
+    margin: 0;
 }
 
-#sender {
+.chat-sender {
     display: block;
     margin-top: 0.4rem;
     font-family: Arial, sans-serif;
@@ -146,3 +197,7 @@ body.generated-page {
 }
 .avatars-page .avatar-detail-heading { background-color: rgb(32, 32, 32); }
 .avatars-page .avatar-detail-cell { background-color: rgb(0, 0, 32); }
+
+h1, h2, span, a, p {
+    font-family: "Trebuchet MS", Arial, sans-serif;
+}
