@@ -110,8 +110,6 @@ jobs:
           mkdir -p "$bundle/deploy/server/postgres"
           mkdir -p "$bundle/deploy/server/environments"
           cp deploy/server/compose.yaml "$bundle/deploy/server/"
-          mkdir -p "$bundle/deploy/server/web"
-          cp -R build/server/web-context-release/. "$bundle/deploy/server/web/"
           install -m 0644 deploy/server/environments/production.ini \
             "$bundle/deploy/server/environments/production.ini"
           install -m 0644 deploy/server/environments/scene-master.Dockerfile \
