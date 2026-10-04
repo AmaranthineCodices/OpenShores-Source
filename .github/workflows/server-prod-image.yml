@@ -131,13 +131,3 @@ jobs:
           name: server-production-compose-${{ github.sha }}
           path: build/server/server-production-compose.tar
           if-no-files-found: error
-
-      - name: Deploy server
-        shell: bash
-        env:
-          DEPLOY_API_KEY: ${{ secrets.DEPLOY_API_KEY }}
-        run: |
-          curl --fail-with-body \
-          -X POST https://soh-mgmt.dcole.dev/deploy \
-          -H "X-API-Key: $DEPLOY_API_KEY" \
-          --data-binary @build/server/server-production-compose.tar
