@@ -99,7 +99,6 @@ a:visited {
 .chat-sender {
     display: block;
     margin-top: 0.4rem;
-    font-family: Arial, sans-serif;
     font-weight: bold;
     color: #ffd580;
 }
@@ -108,7 +107,6 @@ a:visited {
 body.generated-page {
     background-color: #000;
     color: rgb(112, 127, 255);
-    font-family: Helvetica, Arial, sans-serif;
     text-shadow: none;
 }
 .generated-page a:link { color: #a0b3f9; }
@@ -135,14 +133,11 @@ body.generated-page {
 }
 .generated-page .page-title {
     text-align: center;
-    font-family: sans-serif;
 }
 .generated-page .page-title-text {
     font-weight: bold;
-    font-family: sans-serif;
 }
 .generated-page .page-highlight { color: #fff; }
-.generated-page .page-font { font-family: sans-serif; }
 .generated-page .page-indent { margin-left: 10px; }
 .generated-page .page-align-right { text-align: right; }
 .generated-page .page-align-center { text-align: center; }
@@ -174,10 +169,23 @@ body.generated-page {
 .standings-page .standings-score-ally { background-color: rgb(32, 8, 2); }
 /* Avatar directories and profiles only. */
 .avatars-page .avatar-list {
-    width: 80%;
+    width: auto;
+    max-width: 50%;
+    margin-inline: auto;
     border: 0;
     border-spacing: 6px;
+    border: 2px solid grey;
+    background-color: #0B0B3B;
 }
+
+.avatars-page .avatar-list td:first-child { 
+    width: 1%;
+}
+
+.avatars-page .avatar-list tr:not(:last-child) > td { /* Dividing line between each avatar */
+    border-bottom: 1px solid grey;
+}
+
 .avatars-page .avatar-list td { padding: 2px; }
 .avatars-page .avatar-highborn { color: #fc0; }
 .avatars-page .avatar-demiavatar { color: #0038b8; }
@@ -203,6 +211,13 @@ form > label {
     margin: 1em 0;
 }
 
-h1, h2, span, a, p {
+h1, h2, span, a, p, form {
     font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+#formdiv {
+    border: 1px solid grey;
+    background-color: #0B0B3B;
+    padding: 5px;
+    max-width: 500px;
 }

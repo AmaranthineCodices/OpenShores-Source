@@ -8,14 +8,16 @@
 </head>
 <body>
     <main>
-        <h1>Change email address</h1>
-        <form method="post" action="/cgi-bin/AuAcctEmail" accept-charset="UTF-8">
-            <label>Account name <input name="acctname" autocomplete="username" required></label>
-            <label>Current password <input type="password" name="password" autocomplete="current-password" required></label>
-            <label>New email address <input type="email" name="newemail" autocomplete="email" required></label>
-            <button type="submit">Change email address</button>
-        </form>
-        <p><a href="/">Home</a></p>
+        <div id="formdiv">
+            <h1>Change email address</h1>
+            <form method="post" action="/cgi-bin/AuAcctEmail" accept-charset="UTF-8">
+                <label>Account name <input name="acctname" autocomplete="username" required></label>
+                <label>Current password <input type="password" name="password" autocomplete="current-password" required></label>
+                <label>New email address <input type="email" name="newemail" autocomplete="email" required></label>
+                <button type="submit">Change email address</button>
+            </form>
+            <p><a href="/">Home</a></p>
+        </div>
     </main>
 </body>
 </html>
