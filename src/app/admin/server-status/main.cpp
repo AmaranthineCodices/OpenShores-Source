@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 void PrintUsage()
 {
 	QTextStream out(stdout);
-	out << "Shores of Hazeron Server Status\n";
+	out << "OpenShores Server Status\n";
 	out << " Usage: AuServerStatus [-l] [-m] [-s] [-g] [-p] [-c] [-v] [-?]\n";
 	out << "  -l      Poll login master server for status. \n";
 	out << "  -m      Poll mail master server for status. \n";

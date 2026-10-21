@@ -594,7 +594,7 @@ int main(int argc, char** argv)
 	AuBodyPartsRes bodyPartsRes;
 
 	DgData data;
-	gp_AuGlobal = new AuStubGlobal("Shores of Hazeron Empire Report", "Hazeron Freehold", AuGlobal::WebCGI, &data);
+	gp_AuGlobal = new AuStubGlobal("OpenShores Empire Report", "OpenShores", AuGlobal::WebCGI, &data);
 	AuGLModelCache modelCacheGLSL;
 	g_Au.SetModelCache(&modelCacheGLSL);
 

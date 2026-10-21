@@ -3011,7 +3011,7 @@ public:
 
 	virtual const char* WebAddress() const
 	{
-		return "Hazeron.com";
+		return "openshores.net";
 	}
 
 	inline unsigned int WindowOpacity(bool active) const

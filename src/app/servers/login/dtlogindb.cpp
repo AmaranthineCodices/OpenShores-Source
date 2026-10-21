@@ -39,7 +39,7 @@ bool DtLoginDb::OpenDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-	db.setHostName(qEnvironmentVariable("AU_LOGIN_DB_HOST", "LoginDb.Hazeron.net"));
+	db.setHostName(qEnvironmentVariable("AU_LOGIN_DB_HOST", "logindb.openshores.net"));
 	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
@@ -62,7 +62,7 @@ bool DtLoginDb::OpenUniverseDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
-	db.setHostName(qEnvironmentVariable("AU_UNIVERSE_DB_HOST", "UniverseDb.Hazeron.net"));
+	db.setHostName(qEnvironmentVariable("AU_UNIVERSE_DB_HOST", "universedb.openshores.net"));
 	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();
@@ -447,7 +447,7 @@ void DtLoginDb::PerformQueuedOperations()
 		}
 		auLoginServerApp->m_SetPassword.clear();
 	}
-
+    // Needs to be removed, no longer used
 	// Player password reset.
 	if(!auLoginServerApp->m_ResetPassword.isEmpty())
 	{
@@ -499,22 +499,18 @@ void DtLoginDb::PerformQueuedOperations()
 						// Write the message into the file.
 						QTextStream mailbody(&file);
 						mailbody << (*it).m_Name << ",\n\n";
-						mailbody << tr("This message was sent by the Shores of Hazeron account server at your request. "
+						mailbody << tr("This message was sent by the OpenShores account server at your request. "
 							"Contact us directly for further assistance or to report abuse of this automated system.\n\n");
-						mailbody << tr("Your Shores of Hazeron password is ") <<
+						mailbody << tr("Your OpenShores password is ") <<
 							password << ".\n\n";
 						mailbody << tr("Thanks for playing.\n\n");
-						mailbody << tr("Hazeron Freehold LLC\n");
-						mailbody << tr("3900 N. 37th St.\n");
-						mailbody << tr("Norfolk, NE 68701\n");
-						mailbody << tr("402-379-0181\n");
-						mailbody << tr("Shores@Hazeron.com\n");
-						mailbody << tr("https://Hazeron.com\n");
+						mailbody << tr("OpenShores\n");
+						mailbody << tr("https://openshores.net\n");
 						file.close();
 
 						// Mail the file to the address.
-						QString mailcmd = QString("mail -s 'Shores of Hazeron Password' %1 < %2").arg(player.Email()).arg(tmpname);
-						//sprintf(mailcmd, "mail -s 'Shores of Hazeron Password' "
+						QString mailcmd = QString("mail -s 'OpenShores Password' %1 < %2").arg(player.Email()).arg(tmpname);
+						//sprintf(mailcmd, "mail -s 'OpenShores Password' "
 						//		"%s < %s", (const char*)player.m_email.toLatin1(),
 						//		tmpname);
 						if(system((const char*)mailcmd.toLatin1()) == -1)

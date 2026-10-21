@@ -97,7 +97,7 @@ const DiControlInput s_FrameDefaults[] =
 			AuFrame::CI_ToggleAllUIs, Qt::Key_F1, Qt::NoModifier,
 			DiControlInput::MT_None, Qt::NoModifier,
 			DiControlInput::JT_None, 0, 100, false),
-	DiControlInput(QObject::tr("Exit Hazeron Commander"),
+	DiControlInput(QObject::tr("Exit OpenShores Commander"),
 			QObject::tr("The operating system may signal program exit in response to specific key combinations, "
 				"regardless of the binding of this key."),
 			AuFrame::CI_ExitGame, Qt::Key_F4, Qt::AltModifier,
@@ -109,8 +109,8 @@ const DiControlInput s_FrameDefaults[] =
 			DiControlInput::JT_None, 0, 100, false),
 
 	// Commands that toggle the visibility of a single window.
-	DiControlInput(QObject::tr("About Hazeron Commander"),
-			QObject::tr("Displays a window with information about <i>Hazeron Commander</i>."),
+	DiControlInput(QObject::tr("About OpenShores Commander"),
+			QObject::tr("Displays a window with information about <i>OpenShores Commander</i>."),
 			AuFrame::CI_About, Qt::Key_unknown, Qt::NoModifier,
 			DiControlInput::MT_None, Qt::NoModifier,
 			DiControlInput::JT_None, 0, 100, false),
@@ -506,14 +506,14 @@ AuClientView* AuClientFrame::ClientView() const
 void AuClientFrame::ShowForum()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/mybb/");
+	QUrl url("https://openshores.net/feedback");
 	QDesktopServices::openUrl(url);
 }
 
 void AuClientFrame::ShowVideos()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/videos.php");
+	QUrl url("https://openshores.net");
 	QDesktopServices::openUrl(url);
 }
 
@@ -527,21 +527,21 @@ void AuClientFrame::ShowWiki()
 void AuClientFrame::ShowAvatars()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandings/Avatars.php");
+	QUrl url("https://openshores.net/avatars");
 	QDesktopServices::openUrl(url);
 }
 
 void AuClientFrame::ShowWarDimensionStandings()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandings/EmpireStandings.php");
+	QUrl url("https://openshores.net/standings");
 	QDesktopServices::openUrl(url);
 }
 
 void AuClientFrame::ShowPeaceDimensionStandings()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandingsNZ/EmpireStandings.php");
+	QUrl url("https://openshores.net/standings");
 	QDesktopServices::openUrl(url);
 }
 

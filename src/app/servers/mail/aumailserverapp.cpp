@@ -75,13 +75,13 @@ AuMailServerApp::AuMailServerApp(int& argc, char** argv) :
 	if(isMaster)
 	{
 		// Create 'MailMaster' global data object independent of app object.
-		gp_AuGlobal = new AuGlobal("Hazeron Mail Master", "Hazeron Freehold", AuGlobal::MailMaster);
+		gp_AuGlobal = new AuGlobal("OpenShores Mail Master", "OpenShores", AuGlobal::MailMaster);
 		g_Au.Log("Mail Master Started");
 	}
 	else
 	{
 		// Create 'MailServer' global data object independent of app object.
-		gp_AuGlobal = new AuGlobal("Hazeron Mail Worker", "Hazeron Freehold", AuGlobal::MailWorker);
+		gp_AuGlobal = new AuGlobal("OpenShores Mail Worker", "OpenShores", AuGlobal::MailWorker);
 		g_Au.Log("Mail Worker Started");
 	}
 
@@ -434,7 +434,7 @@ bool AuMailServerApp::OpenDatabase(QSqlDatabase& db)
 	//   User: audog
 	//   Password: Gold
 	db.setDatabaseName("auMail");			// NOTE: Name is case sensitive.
-	db.setHostName(qEnvironmentVariable("AU_MAIL_DB_HOST", "MailDb.Hazeron.net"));
+	db.setHostName(qEnvironmentVariable("AU_MAIL_DB_HOST", "maildb.openshores.net"));
 	if(!db.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold")))
 	{
 		QSqlError er = db.lastError();

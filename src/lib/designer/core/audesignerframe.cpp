@@ -110,7 +110,7 @@ const DiControlInput s_FrameDefaults[] =
 			AuFrame::CI_ToggleAllUIs, Qt::Key_F1, Qt::NoModifier,
 			DiControlInput::MT_None, Qt::NoModifier,
 			DiControlInput::JT_None, 0, 100, false),
-	DiControlInput(QObject::tr("Exit %1").arg("Hazeron"),
+	DiControlInput(QObject::tr("Exit %1").arg("OpenShores"),
 			QObject::tr("The operating system may signal program exit in response to specific key combinations, "
 				"regardless of the binding of this key."),
 			AuFrame::CI_ExitGame, Qt::Key_F4, Qt::AltModifier,
@@ -122,8 +122,8 @@ const DiControlInput s_FrameDefaults[] =
 			DiControlInput::JT_None, 0, 100, false),
 
 	// Commands that toggle the visibility of a single window.
-	DiControlInput(QObject::tr("About %1").arg("Hazeron"),
-			QObject::tr("Displays a window with information about <i>%1</i>.").arg("Hazeron"),
+	DiControlInput(QObject::tr("About %1").arg("OpenShores"),
+			QObject::tr("Displays a window with information about <i>%1</i>.").arg("OpenShores"),
 			AuFrame::CI_About, Qt::Key_unknown, Qt::NoModifier,
 			DiControlInput::MT_None, Qt::NoModifier,
 			DiControlInput::JT_None, 0, 100, false),
@@ -920,14 +920,14 @@ AuDesignerView* AuDesignerFrame::DesignerView() const
 void AuDesignerFrame::ShowForum()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/mybb/");
+	QUrl url("https://openshores.net/feedback");
 	QDesktopServices::openUrl(url);
 }
 
 void AuDesignerFrame::ShowVideos()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/videos.php");
+	QUrl url("https://openshores.net");
 	QDesktopServices::openUrl(url);
 }
 
@@ -939,21 +939,21 @@ void AuDesignerFrame::ShowWikiDesigner()
 void AuDesignerFrame::ShowAvatars()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandings/Avatars.php");
+	QUrl url("https://openshores.net/avatars");
 	QDesktopServices::openUrl(url);
 }
 
 void AuDesignerFrame::ShowWarDimensionStandings()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandings/EmpireStandings.php");
+	QUrl url("https://openshores.net/standings");
 	QDesktopServices::openUrl(url);
 }
 
 void AuDesignerFrame::ShowPeaceDimensionStandings()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com/EmpireStandingsNZ/EmpireStandings.php");
+	QUrl url("https://openshores.net/standings");
 	QDesktopServices::openUrl(url);
 }
 
@@ -5535,7 +5535,7 @@ void AuDesignerFrame::LaunchDesigner()
 	case 1:
 		{
 			QString msg = tr("The file <b>%1/Programs/GD</b> is missing. "
-					"Run the <i>Shores of Hazeron Launcher</i> to restore the file. "
+					"Run the <i>OpenShores Launcher</i> to restore the file. "
 					"Then try again.").arg(g_Au.ApplicationName());
 			QMessageBox::warning(this, g_Au.ApplicationName(), msg);
 		}
@@ -5543,7 +5543,7 @@ void AuDesignerFrame::LaunchDesigner()
 	case 2:
 		{
 			QString msg = tr("The file <b>%1/Programs/GD</b> exists but it could not be opened. "
-					"Run the <i>Shores of Hazeron Launcher</i> to repair the file. "
+					"Run the <i>OpenShores Launcher</i> to repair the file. "
 					"This is probably a file permission problem so you may need to manually delete the file. "
 					"Then try again.").arg(g_Au.ApplicationName());
 			QMessageBox::warning(this, g_Au.ApplicationName(), msg);
@@ -5552,7 +5552,7 @@ void AuDesignerFrame::LaunchDesigner()
 	case 3:
 		{
 			QString msg = tr("The file <b>%1/Programs/GD</b> is broken or obsolete. "
-					"Run the <i>Shores of Hazeron Launcher</i> to repair the file. "
+					"Run the <i>OpenShores Launcher</i> to repair the file. "
 					"Then try again.").arg(g_Au.ApplicationName());
 			QMessageBox::warning(this, g_Au.ApplicationName(), msg);
 		}

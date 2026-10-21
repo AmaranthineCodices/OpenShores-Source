@@ -29,7 +29,7 @@
 AuAccountChooseDlg::AuAccountChooseDlg(quint32 hideAccount, QWidget* parent) : QDialog(parent)
 {
 	setWindowIcon(QIcon(":data/ServerMon.png"));
-	setWindowTitle("Shores of Hazeron Account Chooser");
+	setWindowTitle("OpenShores Account Chooser");
 
 	m_HideAccount = hideAccount;
 

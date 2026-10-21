@@ -165,7 +165,7 @@ int CreateUserAccount(const QString& acctname, const QString& password1, const Q
 	}
 
 	// Login to the login server.
-	QString loginName = "WebMaster.Hazeron.com";
+	QString loginName = "webmaster.openshores.net";
 
 	// Create a SHA-1 hash key from the webmaster's password.
 	QByteArray loginPassCrypt;

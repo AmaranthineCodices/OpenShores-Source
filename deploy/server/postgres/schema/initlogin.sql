@@ -44,7 +44,7 @@ CREATE INDEX g_Player_idu3_index ON g_Player USING btree (idu3);
 CREATE INDEX g_Player_idu4_index ON g_Player USING btree (idu4);
 CREATE INDEX g_Player_idu5_index ON g_Player USING btree (idu5);
 CREATE INDEX g_Player_idu6_index ON g_Player USING btree (idu6);
-INSERT INTO g_Player (name, passcrypt, status) VALUES ('WebMaster.Hazeron.com', '\x10df53478309bf6f68d1a31e27e86db22936a22c', 2);
+INSERT INTO g_Player (name, passcrypt, status) VALUES ('webmaster.openshores.net', '\x10df53478309bf6f68d1a31e27e86db22936a22c', 2);
 INSERT INTO g_Player (name, passcrypt, status) VALUES ('u1s0', '\xd3fe9184ff474b00db34e1e6f0bd227323523360', 2);
 INSERT INTO g_Player (name, passcrypt, status) VALUES ('u1s1', '\xd3fe9184ff474b00db34e1e6f0bd227323523360', 2);
 INSERT INTO g_Player (name, passcrypt, status) VALUES ('u1s2', '\xd3fe9184ff474b00db34e1e6f0bd227323523360', 2);

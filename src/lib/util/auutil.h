@@ -31,7 +31,7 @@ public:
 
 	static inline const QString LoginMasterName()
 	{
-		return QString("Login.Hazeron.net");
+		return QString("login.openshores.net");
 	}
 
 	static inline quint16 LoginMasterPort()
@@ -49,7 +49,7 @@ public:
 
 	static inline QString MailMasterName()
 	{
-		return QString("Mail.Hazeron.net");
+		return QString("mail.openshores.net");
 	}
 
 	// 'keyBase' != 0 is used to muddle the version-based key.
@@ -91,7 +91,7 @@ public:
 
 	static inline QString SceneMasterName()
 	{
-		return QString("Scene.Hazeron.net");
+		return QString("scene.openshores.net");
 	}
 
 	static inline quint16 SceneMasterPort()

@@ -140,13 +140,13 @@ AuLoginServerApp::AuLoginServerApp(int& argc, char** argv) : QCoreApplication(ar
 	if(isMaster)
 	{
 		// Create 'LoginMaster' global data object independent of app object.
-		gp_AuGlobal = new AuGlobal("Hazeron Login Master", "Hazeron Freehold", AuGlobal::LoginMaster);
+		gp_AuGlobal = new AuGlobal("OpenShores Login Master", "OpenShores", AuGlobal::LoginMaster);
 		g_Au.Log("Login Master Started");
 	}
 	else
 	{
 		// Create 'LoginServer' global data object independent of app object.
-		gp_AuGlobal = new AuGlobal("Hazeron Login Worker", "Hazeron Freehold", AuGlobal::LoginWorker);
+		gp_AuGlobal = new AuGlobal("OpenShores Login Worker", "OpenShores", AuGlobal::LoginWorker);
 		g_Au.Log("Login Worker Started");
 	}
 

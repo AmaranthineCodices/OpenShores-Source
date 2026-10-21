@@ -277,14 +277,14 @@ void AuPlayersOnlineWidget::PlayersOnlineStatus(AuPlayerOnlineStatusVector playe
 				else if(!alreadyOn)
 					twname->setToolTip(tr("%1 arrived. "
 								"<br>"
-								"%1 is an agent of <i>%2 of Hazeron</i>. "
+								"%1 is an agent of <i>%2</i>. "
 								"Ask %1 for help if assistance is needed. "
 								"<br>"
 								"Right-click for options.").arg((*posi).m_Name).arg(g_Au.ApplicationName()));
 				else
 					twname->setToolTip(tr("%1 is present. "
 								"<br>"
-								"%1 is an agent of <i>%2 of Hazeron</i>. "
+								"%1 is an agent of <i>%2</i>. "
 								"Ask %1 for help if assistance is needed. "
 								"<br>"
 								"Right-click for options.").arg((*posi).m_Name).arg(g_Au.ApplicationName()));
@@ -438,7 +438,7 @@ void AuPlayersOnlineWidget::PlayerRightClicked(QTableWidgetItem* item)
 
 	if(action == openWebPage)
 	{
-		QUrl url(QString("https://www.hazeron.com/EmpireStandings/p%1.php").arg(gotoId.StringId()));
+		QUrl url(QString("https://openshores.net/avatars/p%1").arg(gotoId.StringId()));
 		QDesktopServices::openUrl(url);
 	}
 }

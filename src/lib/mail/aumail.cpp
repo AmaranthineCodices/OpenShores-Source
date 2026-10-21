@@ -732,7 +732,8 @@ void AuMail::MessageReceived(const AuMailMsg& msg)
 void AuMail::VersionError()
 {
 	QMessageBox::critical(this, g_Au.ApplicationName(),
-			tr("Version mismatch error. This software is not compatible with the mail server."),
+			tr("Version mismatch error. This software is not compatible with the mail server.\n\n"
+				"Update using the OpenShores launcher or by downloading the latest patch from the website."),
 			QMessageBox::Ok, QMessageBox::NoButton, QMessageBox::NoButton);
 	close();
 }

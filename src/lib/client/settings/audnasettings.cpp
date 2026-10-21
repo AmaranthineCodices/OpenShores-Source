@@ -1418,10 +1418,10 @@ void AuDNASettings::SaveDNA()
 		lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 	QString saveFilter;
-	saveFilter += QString("Hazeron DNA (*.dna)");
+	saveFilter += QString("OpenShores DNA (*.dna)");
 	saveFilter += QString(";;All Files (*.*)");
 
-	QString saveFile = QFileDialog::getSaveFileName(this, tr("Hazeron DNA File"), lastFile, saveFilter, 0,
+	QString saveFile = QFileDialog::getSaveFileName(this, tr("OpenShores DNA File"), lastFile, saveFilter, 0,
 			QFileDialog::DontUseNativeDialog);
 	if(saveFile.isEmpty())
 		return;
@@ -1452,10 +1452,10 @@ void AuDNASettings::LoadDNA()
 		lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 	QString loadFilter;
-	loadFilter += QString("Hazeron DNA (*.dna)");
+	loadFilter += QString("OpenShores DNA (*.dna)");
 	loadFilter += QString(";;All Files (*.*)");
 
-	QString loadFile = QFileDialog::getOpenFileName(this, tr("Hazeron DNA File"), lastFile, loadFilter, 0,
+	QString loadFile = QFileDialog::getOpenFileName(this, tr("OpenShores DNA File"), lastFile, loadFilter, 0,
 			QFileDialog::DontUseNativeDialog);
 	if(loadFile.isEmpty())
 		return;
@@ -1480,7 +1480,7 @@ void AuDNASettings::LoadDNA()
 		}
 	case 2:	// bad file version
 		{
-			QString smsg = QObject::tr("File does not contain Hazeron DNA.\n\n%1").arg(loadFile);
+			QString smsg = QObject::tr("File does not contain OpenShores DNA.\n\n%1").arg(loadFile);
 			QMessageBox::warning(this, g_Au.ApplicationName(), smsg, QMessageBox::Ok);
 			break;
 		}

@@ -943,5 +943,6 @@
 	<file>data/postponed10x10.png</file>
 	<file>data/question10x10.png</file>
 	<file>data/required10x10.png</file>
+	<file alias="data/LICENSE.txt">../../../LICENSE</file>
 </qresource>
 </RCC>

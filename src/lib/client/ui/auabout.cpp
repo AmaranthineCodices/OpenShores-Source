@@ -9,6 +9,7 @@
 #include "auapp.h"
 #include "auglobal.h"
 #include "austylesheet.h"
+#include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
@@ -42,22 +43,10 @@ AuAbout::AuAbout(QWidget* parent) : AuDialog(parent)
 
 			"<i>%6</i><p>"
 
-			"Copyright %1 %3 Hazeron Freehold LLC<br>"
-			"All rights reserved.<br>"
-			"</td></tr>"
+			"<a href=\"https://openshores.net\" style=\"color: %4;\">openshores.net</a><p>"
 
-			"<tr><td style=\"text-align: center;\">"
-			//"<img src=\"qrc:data/SEiLogoBlue.png\" width=\"120\">"
-			"</td><td>"
-			"<p>"
-			"<b><big>Hazeron Freehold LLC</big></b><br>"
-			"3900 N. 37th St.<br>"
-			"Norfolk, NE 68701<br>"
-			"402-379-0181<br>"
-			"Shores@Hazeron.com<br>"
-			"<a href=\"https://hazeron.com\" style=\"color: %4;\">Hazeron.com</a>"
-			"</p>"
-
+			"OpenShores is an unofficial community project. "
+			"It is not affiliated with or endorsed by Hazeron Freehold LLC."
 			"</td></tr>"
 
 			"</tbody></table>"
@@ -65,7 +54,7 @@ AuAbout::AuAbout(QWidget* parent) : AuDialog(parent)
 			// Give thanks to Deantwo.
 			"<hr>"
 			"<big><b>Thank You Deantwo!</b></big><br>"
-			"Special thanks to Deantwo for endless patience helping players and all the work he does maintaining the wiki "
+			"Special thanks to Deantwo for endless patience helping players and all the work he does maintaining the wiki. "
 			"at <a href=\"https://www.hazeron.com/wiki\" style=\"color: %4;\">Hazeron.com/wiki</a>. "
 			"Deantwo has been a fantastic helper for many years. "
 			"His work is voluntary; he doesn't get paid, just donates his time. "
@@ -117,6 +106,16 @@ AuAbout::AuAbout(QWidget* parent) : AuDialog(parent)
 
 			"</tbody></table>"
 
+
+			"<hr>"
+			"<big><b>Shores of Hazeron</b></big><br>"
+			"Copyright %1 %3 Hazeron Freehold LLC<br>"
+			"Used under the Shores of Hazeron License; see the LICENSE file included with this software."
+			"<p>"
+			"Support the original author: "
+			"<a href=\"https://store.steampowered.com/app/2239520/Hazeron_Starship/\" style=\"color: %4;\">"
+			"Hazeron Starship on Steam</a>"
+
 			"</html>")
 			.arg(g_Au.CopyrightSymbol())
 			.arg(AuUtil::VersionFull())
@@ -138,8 +137,17 @@ AuAbout::AuAbout(QWidget* parent) : AuDialog(parent)
 				"</html>"));
 	connect(qt, SIGNAL(clicked(bool)), SLOT(AboutQt()));
 
+	QToolButton* license = new QToolButton(this);
+	license->setText(tr("License..."));
+	license->setAutoRaise(true);
+	license->setToolTip(tr("<html><b>License...</b><br>"
+				"Shows the license terms for <i>%1</i>."
+				"</html>").arg(g_Au.ApplicationName()));
+	connect(license, SIGNAL(clicked(bool)), SLOT(ShowLicense()));
+
 	QHBoxLayout* buttonLay = new QHBoxLayout;
 	buttonLay->addWidget(qt);
+	buttonLay->addWidget(license);
 	//buttonLay->addStretch();
 
 	QVBoxLayout* lay = new QVBoxLayout;
@@ -162,4 +170,38 @@ QSize AuAbout::sizeHint() const
 void AuAbout::AboutQt()
 {
 	QMessageBox::aboutQt(this, tr("About Qt"));
+}
+
+void AuAbout::ShowLicense()
+{
+	QString licenseText;
+	QFile file(":data/LICENSE.txt");
+	if(file.open(QIODevice::ReadOnly))
+		licenseText = QString::fromUtf8(file.readAll());
+	else
+		licenseText = tr("The license text could not be loaded. See the LICENSE file included with this software.");
+
+	QString text = tr("OpenShores is an unofficial community continuation of Shores of Hazeron, "
+			"used under the license of the original, reproduced below.");
+	text += "\n\n";
+	text += licenseText.trimmed();
+	text += "\n\n";
+	text += tr("This software includes third-party libraries, such as Qt, OpenAL Soft and SDL. "
+			"They remain the property of their respective owners and are covered by their own licenses.");
+
+	AuDialog dlg(this);
+	dlg.setAuDlgTitle(tr("%1 License").arg(g_Au.ApplicationName()));
+	dlg.setAuDlgIcon(QIcon(auApp->Icon32()));
+
+	QTextBrowser* browser = new QTextBrowser(&dlg);
+	browser->setReadOnly(true);
+	browser->setPlainText(text);
+	browser->setMinimumSize(560, 420);
+
+	QVBoxLayout* lay = new QVBoxLayout;
+	lay->addWidget(browser);
+	lay->setMargin(2);
+	lay->setSpacing(2);
+	dlg.setAuDlgLayout(lay);
+	dlg.exec();
 }

@@ -30,7 +30,7 @@
 AuAccountManagerDlg::AuAccountManagerDlg(QWidget* parent) : QDialog(parent)
 {
 	setWindowIcon(QIcon(":data/ServerMon.png"));
-	setWindowTitle("Shores of Hazeron Account Manager");
+	setWindowTitle("OpenShores Account Manager");
 
 	QGridLayout* acctlay = new QGridLayout;
 	{

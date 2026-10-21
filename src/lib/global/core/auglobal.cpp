@@ -1889,11 +1889,8 @@ void AuGlobal::TallyAtomTockerSystemStatus(QHash<AuId, unsigned int>& systemTota
 
 const char* AuGlobal::Address() const
 {
-	return "Hazeron Freehold LLC\n"
-		"3900 N. 37th St.\n"
-		"Norfolk, NE 68701\n"
-		"402-379-0181\n"
-		"Shores@Hazeron.com";
+	return "OpenShores\n"
+		"https://openshores.net";
 }
 
 QString AuGlobal::CommodityName(COMMODITYID cid) const
@@ -2866,7 +2863,7 @@ QString AuGlobal::CacheMail() const
         mailPath = QDir::homePath() + "/Hazeron Starship/Mail";		// There is only one solo app that caches mail.
     else
 	{
-        mailPath = QDir::homePath() + "/Shores of Hazeron/Mail";	// Can't use ApplicationName() because SoH and SoH Mail apps.
+        mailPath = QDir::homePath() + "/OpenShores/Mail";	// Can't use ApplicationName() because SoH and SoH Mail apps.
 		if(MailMasterName() != AuUtil::MailMasterName())
 			mailPath += "Alt";										// Debug servers in use.
 	}
@@ -2900,7 +2897,7 @@ QString AuGlobal::GameName() const
 	if(IsSceneApp())
 		return m_AppName;
 	else
-		return QString("Shores of Hazeron");
+		return QString("OpenShores");
 }
 
 //static

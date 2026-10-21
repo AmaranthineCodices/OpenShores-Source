@@ -29,7 +29,7 @@ AuClientApp::AuClientApp(int& argc, char** argv) : AuApp(argc, argv)
 			altMaster = (*it).mid(2);
 	}
 
-	gp_AuGlobal = new AuClientGlobal("Hazeron Commander", "Hazeron Commander", "Hazeron Freehold", false, m_Data, m_Etherium);
+	gp_AuGlobal = new AuClientGlobal("OpenShores Commander", "OpenShores Commander", "OpenShores", false, m_Data, m_Etherium);
 	if(logClient)
 		g_Au.m_LogMessages |= LOG_ConnectDisconnect;	// Log what happens while starting up and logging in.
 
@@ -133,5 +133,5 @@ QString AuClientApp::Icon32() const
 
 QString AuClientApp::Slogan() const
 {
-	return QString("The MMO Sandbox Universe");
+	return QString("An Unofficial Shores of Hazeron Community Server");
 }

@@ -233,10 +233,10 @@ AuSceneServerApp::AuSceneServerApp(int& argc, char** argv) : QCoreApplication(ar
 	{
 		QString copy;
 		if(QString(AuUtil::CopyrightYear()) == QString("2022"))
-			copy = QString("Copyright %1 2022 Hazeron Freehold LLC. All rights reserved.")
+			copy = QString("Based on Shores of Hazeron. Copyright %1 2022 Hazeron Freehold LLC. Used under the Shores of Hazeron License.")
 				.arg(AuGlobal::CopyrightSymbol());
 		else
-			copy = QString("Copyright %1 2022-%2 Hazeron Freehold LLC. All rights reserved.")
+			copy = QString("Based on Shores of Hazeron. Copyright %1 2022-%2 Hazeron Freehold LLC. Used under the Shores of Hazeron License.")
 				.arg(AuGlobal::CopyrightSymbol())
 				.arg(AuUtil::CopyrightYear());
 		if(role == 0)
@@ -244,7 +244,7 @@ AuSceneServerApp::AuSceneServerApp(int& argc, char** argv) : QCoreApplication(ar
 			// Create 'SceneMaster' global data object independent of app object.
 			m_Data = new DgData;
 			m_Etherium = new AuEther("Hazeron");
-			gp_AuGlobal = new AuDbGlobal("Hazeron Scene Master", "Hazeron Freehold", AuGlobal::SceneMaster, m_Data, m_Etherium);
+			gp_AuGlobal = new AuDbGlobal("OpenShores Scene Master", "OpenShores", AuGlobal::SceneMaster, m_Data, m_Etherium);
 			if(settings.contains("Settings/logFile"))									// logFile
 			{
 				QString logFile = settings.value("Settings/logFile").toString();
@@ -269,7 +269,7 @@ AuSceneServerApp::AuSceneServerApp(int& argc, char** argv) : QCoreApplication(ar
 			// Create 'SceneManager' global data object independent of app object.
 			m_Data = new DgData;
 			m_Etherium = new AuEther("Hazeron");
-			gp_AuGlobal = new AuDbGlobal("Hazeron Scene Manager", "Hazeron Freehold", AuGlobal::SceneManager,m_Data,m_Etherium);
+			gp_AuGlobal = new AuDbGlobal("OpenShores Scene Manager", "OpenShores", AuGlobal::SceneManager,m_Data,m_Etherium);
 			if(settings.contains("Settings/logFile"))									// logFile
 			{
 				QString logFile = settings.value("Settings/logFile").toString();
@@ -298,7 +298,7 @@ AuSceneServerApp::AuSceneServerApp(int& argc, char** argv) : QCoreApplication(ar
 			// Create 'SceneWorker' global data object independent of app object.
 			m_Data = new DgData;
 			m_Etherium = new AuEther("Hazeron");
-			gp_AuGlobal = new AuDbGlobal("Hazeron Scene Worker", "Hazeron Freehold", AuGlobal::SceneWorker, m_Data, m_Etherium);
+			gp_AuGlobal = new AuDbGlobal("OpenShores Scene Worker", "OpenShores", AuGlobal::SceneWorker, m_Data, m_Etherium);
 			if(settings.contains("Settings/logFile"))									// logFile
 			{
 				QString logFile = settings.value("Settings/logFile").toString();

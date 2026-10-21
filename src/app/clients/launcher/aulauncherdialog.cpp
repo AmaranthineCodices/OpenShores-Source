@@ -49,13 +49,13 @@ void AuLauncherNetworkReply::BaseDownloadProgress(qint64 bytesReceived, qint64 b
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
 AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
-	m_Settings("Hazeron Freehold", "Shores of Hazeron", parent)
+	m_Settings("OpenShores", "OpenShores", parent)
 {
 	m_CommState = 0;
 	m_ErrorMessage = 0;
 	m_Timer = 0;
 
-	setWindowTitle(tr("Shores of Hazeron Launcher"));
+	setWindowTitle(tr("OpenShores Launcher"));
 	setWindowIcon(QIcon(":data/Launcher.png"));
 
 	bool canLaunchSoH = CanLaunchSoH();
@@ -72,8 +72,8 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 		m_Init = new QToolButton(this);
 		m_Init->setIcon(QIcon(":data/Wormhole.png"));
 		m_Init->setIconSize(QSize(256,245));
-		m_Init->setToolTip(tr("<html><b>Shores of Hazeron Initial Update</b><br>"
-					"Downloads and configures the files needed to play <i>Shores of Hazeron</i>.<br><br>"
+		m_Init->setToolTip(tr("<html><b>OpenShores Initial Update</b><br>"
+					"Downloads and configures the files needed to play <i>OpenShores</i>.<br><br>"
 					"About 300MB of files will be stored on your computer. "
 					"The download folder can be configured using the <b>Settings</b> button before the download begins."
 #if defined(Q_OS_MACOS)
@@ -94,10 +94,10 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	}
 
 	m_ErrorMessage = new QLabel(tr("<html><b><big><big>Communication Error</big></big></b><br>"
-				"Information about the latest updates cannot be retrieved from the <i>Shores of Hazeron</i> web site.<p>"
+				"Information about the latest updates cannot be retrieved from the <i>OpenShores</i> web site.<p>"
 				"<i>Troubleshooting Tips</i><br>"
 				"- Check your computer's connection to the Internet.<br>"
-				"- Try opening the <u>Hazeron.com</u> web site with your browser, "
+				"- Try opening the <u>openshores.net</u> web site with your browser, "
 				"to ensure the server is accessible.<br>"
 				"- Try running this program again in a few minutes; we could be updating the files right now."
 				"</html>"), this);
@@ -117,8 +117,8 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_LaunchSoH = new QToolButton(this);
 	m_LaunchSoH->setIcon(QIcon(":data/Hazeron.png"));
 	m_LaunchSoH->setIconSize(QSize(256,144));
-	m_LaunchSoH->setToolTip(tr("<html><b>Shores of Hazeron</b><br>"
-				"Launches <i>Shores of Hazeron</i>, the MMO sandbox universe.<br>"
+	m_LaunchSoH->setToolTip(tr("<html><b>OpenShores</b><br>"
+				"Launches <i>OpenShores</i>, the MMO sandbox universe.<br>"
 				"</html>"));
 	m_LaunchSoH->setFocusPolicy(Qt::NoFocus);
 	connect(m_LaunchSoH, SIGNAL(clicked()), SLOT(LaunchSoH()));
@@ -126,8 +126,8 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_LaunchCommander = new QToolButton(this);
 	m_LaunchCommander->setIcon(QIcon(":data/Commander.png"));
 	m_LaunchCommander->setIconSize(QSize(128,72));
-	m_LaunchCommander->setToolTip(tr("<html><b>Hazeron Commander</b><br>"
-				"Launches <i>Hazeron Commander</i> for limited interaction with <i>Shores of Hazeron</i>. "
+	m_LaunchCommander->setToolTip(tr("<html><b>OpenShores Commander</b><br>"
+				"Launches <i>OpenShores Commander</i> for limited interaction with <i>OpenShores</i>. "
 				"No OpenGL view of the scene is provided. "
 				"Most actions that do not require the OpenGL scene can be performed."
 				"</html>"));
@@ -137,8 +137,8 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_LaunchMail = new QToolButton(this);
 	m_LaunchMail->setIcon(QIcon(":data/Mail.png"));
 	m_LaunchMail->setIconSize(QSize(128,72));
-	m_LaunchMail->setToolTip(tr("<html><b>Hazeron Mail</b><br>"
-				"Launches <i>Hazeron Mail</i> for sending and receiving mail in <i>Shores of Hazeron</i> "
+	m_LaunchMail->setToolTip(tr("<html><b>OpenShores Mail</b><br>"
+				"Launches <i>OpenShores Mail</i> for sending and receiving mail in <i>OpenShores</i> "
 				"without launching the full game program."
 				"</html>"));
 	m_LaunchMail->setFocusPolicy(Qt::NoFocus);
@@ -148,8 +148,8 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_LaunchStoryEditor = new QToolButton(this);
 	m_LaunchStoryEditor->setIcon(QIcon(":data/StoryEditor.png"));
 	m_LaunchStoryEditor->setIconSize(QSize(128,72));
-	m_LaunchStoryEditor->setToolTip(tr("<html><b>Hazeron Story Editor</b><br>"
-				"Launches <i>Hazeron Story Editor</i>, a story authoring tool for the game of <i>Shores of Hazeron</i>. "
+	m_LaunchStoryEditor->setToolTip(tr("<html><b>OpenShores Story Editor</b><br>"
+				"Launches <i>OpenShores Story Editor</i>, a story authoring tool for the game of <i>OpenShores</i>. "
 				"</html>"));
 	m_LaunchStoryEditor->setFocusPolicy(Qt::NoFocus);
 	connect(m_LaunchStoryEditor, SIGNAL(clicked()), SLOT(LaunchStoryEditor()));
@@ -164,9 +164,9 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_WebSite->setFocusPolicy(Qt::NoFocus);
 	m_WebSite->setIcon(QIcon(":data/Launcher.png"));
 	m_WebSite->setIconSize(QSize(32,32));
-	m_WebSite->setToolTip(tr("<html><b>Hazeron.com</b><br>"
-				"Opens your web browser at the <i>Shores of Hazeron</i> web site.<p>"
-				"<i>Shores of Hazeron Launcher</i> Usage Tips:<br>"
+	m_WebSite->setToolTip(tr("<html><b>openshores.net</b><br>"
+				"Opens your web browser at the <i>OpenShores</i> web site.<p>"
+				"<i>OpenShores Launcher</i> Usage Tips:<br>"
 				"- Escape or Double-Click - Toggles button visibility on and off.<br>"
 				"- Up Arrow - Selects a picture at random. "
 				"Pictures are loaded from this program <u>and from your picture folder</u>. "
@@ -184,7 +184,7 @@ AuLauncherDialog::AuLauncherDialog(QWidget* parent) : QWidget(parent),
 	m_SettingsButton->setIcon(QIcon(":data/Settings.png"));
 	m_SettingsButton->setIconSize(QSize(32,32));
 	m_SettingsButton->setToolTip(tr("<html><b>Settings...</b><br>"
-				"Configures <i>Shores of Hazeron</i> launcher settings."
+				"Configures <i>OpenShores</i> launcher settings."
 				"</html>"));
 	connect(m_SettingsButton, SIGNAL(clicked()), SLOT(Settings()));
 
@@ -286,10 +286,10 @@ void AuLauncherDialog::paintEvent(QPaintEvent* pe)
 #endif
 	QString copy;
 	if(QString(AuUtil::CopyrightYear()) == QString("2022"))
-		copy = QString("Copyright %1 2022 Hazeron Freehold LLC\nAll rights reserved.")
+		copy = QString("Based on Shores of Hazeron. Copyright %1 2022 Hazeron Freehold LLC\nUsed under the Shores of Hazeron License.")
 			.arg(Csymbol);
 	else
-		copy = QString("Copyright %1 2022-%2 Hazeron Freehold LLC\nAll rights reserved.")
+		copy = QString("Based on Shores of Hazeron. Copyright %1 2022-%2 Hazeron Freehold LLC\nUsed under the Shores of Hazeron License.")
 			.arg(Csymbol)
 			.arg(AuUtil::CopyrightYear());
 
@@ -318,14 +318,14 @@ QString AuLauncherDialog::FileDir() const
 {
 	QString sohPath = m_Settings.value("Settings/BaseDir").toString();
 	if(sohPath.isEmpty())
-		sohPath = QDir::home().absoluteFilePath("Shores of Hazeron");
+		sohPath = QDir::home().absoluteFilePath("OpenShores");
 	return sohPath + "/Programs";
 }
 
 bool AuLauncherDialog::CanLaunchStoryEditor() const
 {
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Story Editor.exe";
+	QString launch = FileDir() + "/OpenShores Story Editor.exe";
 	return QFile::exists(launch);
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/StoryEditor.app/Contents/MacOS/StoryEditor";
@@ -340,7 +340,7 @@ bool AuLauncherDialog::CanLaunchStoryEditor() const
 void AuLauncherDialog::LaunchStoryEditor()
 {
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Story Editor.exe";
+	QString launch = FileDir() + "/OpenShores Story Editor.exe";
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/StoryEditor.app/Contents/MacOS/StoryEditor";
 #else
@@ -358,13 +358,13 @@ bool AuLauncherDialog::CanLaunchCommander() const
 		return false;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Commander.exe";
+	QString launch = FileDir() + "/OpenShores Commander.exe";
 	return QFile::exists(launch);
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHCommander.app/Contents/MacOS/SoHCommander";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/bin/HazeronCommander";
+	QString launch = FileDir() + "/bin/OpenShoresCommander";
 	return QFile::exists(launch);
 #endif
 }
@@ -375,11 +375,11 @@ void AuLauncherDialog::LaunchCommander()
 		return;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Commander.exe";
+	QString launch = FileDir() + "/OpenShores Commander.exe";
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHCommander.app/Contents/MacOS/SoHCommander";
 #else
-	QString launch = FileDir() + "/bin/HazeronCommander";
+	QString launch = FileDir() + "/bin/OpenShoresCommander";
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -401,13 +401,13 @@ bool AuLauncherDialog::CanLaunchMail() const
 		return false;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Mail.exe";
+	QString launch = FileDir() + "/OpenShores Mail.exe";
 	return QFile::exists(launch);
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHMail.app/Contents/MacOS/SoHMail";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/bin/HazeronMail";
+	QString launch = FileDir() + "/bin/OpenShoresMail";
 	return QFile::exists(launch);
 #endif
 }
@@ -418,11 +418,11 @@ void AuLauncherDialog::LaunchMail()
 		return;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Hazeron Mail.exe";
+	QString launch = FileDir() + "/OpenShores Mail.exe";
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoHMail.app/Contents/MacOS/SoHMail";
 #else
-	QString launch = FileDir() + "/bin/HazeronMail";
+	QString launch = FileDir() + "/bin/OpenShoresMail";
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -444,13 +444,13 @@ bool AuLauncherDialog::CanLaunchSoH() const
 		return false;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Shores of Hazeron.exe";
+	QString launch = FileDir() + "/OpenShores.exe";
 	return QFile::exists(launch);
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoH.app/Contents/MacOS/SoH";
 	return QFile::exists(launch);
 #else
-	QString launch = FileDir() + "/bin/ShoresOfHazeron";
+	QString launch = FileDir() + "/bin/OpenShores";
 	return QFile::exists(launch);
 #endif
 }
@@ -461,11 +461,11 @@ void AuLauncherDialog::LaunchSoH()
 		return;
 
 #if defined(Q_OS_WIN)
-	QString launch = FileDir() + "/Shores of Hazeron.exe";
+	QString launch = FileDir() + "/OpenShores.exe";
 #elif defined(Q_OS_MACOS)
 	QString launch = FileDir() + "/SoH.app/Contents/MacOS/SoH";
 #else
-	QString launch = FileDir() + "/bin/ShoresOfHazeron";
+	QString launch = FileDir() + "/bin/OpenShores";
 #endif
 
 #if defined(Q_OS_MACOS)
@@ -490,7 +490,7 @@ void AuLauncherDialog::CheckForLauncherUpdates()
 	connect(m_Net, SIGNAL(finished(QNetworkReply*)), SLOT(NetReplyFinished(QNetworkReply*)));
 	connect(m_Net, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)),
 			SLOT(NetSSLErrors(QNetworkReply*, const QList<QSslError>&)));
-	m_Net->get(QNetworkRequest(QUrl(QString("http://Hazeron.com/software/LauncherVersion.%1").arg(Arch()))));
+	m_Net->get(QNetworkRequest(QUrl(QString("https://openshores.net/software/LauncherVersion.%1").arg(Arch()))));
 }
 
 void AuLauncherDialog::CheckForProgramUpdates()
@@ -503,13 +503,13 @@ void AuLauncherDialog::CheckForProgramUpdates()
 		m_CommState = 1;											// Wait for checksums.
 		m_Net = new QNetworkAccessManager(this);
 		connect(m_Net, SIGNAL(finished(QNetworkReply*)), SLOT(NetReplyFinished(QNetworkReply*)));
-		m_Net->get(QNetworkRequest(QUrl(QString("http://Hazeron.com/software/%1/md5sums").arg(arch))));
+		m_Net->get(QNetworkRequest(QUrl(QString("https://openshores.net/software/%1/md5sums").arg(arch))));
 	}
 	else
 	{
 		// This is fatal.
 		QMessageBox::critical(this, tr("Launcher Error"),
-				tr("<html>The <i>Shores of Hazeron Launcher</i> installation is broken. "
+				tr("<html>The <i>OpenShores Launcher</i> installation is broken. "
 					"Try reinstalling from the original distribution files."
 					"</html>"));
 		close();
@@ -564,7 +564,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 			default:
 				m_UpdateMessage->setText(tr("<html>"
 							"<p>"
-							"An update is available for the <i>Shores of Hazeron Launcher</i>. "
+							"An update is available for the <i>OpenShores Launcher</i>. "
 							"</p>"
 							"<p>"
 							"The update is not required. "
@@ -572,7 +572,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 							"</p>"
 							"<p>"
 							"The launcher cannot update itself. "
-							"Download the latest launcher for free from Hazeron.com. "
+							"Download the latest launcher for free from openshores.net. "
 							"</p>"
 							"</html>"));
 				break;
@@ -580,7 +580,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 				okToDownload = false;
 				m_UpdateMessage->setText(tr("<html>"
 							"<p>"
-							"A <u>critical update</u> is available for the <i>Shores of Hazeron Launcher</i>. "
+							"A <u>critical update</u> is available for the <i>OpenShores Launcher</i>. "
 							"</p>"
 							"<p>"
 							"<b>No files can be updated. "
@@ -588,7 +588,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 							"</p>"
 							"<p>"
 							"The launcher cannot update itself. "
-							"Download the latest launcher for free from Hazeron.com. "
+							"Download the latest launcher for free from openshores.net. "
 							"</p>"
 							"</html>"));
 				break;
@@ -596,7 +596,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 				okToDownload = false;
 				m_UpdateMessage->setText(tr("<html>"
 							"<p>"
-							"A <u>platform upgrade</u> is available for the <i>Shores of Hazeron Launcher</i>. "
+							"A <u>platform upgrade</u> is available for the <i>OpenShores Launcher</i>. "
 							"This version has reached the end of its service life. "
 							"</p>"
 							"<p>"
@@ -605,7 +605,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 							"</p>"
 							"<p>"
 							"The launcher cannot update itself. "
-							"Download the latest launcher for free from Hazeron.com. "
+							"Download the latest launcher for free from openshores.net. "
 							"</p>"
 							"<p>"
 							"The current game software can be launched. "
@@ -617,7 +617,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 				okToDownload = false;
 				m_UpdateMessage->setText(tr("<html>"
 							"<p>"
-							"A <u>critical platform upgrade</u> is available for the <i>Shores of Hazeron Launcher</i>. "
+							"A <u>critical platform upgrade</u> is available for the <i>OpenShores Launcher</i>. "
 							"This version has reached the end of its service life. "
 							"</p>"
 							"<p>"
@@ -626,7 +626,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 							"</p>"
 							"<p>"
 							"The launcher cannot update itself. "
-							"Download the latest launcher for free from Hazeron.com. "
+							"Download the latest launcher for free from openshores.net. "
 							"</p>"
 							"</html>"));
 				break;
@@ -634,7 +634,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 			m_UpdateMessage->show();
 		}
 
-		// Check for updates to the Shores of Hazeron software.
+		// Check for updates to the OpenShores software.
 		if(okToDownload)
 			CheckForProgramUpdates();
 	}
@@ -756,7 +756,7 @@ void AuLauncherDialog::NetReplyFinished(QNetworkReply* reply)
 				else
 					fileStatus += tr("...missing.");
 
-				QUrl url(QString("http://Hazeron.com/software/%1/%2").arg(Arch()).arg(fi.key()));
+				QUrl url(QString("https://openshores.net/software/%1/%2").arg(Arch()).arg(fi.key()));
 				//qDebug() << url.path();
 
 				QListWidgetItem* item = new QListWidgetItem(fileStatus);
@@ -891,13 +891,13 @@ void AuLauncherDialog::InitInstall()
 void AuLauncherDialog::LoadRandomBackdrop()
 {
 	// Load a random backdrop.
-	// Check for screen shots in the Shores of Hazeron/Pictures folder.
+	// Check for screen shots in the OpenShores/Pictures folder.
 	QString picPath = m_Settings.value("Settings/PictureDir").toString();
 	if(picPath.isEmpty())
 	{
 		QString sohPath = m_Settings.value("Settings/BaseDir").toString();
 		if(sohPath.isEmpty())
-			sohPath = QDir::home().absoluteFilePath("Shores of Hazeron");
+			sohPath = QDir::home().absoluteFilePath("OpenShores");
 		picPath = sohPath + "/Pictures";
 	}
 
@@ -1137,7 +1137,7 @@ void AuLauncherDialog::keyPressEvent(QKeyEvent *e)
 
 void AuLauncherDialog::WebSite()
 {
-	QUrl url("https://www.hazeron.com");
+	QUrl url("https://openshores.net");
 	QDesktopServices::openUrl(url);
 }
 
@@ -1198,7 +1198,7 @@ void AuLauncherDialog::Settings()
 
 	QString sohPath = m_Settings.value("Settings/BaseDir").toString();
 	if(sohPath.isEmpty())
-		sohPath = QDir::home().absoluteFilePath("Shores of Hazeron");
+		sohPath = QDir::home().absoluteFilePath("OpenShores");
 
 	QString picPath = m_Settings.value("Settings/PictureDir").toString();
 	if(picPath.isEmpty())
@@ -1226,7 +1226,7 @@ void AuLauncherDialog::Settings()
 		if(glVer != nuglVer && (!m_Init || !m_Init->isVisible()))
 		{
 			QMessageBox::warning(this, tr("Launcher Restart Required"),
-					tr("<html>The <i>Shores of Hazeron Launcher</i> should be restarted. "
+					tr("<html>The <i>OpenShores Launcher</i> should be restarted. "
 						"Files appropriate to the selected OpenGL version will be updated."
 						"</html>"));
 		}
@@ -1277,7 +1277,7 @@ QString AuLauncherDialog::Arch() const
 void AuLauncherDialog::NetSSLErrors(QNetworkReply* reply, const QList<QSslError>& errors)
 {
 	Q_UNUSED(reply);
-	QString errMsg = tr("<html>The <i>Shores of Hazeron Launcher</i> received the following SSL error(s). ");
+	QString errMsg = tr("<html>The <i>OpenShores Launcher</i> received the following SSL error(s). ");
 	for(QList<QSslError>::const_iterator ei = errors.cbegin(); ei != errors.cend(); ei++)
 		errMsg += "<br> - " + (*ei).errorString();
 	errMsg += "</html>";

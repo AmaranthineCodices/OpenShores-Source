@@ -23,12 +23,12 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "040904B0"
 			BEGIN
-				VALUE "CompanyName", "Hazeron Freehold LLC\0"
+				VALUE "CompanyName", "OpenShores\0"
 				VALUE "FileDescription", "\0"
 				VALUE "FileVersion", "7.0.0.0\0"
 				VALUE "LegalCopyright", "Copyright (c) 2022 Hazeron Freehold LLC. All rights reserved.\0"
-				VALUE "OriginalFilename", "Hazeron Launcher.exe\0"
-				VALUE "ProductName", "Shores of Hazeron\0"
+				VALUE "OriginalFilename", "OpenShores Launcher.exe\0"
+				VALUE "ProductName", "OpenShores\0"
 			END
 		END
 	END

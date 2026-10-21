@@ -109,7 +109,7 @@ void AuAgentPlayers::PlayerRightClicked(QTableWidgetItem* item)
 
 	if(action == openWebPage)
 	{
-		QUrl url(QString("https://www.hazeron.com/EmpireStandings/p%1.php").arg(gotoId.StringId()));
+		QUrl url(QString("https://openshores.net/avatars/p%1").arg(gotoId.StringId()));
 		QDesktopServices::openUrl(url);
 	}
 }

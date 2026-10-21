@@ -19,7 +19,7 @@ AuMailClientApp::AuMailClientApp(int& argc, char** argv) :
 	m_Data = new DgData;
 	// The second parameter is the application name used in the settings object, so my settings are syncronous with the mail
 	// UI inside the Shores of Hazeron game app.
-	gp_AuGlobal = new AuGlobal("Hazeron Mail", "Shores of Hazeron", "Hazeron Freehold", AuGlobal::MailClient, m_Data);
+	gp_AuGlobal = new AuGlobal("OpenShores Mail", "OpenShores", "OpenShores", AuGlobal::MailClient, m_Data);
 	
 	// Parse command line.
 	QString altMaster;

@@ -986,10 +986,10 @@ void AuAgentPowerSetDNA::SaveDNAToFile()
 			lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 		QString saveFilter;
-		saveFilter += QString("Hazeron DNA (*.dna)");
+		saveFilter += QString("OpenShores DNA (*.dna)");
 		saveFilter += QString(";;All Files (*.*)");
 
-		QString saveFile = QFileDialog::getSaveFileName(this, tr("Hazeron DNA File"), lastFile, saveFilter, 0,
+		QString saveFile = QFileDialog::getSaveFileName(this, tr("OpenShores DNA File"), lastFile, saveFilter, 0,
 				QFileDialog::DontUseNativeDialog);
 		if(saveFile.isEmpty())
 			return;

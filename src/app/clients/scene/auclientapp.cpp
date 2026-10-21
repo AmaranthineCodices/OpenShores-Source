@@ -10,7 +10,7 @@
 #include "auframe.h"
 #include "dgdata.h"
 
-AuClientApp::AuClientApp(int& argc, char** argv) : AuDesignerApp(argc, argv, "Shores of Hazeron", "Shores of Hazeron", false)
+AuClientApp::AuClientApp(int& argc, char** argv) : AuDesignerApp(argc, argv, "OpenShores", "OpenShores", false)
 {
 	//g_Au.m_LogMessages |= LOG_Story;
 	//g_Au.m_LogMessages |= LOG_Spawn;
@@ -33,5 +33,5 @@ QString AuClientApp::Icon32() const
 
 QString AuClientApp::Slogan() const
 {
-	return QString("The MMO Sandbox Universe");
+	return QString("An Unofficial Shores of Hazeron Community Server");
 }

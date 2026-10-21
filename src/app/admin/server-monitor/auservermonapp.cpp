@@ -13,13 +13,13 @@
 #include "dgdata.h"
 
 AuServerMonApp::AuServerMonApp(int& argc, char** argv) : QApplication(argc, argv),
-	m_Settings("Hazeron Freehold", "Hazeron Server Monitor", this)
+	m_Settings("OpenShores", "OpenShores Server Monitor", this)
 {
 	AuStyleSheet::SetStyle(false);
 
 	m_Data = new DgData;
 
-	gp_AuGlobal = new AuStubGlobal("Hazeron Server Monitor", "Hazeron Freehold", AuGlobal::WebCGI, m_Data);
+	gp_AuGlobal = new AuStubGlobal("OpenShores Server Monitor", "OpenShores", AuGlobal::WebCGI, m_Data);
 
 	m_ModelCache = new AuGLModelCache;
 	g_Au.SetModelCache(m_ModelCache);

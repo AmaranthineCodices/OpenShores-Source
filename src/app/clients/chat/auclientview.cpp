@@ -203,14 +203,14 @@ QString AuViewButton::Name(VIEWBUTTON vb)
 		"Policy",						// VB_GovernPolicy,
 		"",						// VB_UNUSED3,
 		"Taxes",						// VB_GovernTaxes,
-		"Forum",						// VB_Forum,
+		"Bugs and Suggestions",			// VB_Forum,
 		"Wiki",							// VB_Wiki,
 		"Empire Standings",				// VB_WarDimensionStandings,
 		"",				// VB_UNUSED6,
 		"Avatars",						// VB_Avatars,
 		"Manifest",						// VB_CargoManifest,
 		"Blueprint Exchange",			// VB_SpacecraftDesignExchange,
-		"Hazeron Home",					// VB_HazeronHome,
+		"OpenShores Home",					// VB_HazeronHome,
 		"Minion",						// VB_Minion,
 		"Players Online",				// VB_PlayersOnline,
 		"Videos",						// VB_Videos,
@@ -491,9 +491,9 @@ QString AuViewButton::TipBase(VIEWBUTTON vb)
 				""),
 		QObject::tr("<b>Taxes</b> %2<br>"										// VB_GovernTaxes,
 			"Show the <i>Taxes</i> window to view and change taxes of your empire."),
-		QObject::tr("<b>Forum</b> %2<br>"										// VB_Forum
-			"Opens your web browser at the <i>%1</i> Forum. "
-			"The <i>forum</i> provides a place for discussion with other players and to report problems.").arg(g_Au.ApplicationName()),
+		QObject::tr("<b>Bugs and Suggestions</b> %2<br>"						// VB_Forum
+			"Opens your web browser at the <i>OpenShores</i> page for bug reports and suggestions. "
+			"Log in to the web site with your game name and password to report a problem or suggest something."),
 		QObject::tr("<b>Wiki</b> %2<br>"										// VB_Wiki
 			"Opens your web browser at the <i>%1</i> Wiki. "
 			"The <i>wiki</i> is a valuable resource to find answers.").arg(g_Au.ApplicationName()),
@@ -509,8 +509,8 @@ QString AuViewButton::TipBase(VIEWBUTTON vb)
 		QObject::tr("<b>Spacecraft Blueprint Exchange</b> %2<br>"
 			"Show the <i>Spacecraft Blueprint Exchange</i> window to view published blueprints and to publish your own "
 			"blueprints."),	// VB_SpacecraftDesignExchange
-		QObject::tr("<b>Hazeron Home</b> %2<br>"								// VB_HazeronHome
-			"Opens your web browser at the <i>Shores of Hazeron</i> home page."),
+		QObject::tr("<b>OpenShores Home</b> %2<br>"								// VB_HazeronHome
+			"Opens your web browser at the <i>OpenShores</i> home page."),
 		QObject::tr("<b>Minion</b> %2<br>"
 			"Show the <i>Minion</i> window for the <i>%1</i> program.").arg(g_Au.ApplicationName()),
 		QObject::tr("<b>Players Online</b> %2<br>"								// VB_PlayersOnline

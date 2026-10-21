@@ -197,8 +197,7 @@ void AuMailLogin::Login()
 	case 3:	// Incorrect software version.
 		{
 			QString msg = tr("This software version is incompatible with the "
-					"server.\n\nTips:\n- Download the latest version from %1"
-					"\nand try again.").arg(g_Au.WebAddress());
+					"server.\n\nUpdate using the OpenShores launcher or by downloading the latest patch from the website.");
 			QMessageBox::critical(0, g_Au.ApplicationName(), msg);
 			Quit();
 		}

@@ -20,11 +20,11 @@
 AuLauncherSettings::AuLauncherSettings(const QString& sohFolder, const QString& picFolder, const QString& cacheFolder, int glVer,
 		float myVer, const QString& arch, QWidget* parent) : QDialog(parent)
 {
-	setWindowTitle(tr("Shores of Hazeron Settings"));
+	setWindowTitle(tr("OpenShores Settings"));
 	setWindowIcon(QIcon(":data/Settings.png"));
 
 	QLabel* lbInfo = new QLabel(tr("<html>"
-				"<big><b>Shores of Hazeron Launcher</b></big>"
+				"<big><b>OpenShores Launcher</b></big>"
 				"<br>"
 				"<small><i>Version %1 %2 %3</i></small>"
 				"</html>")
@@ -62,14 +62,14 @@ AuLauncherSettings::AuLauncherSettings(const QString& sohFolder, const QString& 
 	Q_UNUSED(glVer);
 #endif
 
-	QLabel* lbfiles = new QLabel(tr("Location of <i>Shores of Hazeron</i> files."), this);
+	QLabel* lbfiles = new QLabel(tr("Location of <i>OpenShores</i> files."), this);
 
 	m_FilesEdit = new QLineEdit(sohFolder, this);
 	m_FilesEdit->setReadOnly(true);
 	m_FilesEdit->setToolTip(tr("<html>"
-				"Shows the path to the folder where <i>Shores of Hazeron</i> files will be stored. "
+				"Shows the path to the folder where <i>OpenShores</i> files will be stored. "
 				"The launcher program downloads updates into this folder and "
-				"it will run <i>Shores of Hazeron</i> from this folder.<br>"
+				"it will run <i>OpenShores</i> from this folder.<br>"
 				"You must have permission to write to this folder."
 				"</html>"));
 
@@ -78,17 +78,17 @@ AuLauncherSettings::AuLauncherSettings(const QString& sohFolder, const QString& 
 	browsefiles->setIcon(QIcon(":data/Folder.png"));
 	browsefiles->setIconSize(QSize(24,24));
 	browsefiles->setToolTip(tr("<html>"
-				"Locates a folder for <i>Shores of Hazeron</i> files."
+				"Locates a folder for <i>OpenShores</i> files."
 				"</html>"));
 	connect(browsefiles, SIGNAL(clicked()), SLOT(ChooseSoHFolder()));
 
-	QLabel* lbpics = new QLabel(tr("Location of <i>Shores of Hazeron</i> screen grabs."), this);
+	QLabel* lbpics = new QLabel(tr("Location of <i>OpenShores</i> screen grabs."), this);
 
 	m_PicsEdit = new QLineEdit(picFolder, this);
 	m_PicsEdit->setReadOnly(true);
 	m_PicsEdit->setToolTip(tr("<html>"
-				"Shows the path to the folder where <i>Shores of Hazeron</i> stores screen grabs.<br>"
-				"This is also the folder where the <i>Shores of Hazeron</i> launcher finds pictures "
+				"Shows the path to the folder where <i>OpenShores</i> stores screen grabs.<br>"
+				"This is also the folder where the <i>OpenShores</i> launcher finds pictures "
 				"to show in the background.<br>"
 				"You must have permission to write to this folder."
 				"</html>"));
@@ -98,16 +98,16 @@ AuLauncherSettings::AuLauncherSettings(const QString& sohFolder, const QString& 
 	browsepics->setIcon(QIcon(":data/Folder.png"));
 	browsepics->setIconSize(QSize(24,24));
 	browsepics->setToolTip(tr("<html>"
-				"Locates a folder for <i>Shores of Hazeron</i> pictures."
+				"Locates a folder for <i>OpenShores</i> pictures."
 				"</html>"));
 	connect(browsepics, SIGNAL(clicked()), SLOT(ChoosePictureFolder()));
 
-	QLabel* lbcache = new QLabel(tr("Location of <i>Shores of Hazeron</i> temporary files."), this);
+	QLabel* lbcache = new QLabel(tr("Location of <i>OpenShores</i> temporary files."), this);
 
 	m_CacheEdit = new QLineEdit(cacheFolder, this);
 	m_CacheEdit->setReadOnly(true);
 	m_CacheEdit->setToolTip(tr("<html>"
-				"Shows the path to the folder where <i>Shores of Hazeron</i> stores temporary files.<br>"
+				"Shows the path to the folder where <i>OpenShores</i> stores temporary files.<br>"
 				"You must have permission to write to this folder."
 				"</html>"));
 
@@ -116,7 +116,7 @@ AuLauncherSettings::AuLauncherSettings(const QString& sohFolder, const QString& 
 	browsecache->setIcon(QIcon(":data/Folder.png"));
 	browsecache->setIconSize(QSize(24,24));
 	browsecache->setToolTip(tr("<html>"
-				"Locates a folder for <i>Shores of Hazeron</i> temporary files."
+				"Locates a folder for <i>OpenShores</i> temporary files."
 				"</html>"));
 	connect(browsecache, SIGNAL(clicked()), SLOT(ChooseCacheFolder()));
 
@@ -182,7 +182,7 @@ QString AuLauncherSettings::SoHFolder() const
 void AuLauncherSettings::ChooseCacheFolder()
 {
 	QString cacheFolder = CacheFolder();
-	cacheFolder = QFileDialog::getExistingDirectory(this, tr("Shores of Hazeron Temporary Files Folder"), cacheFolder,
+	cacheFolder = QFileDialog::getExistingDirectory(this, tr("OpenShores Temporary Files Folder"), cacheFolder,
 			QFileDialog::DontUseNativeDialog);
 	if(!cacheFolder.isEmpty())
 		m_CacheEdit->setText(cacheFolder);
@@ -191,7 +191,7 @@ void AuLauncherSettings::ChooseCacheFolder()
 void AuLauncherSettings::ChoosePictureFolder()
 {
 	QString picFolder = PictureFolder();
-	picFolder = QFileDialog::getExistingDirectory(this, tr("Shores of Hazeron Pictures Folder"), picFolder,
+	picFolder = QFileDialog::getExistingDirectory(this, tr("OpenShores Pictures Folder"), picFolder,
 			QFileDialog::DontUseNativeDialog);
 	if(!picFolder.isEmpty())
 		m_PicsEdit->setText(picFolder);
@@ -200,7 +200,7 @@ void AuLauncherSettings::ChoosePictureFolder()
 void AuLauncherSettings::ChooseSoHFolder()
 {
 	QString sohFolder = SoHFolder();
-	sohFolder = QFileDialog::getExistingDirectory(this, tr("Shores of Hazeron Folder"), sohFolder,
+	sohFolder = QFileDialog::getExistingDirectory(this, tr("OpenShores Folder"), sohFolder,
 			QFileDialog::DontUseNativeDialog);
 	if(!sohFolder.isEmpty())
 		m_FilesEdit->setText(sohFolder);

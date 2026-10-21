@@ -152,7 +152,7 @@ int main(int argc, char** argv)
 void SendPassword(const QString& acctname)
 {
 	// Login to the login server.
-	QString loginName = "WebMaster.Hazeron.com";
+	QString loginName = "webmaster.openshores.net";
 
 	// Create a SHA-1 hash key from the webmaster's password.
 	QByteArray loginPassCrypt;

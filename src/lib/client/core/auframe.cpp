@@ -103,7 +103,7 @@ void AuFrame::BlueprintRating(quint32 designId, QString designName, AuExchangeBl
 void AuFrame::ShowHomePage()
 {
 	// Thanks Qt for making this one so easy.
-	QUrl url("https://www.hazeron.com");
+	QUrl url("https://openshores.net");
 	QDesktopServices::openUrl(url);
 }
 

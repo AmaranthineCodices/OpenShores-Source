@@ -20,7 +20,7 @@ AuMailSettings::AuMailSettings(QWidget* parent) : AuDialog(parent)
 	m_IconIndex = 0;
 	m_timer = 0;
 
-	setAuDlgTitle(tr("Hazeron Mail Settings"));
+	setAuDlgTitle(tr("OpenShores Mail Settings"));
 	setAuDlgIcon(QIcon(":data/Settings.png"));
 
 	ckmail = new QComboBox(this);

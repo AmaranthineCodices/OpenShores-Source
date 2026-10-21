@@ -81,7 +81,7 @@ void ExpireAccounts(bool verbose)
 	//   Password: Gold
 	QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL7", "AuLogin");
 	db.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-	db.setHostName("LoginDb.Hazeron.net");
+	db.setHostName("logindb.openshores.net");
 	if(db.open("audog","Gold"))
 	{
 		QSet<quint32> expiredAccounts;
@@ -149,7 +149,7 @@ void ActivateAccounts()
 	//   Password: Gold
 	QSqlDatabase db = QSqlDatabase::addDatabase("QPSQL7", "AuLogin");
 	db.setDatabaseName("auLogin");			// NOTE: Name is case sensitive.
-	db.setHostName("LoginDb.Hazeron.net");
+	db.setHostName("logindb.openshores.net");
 	if(db.open("audog","Gold"))
 	{
 		// Activate all accounts that are inactive.

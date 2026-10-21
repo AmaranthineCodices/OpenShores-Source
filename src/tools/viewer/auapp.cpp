@@ -24,7 +24,7 @@ AuApp::AuApp(int& argc, char** argv) : QApplication(argc, argv)
 	m_Frame = 0;
 	m_Etherium = new AuEther("AuApp");
 
-	gp_AuGlobal = new AuViewerGlobal("Hazeron Viewer", "Hazeron Freehold", m_Data, m_Etherium);
+	gp_AuGlobal = new AuViewerGlobal("OpenShores Viewer", "OpenShores", m_Data, m_Etherium);
 
 	// Create cache for 3ds models.
 	m_ModelCache = new AuGLModelCache;

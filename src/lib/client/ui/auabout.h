@@ -21,6 +21,7 @@ public:
 
 protected slots:
 	void AboutQt();
+	void ShowLicense();
 };
 
 #endif // AuAbout_H

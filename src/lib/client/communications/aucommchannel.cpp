@@ -4880,7 +4880,7 @@ void AuCommChannel::ViewWebPageOfSender()
 	if(IsNarrator())
 		return;
 	AuId fromId = m_Transcript->SelectedMessageFromId();
-	QUrl url(QString("https://www.hazeron.com/EmpireStandings/p%1.php").arg(fromId.StringId()));
+	QUrl url(QString("https://openshores.net/avatars/p%1").arg(fromId.StringId()));
 	QDesktopServices::openUrl(url);
 }
 

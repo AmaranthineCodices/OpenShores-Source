@@ -61,9 +61,13 @@ AuIntroBase::AuIntroBase(QWidget* parent) : QWidget(parent)	//QVideoWidget(paren
 	//m_Credits << ":data/SoHLogo128.png";
 	m_Credits << QString("*%1").arg(g_Au.ApplicationName());
 	m_Credits << QString("  %1").arg(AuUtil::VersionFull());
+	m_Credits << QString("  %1").arg(auApp->Slogan());
+	m_Credits << "";
 
+	// Credit the original game and carry its copyright notice.
+	m_Credits << "    Based on Shores of Hazeron";
 	m_Credits << QString("    Copyright %1 %2 Hazeron Freehold LLC").arg(g_Au.CopyrightSymbol()).arg(copy);
-	m_Credits << "      All rights reserved.";
+	m_Credits << "    Used under the Shores of Hazeron License.";
 
 	// Get message of the day from the settings file.
 	QString motd = g_Au.Settings().readEntry("Settings/MOTD");
@@ -293,8 +297,8 @@ AuIntroAvatarWidget::AuIntroAvatarWidget(bool solo, int index, QWidget* parent) 
 	m_Enter->setAutoRaise(true);
 	m_Enter->setIcon(QIcon(":data/StartExistingAvatar.png"));
 	m_Enter->setIconSize(QSize(128,64));
-	m_Enter->setToolTip(QObject::tr("<b>Return to Hazeron</b><br>"
-				"Returns to the Hazeron universe in the persona of this avatar."));
+	m_Enter->setToolTip(QObject::tr("<b>Return to OpenShores</b><br>"
+				"Returns to the OpenShores universe in the persona of this avatar."));
 	connect(m_Enter, SIGNAL(clicked()), SLOT(Enter()));
 
 	m_Save = new QToolButton(this);
@@ -381,8 +385,8 @@ void AuIntroAvatarWidget::SetAvatar(const AuId& id, const QString& name, const A
 	m_NewDNA3->hide();
 	m_NewDNA4->hide();
 
-	m_Enter->setToolTip(QObject::tr("<b>Return to Hazeron as %1</b><br>"
-				"Returns to the Hazeron universe in the persona of %1.").arg(name));
+	m_Enter->setToolTip(QObject::tr("<b>Return to OpenShores as %1</b><br>"
+				"Returns to the OpenShores universe in the persona of %1.").arg(name));
 	if(m_UnitDNA->Version() == 3)
 		m_Save->setToolTip(QObject::tr("<b>Save %1...</b><br>"
 					"Saves %1 to a .chr file.").arg(name));
@@ -588,10 +592,10 @@ void AuIntroAvatarWidget::Save()
 			lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 		QString saveFilter;
-		saveFilter += QString("Hazeron DNA (*.dna)");
+		saveFilter += QString("OpenShores DNA (*.dna)");
 		saveFilter += QString(";;All Files (*.*)");
 
-		QString saveFile = QFileDialog::getSaveFileName(this, tr("Hazeron DNA File"), lastFile, saveFilter, 0,
+		QString saveFile = QFileDialog::getSaveFileName(this, tr("OpenShores DNA File"), lastFile, saveFilter, 0,
 				QFileDialog::DontUseNativeDialog);
 		if(saveFile.isEmpty())
 			return;
@@ -1621,14 +1625,14 @@ AuIntroCreateAvatar::AuIntroCreateAvatar(QWidget* parent) : QWidget(parent)
 	m_Enter->setAutoRaise(true);
 	m_Enter->setIcon(QIcon(":data/StartNewAvatar.png"));
 	m_Enter->setIconSize(QSize(64,64));
-	m_Enter->setToolTip(QObject::tr("<b>Go To Hazeron</b><br>"
+	m_Enter->setToolTip(QObject::tr("<b>Go To OpenShores</b><br>"
 				"This is the final step to create an avatar. "
 				"<br>"
 				"%1 Creates a homeworld. "
 				"<br>"
 				"%1 Creates an avatar there. "
 				"<br>"
-				"%1 Enters the Hazeron universe in the persona of your new avatar. "
+				"%1 Enters the OpenShores universe in the persona of your new avatar. "
 				"<br>"
 				"%1 This button will be disabled if any setting is not valid. ").arg(g_Au.MiddleDotSymbol()));
 	connect(m_Enter, SIGNAL(clicked()), SLOT(Enter()));
@@ -2375,14 +2379,14 @@ AuIntroCreateAvatar4::AuIntroCreateAvatar4(QWidget* parent) : QWidget(parent)
 	m_Enter->setAutoRaise(true);
 	m_Enter->setIcon(QIcon(":data/StartNewAvatar.png"));
 	m_Enter->setIconSize(QSize(64,64));
-	m_Enter->setToolTip(QObject::tr("<b>Go To Hazeron</b><br>"
+	m_Enter->setToolTip(QObject::tr("<b>Go To OpenShores</b><br>"
 				"This is the final step to create an avatar. "
 				"<br>"
 				"%1 Creates a homeworld. "
 				"<br>"
 				"%1 Creates an avatar there. "
 				"<br>"
-				"%1 Enters the Hazeron universe in the persona of your new avatar. "
+				"%1 Enters the OpenShores universe in the persona of your new avatar. "
 				"<br>"
 				"%1 This button will be disabled if any setting is not valid. ").arg(g_Au.MiddleDotSymbol()));
 	connect(m_Enter, SIGNAL(clicked()), SLOT(Enter()));
@@ -2614,10 +2618,10 @@ void AuIntroCreateAvatar4::Load()
 		lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 	QString loadFilter;
-	loadFilter += QString("Hazeron DNA (*.dna)");
+	loadFilter += QString("OpenShores DNA (*.dna)");
 	loadFilter += QString(";;All Files (*.*)");
 
-	QString loadFile = QFileDialog::getOpenFileName(this, tr("Hazeron DNA File"), lastFile, loadFilter, 0,
+	QString loadFile = QFileDialog::getOpenFileName(this, tr("OpenShores DNA File"), lastFile, loadFilter, 0,
 			QFileDialog::DontUseNativeDialog);
 	if(loadFile.isEmpty())
 		return;
@@ -2639,7 +2643,7 @@ void AuIntroCreateAvatar4::Load()
 		}
 	case 2:	// bad file version
 		{
-			QString smsg = QObject::tr("File does not contain Hazeron DNA.\n\n%1").arg(loadFile);
+			QString smsg = QObject::tr("File does not contain OpenShores DNA.\n\n%1").arg(loadFile);
 			QMessageBox::warning(this, g_Au.ApplicationName(), smsg, QMessageBox::Ok);
 			break;
 		}
@@ -2672,10 +2676,10 @@ void AuIntroCreateAvatar4::Save()
 		lastFile = lastFileInfo.absolutePath();	// Last file does not exist. Drop the file name and just go to the last folder.
 
 	QString saveFilter;
-	saveFilter += QString("Hazeron DNA (*.dna)");
+	saveFilter += QString("OpenShores DNA (*.dna)");
 	saveFilter += QString(";;All Files (*.*)");
 
-	QString saveFile = QFileDialog::getSaveFileName(this, tr("Hazeron DNA File"), lastFile, saveFilter, 0,
+	QString saveFile = QFileDialog::getSaveFileName(this, tr("OpenShores DNA File"), lastFile, saveFilter, 0,
 			QFileDialog::DontUseNativeDialog);
 	if(saveFile.isEmpty())
 		return;
@@ -4880,7 +4884,7 @@ AuIntroStartReach::AuIntroStartReach(QStackedLayout* descriptions, QWidget* pare
 				"Build a civilization or die. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world. "
+				"Your avatar enters OpenShores on an unexplored habitable world. "
 				"</p>"
 				"<p>"
 				"Targoss arrives to show how to play the game. "
@@ -5038,7 +5042,7 @@ AuIntroStartCitizen::AuIntroStartCitizen(QStackedLayout* descriptions, QWidget* 
 				"Begin as a citizen of an existing empire. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world. "
+				"Your avatar enters OpenShores on an unexplored habitable world. "
 				"</p>"
 				"</html>")
 			.arg(ScenarioName(CitizenOfTheGalaxy)), this);
@@ -5211,7 +5215,7 @@ AuIntroStartSavage::AuIntroStartSavage(QStackedLayout* descriptions, QWidget* pa
 				"Begin as a savage in the wilderness. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron on an unexplored habitable world."
+				"Your avatar enters OpenShores on an unexplored habitable world."
 				"</p>"
 				"<p>"
 				"<b>No village, no items, no Targoss, no asteroid.</b>"
@@ -5305,7 +5309,7 @@ AuIntroStartLost::AuIntroStartLost(QStackedLayout* descriptions, QWidget* parent
 				"No trace of your former civilization exists. "
 				"</p>"
 				"<p>"
-				"Your avatar enters Hazeron aboard a starship in deep space. "
+				"Your avatar enters OpenShores aboard a starship in deep space. "
 				"</p>"
 				"</html>")
 			.arg(ScenarioName(LostAtlantis)), this);

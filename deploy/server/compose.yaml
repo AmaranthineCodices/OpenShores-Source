@@ -134,7 +134,7 @@ services:
     networks:
       server:
         aliases:
-          - Login.Hazeron.net
+          - login.openshores.net
     healthcheck:
       test: ["CMD-SHELL", "grep -qx 'Server Map' aulogin.txt"]
       interval: 5s
@@ -174,7 +174,7 @@ services:
     networks:
       server:
         aliases:
-          - Mail.Hazeron.net
+          - mail.openshores.net
     healthcheck:
       test: ["CMD-SHELL", "grep -qx 'Server Map' aumail.txt"]
       interval: 5s
@@ -231,7 +231,7 @@ services:
     networks:
       server:
         aliases:
-          - Scene.Hazeron.net
+          - scene.openshores.net
     healthcheck:
       test: ["CMD", "/opt/openshores/bin/health-port", "16756", "16759"]
       interval: 5s

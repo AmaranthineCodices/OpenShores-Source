@@ -1439,12 +1439,9 @@ void AuApp::LoginFailed(quint8 errCode)
 		QString msg = tr("<html>"
 				"Login failure. "
 				"The version of this program is incompatible with the server.<p>"
-				"<i>Tips:</i><p>"
-				"%1 Run the <i>%2 Launcher</i> to update your local program files.<br>"
-				"%1 Try again in a short while. We could be posting updates now.<p>"
-				"<i>%2</i> will now exit."
+				"Update using the OpenShores launcher or by downloading the latest patch from the website.<p>"
+				"<i>%1</i> will now exit."
 				"</html>")
-			.arg(g_Au.MiddleDotSymbol())
 			.arg(g_Au.ApplicationName());
 		QMessageBox::critical(frame, g_Au.ApplicationName(), msg);
 	}

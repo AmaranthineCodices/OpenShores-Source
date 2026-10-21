@@ -199,7 +199,7 @@ int main(int argc, char** argv)
 void PrintUsage()
 {
 	QTextStream out(stdout);
-	out << "Hazeron Story Script Compiler\n";
+	out << "OpenShores Story Script Compiler\n";
 	out << " Usage: AuScript [-b] [-c [id]] [-d] [-e] [-f] [-l] [-m] [-p] [-r] [-v] [-?]\n";
 	out << "  -b    Outputs the list of building names.\n";
 	out << "  -c    Compile script.sh file.\n";
@@ -220,13 +220,13 @@ void PrintUsage()
 void PrintVersion()
 {
 	QTextStream out(stdout);
-	out << "Hazeron Story Script Compiler " << AuUtil::VersionFull() << '\n';
+	out << "OpenShores Story Script Compiler " << AuUtil::VersionFull() << '\n';
 }
 
 int CompileScript(const QString& dataPath, const QString& scriptFileName, const QString& scriptId)
 {
 	DgData* data = new DgData;
-	gp_AuGlobal = new AuGlobal("Hazeron Story Script Compiler", "Hazeron Freehold", AuGlobal::WebCGI, data, 0);
+	gp_AuGlobal = new AuGlobal("OpenShores Story Script Compiler", "OpenShores", AuGlobal::WebCGI, data, 0);
 
 	// Read the data file.
 	if(!ReadDataFile(dataPath, gp_AuGlobal->m_CommodityArray, data->m_bIndustryArray, data->m_gEmpires))
@@ -288,7 +288,7 @@ void CreateDataFile(const QString& dataPath)
 	//   User: audog
 	//   Password: Gold
 	dbUniverse.setDatabaseName("auUniverse");			// NOTE: Name is case sensitive.
-	dbUniverse.setHostName("UniverseDb.Hazeron.net");
+	dbUniverse.setHostName("universedb.openshores.net");
 	if(!dbUniverse.open("audog","Gold"))
 	{
 		qWarning("Failed to connect to the Universe database.");

@@ -4890,7 +4890,7 @@ private:
 	QString								m_Text;					// Text of this announcement.
 
 public:
-	AuCommAnnouncement(const QString& text, const QString& fromName = QObject::tr("Hazeron"));
+	AuCommAnnouncement(const QString& text, const QString& fromName = QObject::tr("OpenShores"));
 	AuCommAnnouncement();
 	AuCommAnnouncement(const AuCommAnnouncement& c);
 

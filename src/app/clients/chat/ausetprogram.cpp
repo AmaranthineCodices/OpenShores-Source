@@ -23,7 +23,7 @@
 
 AuSetProgram::AuSetProgram(QWidget *parent) : QWidget(parent)
 {
-	QPushButton* pbAbout = new QPushButton(QIcon(":data/SoHLogo32.png"), tr("About %1 of Hazeron...").arg(g_Au.ApplicationName()), this);
+	QPushButton* pbAbout = new QPushButton(QIcon(":data/SoHLogo32.png"), tr("About %1...").arg(g_Au.ApplicationName()), this);
 	connect(pbAbout, SIGNAL(clicked()), SLOT(AboutSoH()));
 
 	QLabel* tempFolderLabel = new QLabel(tr("Temporary Files Folder"), this);

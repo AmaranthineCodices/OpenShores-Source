@@ -116,7 +116,7 @@ void AuIntro::ExistingAvatarLogin(AuId avatarId)
 {
 	if(m_msgDialog)
 	{
-		m_msgDialog->SetMessage(1, tr("Entering Hazeron"));
+		m_msgDialog->SetMessage(1, tr("Entering OpenShores"));
 		m_msgDialog->show();
 	}
 	emit AvatarLogin(avatarId);
@@ -300,9 +300,9 @@ void AuIntroLogin::Login()
 					"Tips:<br>"
 					"%1 Check your network connection.<br>"
 					"%1 Check server status on our web site.<br>"
-					"%1 Run the <i>Shores of Hazeron Launcher</i> to update your files.<br>"
+					"%1 Run the <i>OpenShores Launcher</i> to update your files.<br>"
 					"%1 If that doesn't work, "
-					"download and install the latest <i>Shores of Hazeron Launcher</i> and try again."
+					"download and install the latest <i>OpenShores Launcher</i> and try again."
 					"</html>")
 				.arg(g_Au.MiddleDotSymbol());
 			QMessageBox mb(QMessageBox::NoIcon, g_Au.ApplicationName(), msg, QMessageBox::Cancel, this);
@@ -314,12 +314,12 @@ void AuIntroLogin::Login()
 			mb.exec();
 			if(mb.clickedButton() == openStatus)
 			{
-				QUrl url("https://www.hazeron.com/status.php");
+				QUrl url("https://openshores.net");
 				QDesktopServices::openUrl(url);
 			}
 			else if(mb.clickedButton() == openDownloads)
 			{
-				QUrl url("https://www.hazeron.com/downloads.php");
+				QUrl url("https://openshores.net");
 				QDesktopServices::openUrl(url);
 			}
 		}
@@ -346,12 +346,8 @@ void AuIntroLogin::Login()
 		{
 			QString msg = tr("<html><b>Version Mismatch</b><p>"
 					"This program's version is incompatible with the server.<p>"
-					"Tips:<br>"
-					"%1 Run the <i>Shores of Hazeron Launcher</i> to update your files.<br>"
-					"%1 If that doesn't work, "
-					"download and install the latest <i>Shores of Hazeron Launcher</i> and try again."
-					"</html>")
-				.arg(g_Au.MiddleDotSymbol());
+					"Update using the OpenShores launcher or by downloading the latest patch from the website."
+					"</html>");
 			QMessageBox mb(QMessageBox::NoIcon, g_Au.ApplicationName(), msg, QMessageBox::Cancel, this);
 			mb.setIconPixmap(QPixmap(":data/SoHLogo32.png"));
 			QAbstractButton* openDownloads = mb.addButton(tr("Open Downloads Web Page"),
@@ -360,7 +356,7 @@ void AuIntroLogin::Login()
 			if(mb.clickedButton() == openDownloads)
 			{
 				// Thanks Qt for making this one so easy.
-				QUrl url("https://www.hazeron.com/downloads.php");
+				QUrl url("https://openshores.net");
 				QDesktopServices::openUrl(url);
 			}
 		}
@@ -371,16 +367,16 @@ void AuIntroLogin::Login()
 			m_Login->setEnabled(true);
 			QString msg = tr("<html><b>Account Locked</b><p>"
 					"The account is locked. "
-					"Contact Hazeron Freehold to unlock the account. "
+					"Contact the OpenShores team to unlock the account. "
 					"</html>");
 			QMessageBox mb(QMessageBox::NoIcon, g_Au.ApplicationName(), msg, QMessageBox::Cancel, this);
 			mb.setIconPixmap(QPixmap(":data/SoHLogo32.png"));
-			QAbstractButton* openLink = mb.addButton(tr("Open Hazeron Freehold Web Page"), QMessageBox::ActionRole);
+			QAbstractButton* openLink = mb.addButton(tr("Open OpenShores Web Page"), QMessageBox::ActionRole);
 			mb.exec();
 			if(mb.clickedButton() == openLink)
 			{
 				// Thanks Qt for making this one so easy.
-				QUrl url("https://Hazeron.com/");
+				QUrl url("https://openshores.net");
 				QDesktopServices::openUrl(url);
 			}
 		}

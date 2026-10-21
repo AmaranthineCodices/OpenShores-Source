@@ -716,14 +716,14 @@ QString AuViewButton::Name(VIEWBUTTON vb)
 		"Policy",						// VB_GovernPolicy,
 		"",						// VB_UNUSED4,
 		"Taxes",						// VB_GovernTaxes,
-		"Forum",						// VB_Forum,
+		"Bugs and Suggestions",			// VB_Forum,
 		"Wiki",							// VB_Wiki,
 		"Empire Standings",				// VB_WarDimensionStandings,
 		"",				// VB_UNUSED8,
 		"Avatars",						// VB_Avatars,
 		"Manifest",						// VB_CargoManifest,
 		"Blueprint Exchange",			// VB_SpacecraftDesignExchange,
-		"Hazeron Home",					// VB_HazeronHome,
+		"OpenShores Home",					// VB_HazeronHome,
 		"Minion",						// VB_Minion,
 		"Players Online",				// VB_PlayersOnline,
 		"Videos",						// VB_Videos,
@@ -1022,18 +1022,18 @@ QString AuViewButton::TipBase(VIEWBUTTON vb)
 				""),
 		QObject::tr("<b>Taxes</b> %2<br>"										// VB_GovernTaxes,
 			"Show the <i>Taxes</i> window to view and change taxes of your empire."),
-		QObject::tr("<b>Forum</b> %2<br>"										// VB_Forum
-			"Opens your web browser at the <i>Shores of Hazeron</i> Forum. "
-			"The <i>forum</i> provides a place for discussion with other players and to report problems."),
+		QObject::tr("<b>Bugs and Suggestions</b> %2<br>"						// VB_Forum
+			"Opens your web browser at the <i>OpenShores</i> page for bug reports and suggestions. "
+			"Log in to the web site with your game name and password to report a problem or suggest something."),
 		QObject::tr("<b>Wiki</b> %2<br>"										// VB_Wiki
-			"Opens your web browser at the <i>Shores of Hazeron</i> Wiki. "
+			"Opens your web browser at the <i>OpenShores</i> Wiki. "
 			"The <i>wiki</i> is a valuable resource to find answers."),
 		QObject::tr("<b>Empire Standings</b> %2<br>"						// VB_WarDimensionStandings
-			"Opens your web browser at the <i>Shores of Hazeron</i> empire standings page."),
+			"Opens your web browser at the <i>OpenShores</i> empire standings page."),
 		QObject::tr("<b>UNUSED8</b> %2<br>"						// VB_UNUSED8
 			""),
 		QObject::tr("<b>Avatars</b> %2<br>"										// VB_Avatars
-			"Opens your web browser at the <i>Shores of Hazeron</i> avatars page. "
+			"Opens your web browser at the <i>OpenShores</i> avatars page. "
 			"The avatars page shows information about individual avatars in the game."),
 		QObject::tr("<html><b>Manifest</b> %2<br>"								// VB_CargoManifest
 			"Shows a manifest of cargo in the hold of the ship. "
@@ -1041,14 +1041,14 @@ QString AuViewButton::TipBase(VIEWBUTTON vb)
 		QObject::tr("<b>Spacecraft Blueprint Exchange</b> %2<br>"
 			"Show the <i>Spacecraft Blueprint Exchange</i> window to view published blueprints and to publish your own "
 			"blueprints."),	// VB_SpacecraftDesignExchange
-		QObject::tr("<b>Hazeron Home</b> %2<br>"								// VB_HazeronHome
-			"Opens your web browser at the <i>Shores of Hazeron</i> home page."),
+		QObject::tr("<b>OpenShores Home</b> %2<br>"								// VB_HazeronHome
+			"Opens your web browser at the <i>OpenShores</i> home page."),
 		QObject::tr("<b>Minion</b> %2<br>"
 			"Show the <i>Minion</i> window for the <i>%1</i> program.").arg(g_Au.ApplicationName()),
 		QObject::tr("<b>Players Online</b> %2<br>"								// VB_PlayersOnline
 			"Show the <i>Players Online</i> window to view a list of all players online."),
 		QObject::tr("<b>Videos</b> %2<br>"										// VB_Videos
-			"Opens your web browser at the <i>Shore of Hazeron</i> videos page. "
+			"Opens your web browser at the <i>OpenShores</i> videos page. "
 			"There are videos to show how to use the designer and how to play the game."),
 		QObject::tr("<b>Building Blueprint Exchange</b> %2<br>"
 			"Show the <i>Building Blueprint Exchange</i> window to view published blueprints and to publish your own "
@@ -7979,7 +7979,7 @@ void AuDesignerView::ScreenShot()
 	// Construct a file name.
 	// No spaces makes it easy to copy them right to the web site. My shell script there doesn't like spaces in the names.
 	// Windows, rsync and ssh don't like colons in the name.
-	picPath += "/Hazeron." + QDateTime::currentDateTime().toString("MMM-d-yyyy.h-mm-ss-zzz") + ".png";
+	picPath += "/OpenShores." + QDateTime::currentDateTime().toString("MMM-d-yyyy.h-mm-ss-zzz") + ".png";
 
 	// Save the screen shot.
 	QImage screen = grabFramebuffer().convertToFormat(QImage::Format_RGB32);
@@ -12478,8 +12478,8 @@ void AuDesignerView::DesignerOpen()
 		}
 	}
 
-	QString loadFile = QFileDialog::getOpenFileName(this, tr("Hazeron Design File"), designFileName,
-			"Hazeron Designs (*.SoH);;All Files (*.*)", 0,
+	QString loadFile = QFileDialog::getOpenFileName(this, tr("OpenShores Design File"), designFileName,
+			"OpenShores Designs (*.SoH);;All Files (*.*)", 0,
 			g_Au.UseNativeFileDialog() ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 	if(!loadFile.isEmpty() && loadFile.right(4).compare(".SoH", Qt::CaseInsensitive) == 0)
 	{
@@ -13019,9 +13019,9 @@ void AuDesignerView::DesignerSaveAs()
 	}
 
 	QString suffix(".SoH");
-	QString filter = QString("Hazeron Designs (*%1);;All Files (*.*)").arg(suffix);
+	QString filter = QString("OpenShores Designs (*%1);;All Files (*.*)").arg(suffix);
 
-	QString saveFile = QFileDialog::getSaveFileName(this, tr("Hazeron Design File"), designFileName, filter, 0,
+	QString saveFile = QFileDialog::getSaveFileName(this, tr("OpenShores Design File"), designFileName, filter, 0,
 			g_Au.UseNativeFileDialog() ? QFileDialog::Options() : QFileDialog::DontUseNativeDialog);
 	if(saveFile.isEmpty())
 		return;
