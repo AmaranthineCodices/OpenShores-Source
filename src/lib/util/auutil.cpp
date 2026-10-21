@@ -179,6 +179,20 @@ int AuUtil::ReadPacketSize(QDataStream& in, quint32& pktSize, int& pktSizeBytesL
 }
 
 //static
+bool AuUtil::KeepReading(QTcpSocket& socket, qint64& leftOver)
+{
+	if(socket.state() == QAbstractSocket::ConnectedState)
+	{
+		leftOver = -1;
+		return true;
+	}
+	const qint64 left = socket.bytesAvailable();
+	if(!left || left == leftOver)
+		return false;
+	leftOver = left;
+	return true;
+}
+
 int AuUtil::ReadPacketSize(QTcpSocket& socket, quint32& pktSize, int& pktSizeBytesLeft)
 {
 	//qDebug() << "AuUtil::ReadPacketSize" << pktSize << pktSizeBytesLeft << "avail" << socket.bytesAvailable();

@@ -109,6 +109,7 @@ void DtSceneServer::run()
 	}
 
 	m_tmConnect.Set();
+	m_LastRxMSecs = QDateTime::currentMSecsSinceEpoch();
 	QString peerAddr = tcpSocket.peerAddress().toString();
 	//if(peerAddr.left(8) == "192.168." || peerAddr == "127.0.0.1" || peerAddr.right(9) == "127.0.0.1" ||
 			//peerAddr.left(15) == "::ffff:192.168.")
@@ -155,6 +156,16 @@ void DtSceneServer::run()
 		RxData(tcpSocket);
 		if(tcpSocket.state() != QAbstractSocket::ConnectedState)
 			break;
+
+		const qint64 silentMSecs = QDateTime::currentMSecsSinceEpoch() - m_LastRxMSecs;
+		if(silentMSecs > 3 * 60 * 1000)
+		{
+			logmsg = tr("SCENE:%99 Disconnect. Player %1 %2: silent for %3 s.").arg(m_idPlayer).arg(peerAddr)
+					.arg(silentMSecs / 1000).arg(m_Id);
+			g_Au.LogConnect(auSceneServerApp->LoginName(), logmsg);
+			tcpSocket.abort();
+			break;
+		}
 
 		// Check to see if the login server still thinks this guy is logged in.
 		if(!gp_AuGlobal)
@@ -246,6 +257,8 @@ void DtSceneServer::run()
 void DtSceneServer::RxData(QTcpSocket& tcpSocket)
 {
 	//qDebug("DtSceneServer::RxData");
+	if(tcpSocket.bytesAvailable())
+		m_LastRxMSecs = QDateTime::currentMSecsSinceEpoch();
 	while(tcpSocket.bytesAvailable())
 	{
 		if(!m_PacketSize || m_PacketSizeBytesLeft)
@@ -280,6 +293,7 @@ void DtSceneServer::ReadUdpPacket(const QByteArray& ba)
 		return;							// Ignore packets when preparing to disconnect.
 
 	m_BytesRx += ba.count();
+	m_LastRxMSecs = QDateTime::currentMSecsSinceEpoch();
 	QDataStream block(ba);
 	block.setVersion(QDataStream::Qt_4_1);
 
@@ -1637,6 +1651,17 @@ void DtSceneServer::SyncClient()
 void DtSceneServer::DeferClient()
 {
 	QMutexLocker queryLock(&m_muAtomQuery);
+	if(m_QueryReason == QUERY_RetryDefer && m_tmDeferWait.isValid())
+	{
+		const qint64 secs = m_tmDeferWait.elapsed() / d_MSecPerSec;
+		if(secs > 10 * 60)
+		{
+			m_tmDeferWait.invalidate();
+			m_QueryReason = QUERY_None;
+			m_tmDisconnect.start();
+			return;
+		}
+	}
 	if(m_QueryReason == QUERY_RetryDefer && m_tmAtomQuery.elapsed() < d_MSecPerSec)
 		return;
 
@@ -2647,9 +2672,12 @@ void DtSceneServer::AtomPresenceResolved(AuId atom, quint32 empire, QString netN
 		// its world loads instead of sending the client back to this same master.
 		m_QueryReason = QUERY_RetryDefer;
 		m_tmAtomQuery.restart();
+		if(!m_tmDeferWait.isValid())
+			m_tmDeferWait.start();
 		return;
 	}
 
+	m_tmDeferWait.invalidate();
 	AtomPresence(netName, port, peerName);
 }
 

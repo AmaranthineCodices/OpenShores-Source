@@ -89,6 +89,8 @@ public:
 
 	static int ReadPacketSize(QDataStream& in, quint32& pktSize, int& pktSizeBytesLeft);
 
+	static bool KeepReading(QTcpSocket& socket, qint64& leftOver);
+
 	static inline QString SceneMasterName()
 	{
 		return QString("scene.openshores.net");

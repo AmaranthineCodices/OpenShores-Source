@@ -171,7 +171,7 @@ void PollLoginServer()
 		quint32 packetSize = 0;
 		int packetSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead(10000);
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			while(tcpSocket.bytesAvailable())
@@ -278,7 +278,7 @@ void PollMailServer()
 		quint32 packetSize = 0;
 		int packetSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead(10000);
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			while(tcpSocket.bytesAvailable())
@@ -393,7 +393,7 @@ void PollSceneServer(int dbLoadTime)
 		quint32 packetSize = 0;
 		int packetSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead(10000);
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			while(tcpSocket.bytesAvailable())
@@ -560,7 +560,7 @@ bool PollServerManager(int dbLoadTime, bool chatOnly)
 		quint32 packetSize = 0;
 		int packetSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead(10000);
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			while(tcpSocket.bytesAvailable())
@@ -761,7 +761,7 @@ bool ReportPlayersOnline()
 		quint32 packetSize = 0;
 		int packetSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead(10000);
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			while(tcpSocket.bytesAvailable())

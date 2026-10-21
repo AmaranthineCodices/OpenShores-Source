@@ -21,6 +21,7 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include <QThread>
+#include <atomic>
 
 class AuDNABase;
 class AuGearPos;
@@ -410,6 +411,8 @@ private:
 	quint16			m_PosStationId;
 	AuPoint			m_PosVec;
 	quint16			m_PosWhichConsole;
+	std::atomic<qint64>	m_LastRxMSecs{0};
+	AuElapsedTimer	m_tmDeferWait;
 	AuElapsedTimer	m_PosReportTimer;
 };
 

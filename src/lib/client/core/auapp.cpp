@@ -485,6 +485,14 @@ void AuApp::TestClientConnection()
 		StopThreads();
 		g_Au.ResetSceneServer();
 		StartSceneClientThread();
+
+		if(RunState() == LoggedIn || RunState() == LoggedInWait)
+		{
+			if(g_Au.m_LogMessages & LOG_ConnectDisconnect)
+				g_Au.Log(g_Au.CacheApp() + "/soh.txt", QString("App: Connection lost; logging in again."));
+			m_Model->ConnectionEstablished();
+			SceneLogin();
+		}
 	}
 }
 

@@ -69,8 +69,7 @@ int AuLoginCheck::LoginTestCredentials(const QString& acctName, const QByteArray
 			m_PacketSize = 0;
 			m_PacketSizeBytesLeft = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				//qDebug() << "AuLoginCheck::LoginTest rxdata" << tcpSocket.bytesAvailable();
 				// Pull in any data that is waiting for us.
@@ -295,8 +294,7 @@ int AuLoginCheck::CreateAccount(const QString& acctName, const QByteArray& passw
 		m_PacketSize = 0;
 		m_PacketSizeBytesLeft = 0;
 		tcpSocket.waitForReadyRead();
-		while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-				tcpSocket.bytesAvailable())
+		for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 		{
 			// Pull in any data that is waiting for us.
 			RxData(tcpSocket);

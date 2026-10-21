@@ -745,6 +745,9 @@ bool AuGlobal::IsPlayerLoggedIn(unsigned int idPlayer, unsigned int confirmNum, 
 	// This will be our return result.
 	bool isLoggedIn = false;
 	bool deferred;
+	QElapsedTimer checkTime;
+	checkTime.start();
+	int deferrals = 0;
 	do
 	{
 		// Connect to the login server.
@@ -774,7 +777,7 @@ bool AuGlobal::IsPlayerLoggedIn(unsigned int idPlayer, unsigned int confirmNum, 
 			quint32 packetSize = 0;
 			int packetSizeBytesLeft = 0;
 			tcpSocket.waitForReadyRead(10000);
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				while(tcpSocket.bytesAvailable())
@@ -852,6 +855,11 @@ bool AuGlobal::IsPlayerLoggedIn(unsigned int idPlayer, unsigned int confirmNum, 
 
 				if(tcpSocket.state() == QAbstractSocket::ConnectedState)
 					tcpSocket.waitForDisconnected(100);
+				if(checkTime.elapsed() > 30 * 1000)
+				{
+					deferred = false;
+					break;
+				}
 			}
 
 			// Close the tcp connection.
@@ -863,7 +871,7 @@ bool AuGlobal::IsPlayerLoggedIn(unsigned int idPlayer, unsigned int confirmNum, 
 			}
 		}
 	}
-	while(deferred);
+	while(deferred && ++deferrals < 5 && checkTime.elapsed() < 30 * 1000);
 	
 	// Return the final result.
 	return isLoggedIn;
@@ -1267,7 +1275,7 @@ bool AuGlobal::ListPlayerUnits(const AuId& unitId, AuId* idUnits)
 			quint32 packetSize = 0;
 			int packetSizeBytesLeft = 0;
 			tcpSocket.waitForReadyRead(10000);
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				while(tcpSocket.bytesAvailable())

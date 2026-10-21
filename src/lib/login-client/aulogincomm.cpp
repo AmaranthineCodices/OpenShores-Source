@@ -82,8 +82,7 @@ int AuLoginComm::Login(const QString& acctName, const QByteArray& acctPassword)
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -151,8 +150,7 @@ int AuLoginComm::RequestContacts(const QString& acctName, const QByteArray& acct
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-				tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -446,8 +444,7 @@ int AuLoginComm::Logout()
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -499,8 +496,7 @@ void AuLoginComm::SetPlayerUnit(unsigned int idPlayer, unsigned int confirmNum, 
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -549,8 +545,7 @@ void AuLoginComm::PlayerUnitBorn(const AuId& motherUnit, const AuId& idUnit)
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -599,8 +594,7 @@ void AuLoginComm::PlayerUnitDied(const AuId& avatar)
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -651,8 +645,7 @@ void AuLoginComm::DeletePlayerUnit(unsigned int idPlayer, unsigned int confirmNu
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -723,8 +716,7 @@ void AuLoginComm::UpdateContacts(const QString& acctName, const QByteArray& acct
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -790,8 +782,7 @@ void AuLoginComm::UpdateContact(const QString& acctName, const QByteArray& acctP
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -841,8 +832,7 @@ void AuLoginComm::TransferPlayerUnit(const AuId& avatar, const AuId& accepter)
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);
@@ -896,7 +886,7 @@ void AuLoginComm::QueryAvatars(AuIdList& activeIds, AuIdList& inactiveIds)
 			quint32 packetSize = 0;
 			int packetSizeBytesLeft = 0;
 			tcpSocket.waitForReadyRead(10000);
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				while(tcpSocket.bytesAvailable())
@@ -1030,7 +1020,7 @@ void AuLoginComm::ListPlayerUnits(unsigned int idPlayer, unsigned int confirmNum
 			quint32 packetSize = 0;
 			int packetSizeBytesLeft = 0;
 			tcpSocket.waitForReadyRead(10000);
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState || tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				while(tcpSocket.bytesAvailable())
@@ -1161,8 +1151,7 @@ int AuLoginComm::LoginSteam(const QByteArray& ticket)
 			// The server will send back a reply, good or bad, then it will disconnect.
 			m_PacketSize = 0;
 			tcpSocket.waitForReadyRead();
-			while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-					tcpSocket.bytesAvailable())
+			for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 			{
 				// Pull in any data that is waiting for us.
 				RxData(tcpSocket);

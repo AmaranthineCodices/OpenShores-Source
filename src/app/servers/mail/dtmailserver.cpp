@@ -49,9 +49,18 @@ void DtMailServer::run()
 	g_Au.Log(logmsg);
 
 	tcpSocket.waitForReadyRead(10000);
-	while(tcpSocket.state() == QAbstractSocket::ConnectedState ||
-			tcpSocket.bytesAvailable())
+	QElapsedTimer connectionTime;
+	connectionTime.start();
+	for(qint64 leftOver = -1; AuUtil::KeepReading(tcpSocket, leftOver); )
 	{
+		if(connectionTime.elapsed() > 60 * 1000)
+		{
+			logmsg = QObject::tr("%1 Connection with %2 open for a minute; closed.")
+					.arg((unsigned long)currentThreadId()).arg(peerAddr);
+			g_Au.Log(logmsg);
+			tcpSocket.abort();
+			break;
+		}
 		// Pull in any data that is waiting for us.
 		// Note: If we wait for the signal, it appears to come from the gui
 		// thread, which causes us grief. It's better for us to get the data
