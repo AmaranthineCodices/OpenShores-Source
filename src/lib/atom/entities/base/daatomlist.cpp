@@ -10,6 +10,46 @@
 #include "auglobal.h"
 #include "daperson.h"
 
+static thread_local DaAtomList::UniqueIndexScope* t_UniqueIndex = nullptr;
+
+DaAtomList::UniqueIndexScope::UniqueIndexScope(DaAtomList& list) : m_List(&list), m_IndexedSize(-1), m_Previous(t_UniqueIndex)
+{
+	t_UniqueIndex = this;
+}
+
+DaAtomList::UniqueIndexScope::~UniqueIndexScope()
+{
+	t_UniqueIndex = m_Previous;
+}
+
+bool DaAtomList::AddIfUnique(DaAtom* pAdd)
+{
+	UniqueIndexScope* index = t_UniqueIndex;
+	if(index && index->m_List == this)
+	{
+		if(index->m_IndexedSize != size())
+		{
+			index->m_Atoms.clear();
+			index->m_Atoms.reserve(size() * 2 + 64);
+			for(const DaAtom* atom : qAsConst(*this))
+				index->m_Atoms.insert(atom);
+		}
+		if(index->m_Atoms.contains(pAdd))
+		{
+			index->m_IndexedSize = size();
+			return false;
+		}
+		index->m_Atoms.insert(pAdd);
+		append(pAdd);
+		index->m_IndexedSize = size();
+		return true;
+	}
+	if(contains(pAdd))
+		return false;
+	append(pAdd);
+	return true;
+}
+
 // Returns true if the atom is removed.
 bool DaAtomList::RemoveAtom(DaAtom* atom)
 {

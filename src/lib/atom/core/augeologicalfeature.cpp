@@ -293,14 +293,74 @@ AuGeologicalFeature* AuGeologicalFeatures::FindDeletableContaining(const DaWorld
 	return 0;
 }
 
+bool AuGeologicalFeatures::s_SkipOutOfReach = true;
+
+namespace
+{
+
+bool ReachProbe(const DaWorldLL& llworld, const AuGlobeLL& ll, int features, AuPoint& unit, double& radius)
+{
+	if(!AuGeologicalFeatures::s_SkipOutOfReach || features < 8 || llworld.LLShape() != LL_Globe)
+		return false;
+	unit = llworld.LocOfLL(ll, 0.0);
+	radius = unit.Length();
+	if(radius < 1.0)
+		return false;
+	unit = unit * (1.0 / radius);
+	return true;
+}
+
+}
+
+bool AuGeoReach::Beyond(const AuGlobeLLF& a, const AuGlobeLLF& b, double reach, const AuPoint& unit, double radius) const
+{
+	int s = state.loadAcquire();
+	if(s == 0)
+	{
+		if(!state.testAndSetAcquire(0, 1))
+			return false;
+		const double lonGap = fabs((double)a.Longitude() - (double)b.Longitude());
+		bool bounded = fabs(a.Latitude()) < 1.35 && fabs(b.Latitude()) < 1.35 && lonGap < 0.5;
+		if(bounded)
+		{
+			const AuPoint ua = a.GlobeLocation(1.0), ub = b.GlobeLocation(1.0);
+			mid = ua + ub;
+			if(mid.Length() < 1e-9)
+				bounded = false;
+			else
+			{
+				mid.Unit();
+				const double d = qBound(-1.0, ua.Dot(ub), 1.0);
+				halfAngle = acos(d) / 2 * 1.5 + 1e-7;
+				feet = reach * 1.5 + 100.0;
+			}
+		}
+		state.storeRelease(bounded ? 2 : 3);
+		s = bounded ? 2 : 3;
+	}
+	if(s != 2)
+		return false;
+	const double t = halfAngle + feet / radius;
+	if(t >= 1.0)
+		return false;
+	return unit.Dot(mid) < cos(t);
+}
+
 double AuGeologicalFeatures::AdjustAltMSL(const DaWorldLL& llworld, const AuGlobeLL& ll, double altMSL, bool& hideRocks,
 		int& hideGrass, bool& hideShrubs, bool& hideTrees, WORLDTEX_TYPE& pavementType, AuTime& newest) const
 {
 	int onRoadOrGrader = 0;
 	newest = AuTime();
+	AuPoint unit;
+	double radius = 0;
+	const bool skip = ReachProbe(llworld, ll, count(), unit, radius);
 	for(const_iterator fi = constBegin(); fi != constEnd(); fi++)
+	{
+		if(skip && (*fi)->OutOfReach(unit, radius))
+			continue;
 		altMSL = (*fi)->AdjustAltMSL(llworld, ll, altMSL, hideRocks, hideGrass, hideShrubs, hideTrees, pavementType,
 				onRoadOrGrader, newest);
+	}
 	return altMSL;
 }
 
@@ -308,8 +368,15 @@ double AuGeologicalFeatures::AdjustAltMSL(const DaWorldLL& llworld, const AuGlob
 {
 	int onRoadOrGrader = 0;
 	newest = AuTime();
+	AuPoint unit;
+	double radius = 0;
+	const bool skip = ReachProbe(llworld, ll, count(), unit, radius);
 	for(const_iterator fi = constBegin(); fi != constEnd(); fi++)
+	{
+		if(skip && (*fi)->OutOfReach(unit, radius))
+			continue;
 		altMSL = (*fi)->AdjustAltMSL(llworld, ll, altMSL, pavementType, onRoadOrGrader, newest);
+	}
 	return altMSL;
 }
 
@@ -3388,6 +3455,7 @@ void AuGeoRoadGrade::operator<<(QDataStream& in)
 	in >> hasWhat;
 	m_Slab = hasWhat & 0x01;
 	in >> m_EndMSL;
+	m_Reach.Reset();
 	in >> m_StartLL;
 	in >> m_StartMSL;
 	in >> m_Width;
@@ -3634,6 +3702,11 @@ double AuGeoRoadGrade::AdjustAltMSLUndeveloped(const DaWorldLL& llworld, const A
 	Q_UNUSED(llworld);
 	Q_UNUSED(adjLL);
 	return altMSL;
+}
+
+bool AuGeoRoadGrade::OutOfReach(const AuPoint& unit, double radius) const
+{
+	return m_Reach.Beyond(m_StartLL, m_LL, m_Width / 2 + 8 + 10 * FeetPerMeter(), unit, radius);
 }
 
 // 'worldGenSeed' is the GenSeed for this feature's world, in case we want to consistently generate a name.
@@ -5299,6 +5372,7 @@ void AuGeoLandscape::operator<<(QDataStream& in)
 	m_HideShrubs = hasWhat & 0x08;
 	m_HideTrees = hasWhat & 0x10;
 	in >> m_EndMSL;
+	m_Reach.Reset();
 	in >> m_StartLL;
 	in >> m_StartMSL;
 	in >> m_Width;
@@ -5414,6 +5488,11 @@ double AuGeoLandscape::AdjustAltMSLUndeveloped(const DaWorldLL& llworld, const A
 	Q_UNUSED(llworld);
 	Q_UNUSED(adjLL);
 	return altMSL;
+}
+
+bool AuGeoLandscape::OutOfReach(const AuPoint& unit, double radius) const
+{
+	return m_Reach.Beyond(m_StartLL, m_LL, m_Width / 2 + 8 + 10 * FeetPerMeter(), unit, radius);
 }
 
 // 'worldGenSeed' is the GenSeed for this feature's world, in case we want to consistently generate a name.

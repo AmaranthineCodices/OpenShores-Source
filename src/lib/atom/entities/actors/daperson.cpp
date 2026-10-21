@@ -11832,6 +11832,8 @@ bool DaPerson::ListSceneAtoms(DaAtomList& sceneAtoms)
 	AuPoint cameraEnvLoc = EnvTransform().Project(SceneCameraLocation());
 	const DaAtom* env = FindEnvironmentAtom();
 
+	DaAtomList::UniqueIndexScope uniqueIndex(sceneAtoms);
+
 	// Now append all subatoms.
 	//qDebug("DaAtom::ListSceneAtoms - apath %d", apath.count());
 	bool inEnv = false;

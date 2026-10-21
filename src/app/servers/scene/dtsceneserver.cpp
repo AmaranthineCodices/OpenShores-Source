@@ -108,6 +108,8 @@ void DtSceneServer::run()
 		return;
 	}
 
+	tcpSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+
 	m_tmConnect.Set();
 	m_LastRxMSecs = QDateTime::currentMSecsSinceEpoch();
 	QString peerAddr = tcpSocket.peerAddress().toString();

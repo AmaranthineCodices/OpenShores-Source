@@ -62,6 +62,10 @@ void DtClient::run()
 	// event loop. This ensures that Qt will not try to deliver events to our socket
 	// from the main thread while we are accessing it from DtClient::run().
 	QTcpSocket tcpSocket;
+	QObject::connect(&tcpSocket, &QAbstractSocket::connected, [&tcpSocket]()
+	{
+		tcpSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+	});
 	//connect(&tcpSocket, SIGNAL(readyRead()), SLOT(RxData()));
 	//connect(&tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
 			//SLOT(NetworkError(QAbstractSocket::SocketError)));

@@ -507,9 +507,18 @@ void DtDb::LoadScDesigns()
 	g_AuDb.UnlockScDesignsNeeded();
 
 	// Insure the designs used by pirates are loaded.
+	QList<quint32> pirateDesigns;
 	const DgData& gd = g_Au.LockDataForRead();
-	gd.PirateScBlueprints(designsNeeded);
+	gd.PirateScBlueprints(pirateDesigns);
 	g_Au.UnlockData();
+	if(!pirateDesigns.isEmpty())
+	{
+		const DgData& pdd = g_Au.LockScDesignsForRead();
+		for(quint32 designId : qAsConst(pirateDesigns))
+			if(!pdd.ScDesignIsLoaded(designId))
+				designsNeeded.append(designId);
+		g_Au.UnlockScDesigns();
+	}
 
 	if(designsNeeded.isEmpty() && archDesignsNeeded.isEmpty())
 		return;	// Nothing to load.
@@ -666,9 +675,18 @@ void DtDb::LoadBdDesigns()
 	g_AuDb.UnlockBdDesignsNeeded();
 
 	// Insure the designs used by pirates are loaded.
+	QList<quint32> pirateDesigns;
 	const DgData& gd = g_Au.LockDataForRead();
-	gd.PirateBdBlueprints(designsNeeded);
+	gd.PirateBdBlueprints(pirateDesigns);
 	g_Au.UnlockData();
+	if(!pirateDesigns.isEmpty())
+	{
+		const DgData& pdd = g_Au.LockBdDesignsForRead();
+		for(quint32 designId : qAsConst(pirateDesigns))
+			if(!pdd.BdDesignIsLoaded(designId))
+				designsNeeded.append(designId);
+		g_Au.UnlockBdDesigns();
+	}
 
 	if(designsNeeded.isEmpty() && archDesignsNeeded.isEmpty())
 		return;	// Nothing to load.
@@ -2750,6 +2768,28 @@ void DtDb::LoadAssignedAtoms()
 		if(m_eDbStatus == Loaded && idSectors.empty())
 			return;	// Nothing to do. When NotLoaded, must load Universe and Galaxy.
 
+		// Check to see if anything has changed, as in solar system assigned/deassigned.
+		m_LoadedLock.lock();
+		AuIdList loaded(m_Loaded);
+		m_LoadedLock.unlock();
+		bool anyChange = false;
+		if((unsigned int)loaded.size() != idSectors.size())
+			anyChange = true;
+		else
+		{
+			// The list of loaded systems and the list of assigned systems have the same number of entries.
+			// Check each system id in case one left and another arrived in the same time period.
+			for(AuIdList::const_iterator sli = loaded.cbegin(); sli != loaded.cend(); sli++)
+				if(idSectors.find(*sli) == idSectors.end())
+				{
+					anyChange = true;
+					break;
+				}
+		}
+
+		if(m_eDbStatus == Loaded && !anyChange)
+			return;
+
 		// Open the database before locking the root mutex.
 		QSqlDatabase db = QSqlDatabase::database("AuUniverse", false);
 		if(!OpenDatabase(db))
@@ -2775,25 +2815,6 @@ void DtDb::LoadAssignedAtoms()
 			// Go to 'Loaded' state since the universe loaded ok. All other atoms come and go as assigned/needed.
 			m_eDbStatus = Loaded;
 			emit FinishedInit();
-		}
-
-		// Check to see if anything has changed, as in solar system assigned/deassigned.
-		m_LoadedLock.lock();
-		AuIdList loaded(m_Loaded);
-		m_LoadedLock.unlock();
-		bool anyChange = false;
-		if((unsigned int)loaded.size() != idSectors.size())
-			anyChange = true;
-		else
-		{
-			// The list of loaded systems and the list of assigned systems have the same number of entries.
-			// Check each system id in case one left and another arrived in the same time period.
-			for(AuIdList::const_iterator sli = loaded.cbegin(); sli != loaded.cend(); sli++)
-				if(idSectors.find(*sli) == idSectors.end())
-				{
-					anyChange = true;
-					break;
-				}
 		}
 
 		// Load each individual sector that is assigned to me.
@@ -2884,6 +2905,31 @@ void DtDb::LoadAssignedAtoms()
 		if(m_eDbStatus == Loaded && idSystems.isEmpty())
 			return;	// Database is loaded but no systems are assigned yet. Wait for a system assignment before doing anything.
 
+		// Check to see if anything has changed, as in solar system assigned/deassigned.
+		m_LoadedLock.lock();
+		AuIdList loaded(m_Loaded);
+		m_LoadedLock.unlock();
+		bool anyChange = false;
+		if(loaded.count() != idSystems.count())
+			anyChange = true;
+		else
+		{
+			// The list of loaded systems and the list of assigned systems have the same number of entries.
+			// Check each system id in case one left and another arrived in the same time period.
+			for(AuIdList::const_iterator sli = loaded.cbegin(); sli != loaded.cend(); sli++)
+				if(!idSystems.contains(*sli))
+				{
+					anyChange = true;
+					break;
+				}
+		}
+
+		m_muAtomTransactions.lock();
+		bool arrivalsWaiting = !m_ArrivingTravelers.isEmpty() || !m_ArrivingHengeTeleport.isEmpty();
+		m_muAtomTransactions.unlock();
+		if(m_eDbStatus == Loaded && !anyChange && !arrivalsWaiting)
+			return;
+
 		// Open the database before locking the root mutex.
 		QSqlDatabase db = QSqlDatabase::database("AuUniverse", false);
 		if(!OpenDatabase(db))
@@ -2909,25 +2955,6 @@ void DtDb::LoadAssignedAtoms()
 			// Go to 'Loaded' state since the universe loaded ok. All other atoms come and go as assigned/needed.
 			m_eDbStatus = Loaded;
 			emit FinishedInit();
-		}
-
-		// Check to see if anything has changed, as in solar system assigned/deassigned.
-		m_LoadedLock.lock();
-		AuIdList loaded(m_Loaded);
-		m_LoadedLock.unlock();
-		bool anyChange = false;
-		if(loaded.count() != idSystems.count())
-			anyChange = true;
-		else
-		{
-			// The list of loaded systems and the list of assigned systems have the same number of entries.
-			// Check each system id in case one left and another arrived in the same time period.
-			for(AuIdList::const_iterator sli = loaded.cbegin(); sli != loaded.cend(); sli++)
-				if(!idSystems.contains(*sli))
-				{
-					anyChange = true;
-					break;
-				}
 		}
 
 		QMap<AuId, AuPoint> mySectors[GALAXY_Count];	// Sectors containing assigned systems. Key is sector; value is sector loc.

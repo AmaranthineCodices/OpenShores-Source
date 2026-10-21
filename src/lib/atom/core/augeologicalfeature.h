@@ -25,6 +25,29 @@ class AuScFaceList;
 class DeConstructionProcess;
 class DaWorldLL;
 
+#include <QAtomicInt>
+
+struct AUATOM_DLL AuGeoReach
+{
+	mutable QAtomicInt	state;
+	mutable AuPoint		mid;
+	mutable double		halfAngle;
+	mutable double		feet;
+
+	AuGeoReach() : state(0), halfAngle(0), feet(0) {}
+	AuGeoReach(const AuGeoReach&) : state(0), halfAngle(0), feet(0) {}
+	AuGeoReach& operator=(const AuGeoReach&)
+	{
+		state.storeRelease(0);
+		return *this;
+	}
+	inline void Reset()
+	{
+		state.storeRelease(0);
+	}
+	bool Beyond(const AuGlobeLLF& a, const AuGlobeLLF& b, double reach, const AuPoint& unit, double radius) const;
+};
+
 class AUATOM_DLL AuGeologicalFeature
 {
 protected:
@@ -65,6 +88,13 @@ public:
 	// Ignores anything that can be man made, such as roads, landscapers and bomb craters.
 	// Returns the adjusted altitude. Will be the same as 'altMSL' if no adjustment is made.
 	virtual double AdjustAltMSLUndeveloped(const DaWorldLL& llworld, const AuGlobeLL& ll, double altMSL) const = 0;
+
+	virtual bool OutOfReach(const AuPoint& unit, double radius) const
+	{
+		Q_UNUSED(unit);
+		Q_UNUSED(radius);
+		return false;
+	}
 
 	virtual float AlignmentRot(const DaWorldLL& llworld, const AuGlobeLLF& alignLL) const
 	{
@@ -365,6 +395,9 @@ inline QDataStream& operator>>(QDataStream& in, AuGeologicalFeature& geo)
 
 class AUATOM_DLL AuGeologicalFeatures : public QList<AuGeologicalFeature*>
 {
+public:
+	static bool s_SkipOutOfReach;
+
 public:	// Operators
 	void operator<<(QDataStream& in);
 	void operator>>(QDataStream& out) const;
@@ -1219,6 +1252,7 @@ protected:
 	float								m_StartMSL;				// Altitude at the start of the road, at m_StartLL.
 	AuTime								m_TimeCreated;			// Time this feature was created.
 	float								m_Width;				// Width of the road.
+	AuGeoReach							m_Reach;
 
 public:
 	// 'cp' can be null to start out fully constructed.
@@ -1240,6 +1274,7 @@ public:
 			int& onRoadOrGrader, AuTime& newest) const;
 
 	virtual double AdjustAltMSLUndeveloped(const DaWorldLL& llworld, const AuGlobeLL& ll, double altMSL) const;
+	virtual bool OutOfReach(const AuPoint& unit, double radius) const;
 
 	virtual float AlignmentRot(const DaWorldLL& llworld, const AuGlobeLLF& alignLL) const;
 
@@ -1604,6 +1639,7 @@ protected:
 	float								m_StartMSL;				// Altitude at the start of the landscape area, at m_StartLL.
 	AuTime								m_TimeCreated;			// Time this feature was created.
 	float								m_Width;				// Width of the landscape area.
+	AuGeoReach							m_Reach;
 
 public:
 	// 'cp' can be null to start out fully constructed.
@@ -1624,6 +1660,7 @@ public:
 			int& onRoadOrGrader, AuTime& newest) const;
 
 	virtual double AdjustAltMSLUndeveloped(const DaWorldLL& llworld, const AuGlobeLL& ll, double altMSL) const;
+	virtual bool OutOfReach(const AuPoint& unit, double radius) const;
 
 	virtual AuGeologicalFeature* Clone() const;
 

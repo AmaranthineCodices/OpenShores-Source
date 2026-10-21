@@ -10,6 +10,7 @@
 #include "auatom.h"
 #include "audef.h"
 #include <QList>
+#include <QSet>
 
 class AuAtomSet;
 class AuDomain;
@@ -37,13 +38,24 @@ public:	// Operators
 public:
 	// Adds an atom to the list if it's not already here.
 	// Test compares pointer value, not Id.
-	inline bool AddIfUnique(DaAtom* pAdd)
+	bool AddIfUnique(DaAtom* pAdd);
+
+	class AUATOM_DLL UniqueIndexScope
 	{
-		if(contains(pAdd))
-			return false;
-		append(pAdd);
-		return true;
-	}
+	public:
+		explicit UniqueIndexScope(DaAtomList& list);
+		~UniqueIndexScope();
+
+	private:
+		friend class DaAtomList;
+		UniqueIndexScope(const UniqueIndexScope&) = delete;
+		UniqueIndexScope& operator=(const UniqueIndexScope&) = delete;
+
+		DaAtomList*							m_List;
+		QSet<const DaAtom*>					m_Atoms;
+		int									m_IndexedSize;
+		UniqueIndexScope*					m_Previous;
+	};
 
 	// Adds an atom to the list if it's not already here.
 	// Test compares Id, not pointer value.

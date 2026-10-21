@@ -153,7 +153,7 @@ void DtTock::run()
 			m_UsedMs += loopTime.elapsed();
 			m_UseLock.unlock();
 			consecutiveAtoms = 0;
-			msleep(NominalTime()/10);
+			msleep(NominalTime()/5);
 		}
 		loopTime.restart();
 

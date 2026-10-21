@@ -3696,6 +3696,30 @@ AuGLTriVAO AuGlobeModelTri::VAO(AuOpenGLFunctions& GLf)
 	return m_VAO;
 }
 
+static bool CloneBdsNear(const DaWorldLL* world, const AuPoint& centre, double reach, AuEther& ether)
+{
+	bool any = false;
+	DaAtomList subs;
+	world->ListNormalSubatoms(subs);
+	for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
+	{
+		const DaBd* bd = dynamic_cast<const DaBd*>(*ai);
+		if(!bd)
+			continue;
+		AuGlobeLL ll;
+		const AuPoint site = bd->Transform().Project(bd->SiteCenter());
+		if(world->LLOfLoc(ll, site))
+		{
+			const double siteReach = qMax(bd->SiteHullBoxRadius().Length(), bd->RoughRadius()) + 300;
+			if(world->LocOfLL(ll).Distance(centre) > reach + siteReach)
+				continue;
+		}
+		ether.AddAtom(bd->Clone());
+		any = true;
+	}
+	return any;
+}
+
 // This guy does the grunt work to create the model of the globe.
 void AuGlobeModelTri::run()
 {
@@ -3780,20 +3804,11 @@ void AuGlobeModelTri::run()
 			}
 
 			// Must also clone the bds so terrain can conform to site meshes.
-			bool bds = false;
-			DaAtomList subs;
-			world->ListNormalSubatoms(subs);
-			for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
-			{
-				if(!dynamic_cast<const DaBd*>(*ai))
-					continue;
-
-				// Add the clone.
-				DaAtom* clone = (*ai)->Clone();
-				tempEther.AddAtom(clone);
-				bds = true;
-			}
-			if(bds)
+			const AuPoint c0 = world->LocOfLL(m_TerrainTri.m_LL0), c1 = world->LocOfLL(m_TerrainTri.m_LL1),
+					c2 = world->LocOfLL(m_TerrainTri.m_LL2);
+			const AuPoint mid = (c0 + c1 + c2) / 3;
+			const double reach = qMax(qMax(mid.Distance(c0), mid.Distance(c1)), mid.Distance(c2));
+			if(CloneBdsNear(world, mid, reach, tempEther))
 				clonedWorld->BdAdded();
 		}
 		g_Au.UnlockEtheriumDelete();
@@ -4012,21 +4027,28 @@ void AuFloraModel::run()
 		floraGlow = world->FloraGlow();
 
 		// Must also clone the bds so terrain can conform to site meshes.
-		bool bds = false;
-		DaAtomList subs;
-		world->ListNormalSubatoms(subs);
-		for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
+		AuGlobeLL groundLL;
+		if(world->LLOfLoc(groundLL, m_GroundLoc))
 		{
-			if(!dynamic_cast<const DaBd*>(*ai))
-				continue;
-
-			// Add the clones.
-			DaAtom* clone = (*ai)->Clone();
-			tempEther.AddAtom(clone);
-			bds = true;
+			const double range = qMax(qMax(g_Au.GrassViewRangeFt(), g_Au.ShrubViewRangeFt()), g_Au.TreeViewRangeFt())
+					+ 100 * FeetPerMeter();
+			if(CloneBdsNear(world, world->LocOfLL(groundLL), range * 1.42, tempEther))
+				clonedWorld->BdAdded();
 		}
-		if(bds)
-			clonedWorld->BdAdded();
+		else
+		{
+			bool bds = false;
+			DaAtomList subs;
+			world->ListNormalSubatoms(subs);
+			for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
+				if(dynamic_cast<const DaBd*>(*ai))
+				{
+					tempEther.AddAtom((*ai)->Clone());
+					bds = true;
+				}
+			if(bds)
+				clonedWorld->BdAdded();
+		}
 	}
 	g_Au.UnlockEtheriumDelete();
 	if(clonedWorld && gp_AuGlobal)
@@ -4176,21 +4198,27 @@ void AuRockModel::run()
 		genSeed = world->GenSeed();
 
 		// Must also clone the bds so terrain can conform to site meshes.
-		bool bds = false;
-		DaAtomList subs;
-		world->ListNormalSubatoms(subs);
-		for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
+		AuGlobeLL groundLL;
+		if(world->LLOfLoc(groundLL, m_GroundLoc))
 		{
-			if(!dynamic_cast<const DaBd*>(*ai))
-				continue;
-
-			// Add the clones.
-			DaAtom* clone = (*ai)->Clone();
-			tempEther.AddAtom(clone);
-			bds = true;
+			const double range = g_Au.RockViewRangeFt() + 100 * FeetPerMeter();
+			if(CloneBdsNear(world, world->LocOfLL(groundLL), range, tempEther))
+				clonedWorld->BdAdded();
 		}
-		if(bds)
-			clonedWorld->BdAdded();
+		else
+		{
+			bool bds = false;
+			DaAtomList subs;
+			world->ListNormalSubatoms(subs);
+			for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
+				if(dynamic_cast<const DaBd*>(*ai))
+				{
+					tempEther.AddAtom((*ai)->Clone());
+					bds = true;
+				}
+			if(bds)
+				clonedWorld->BdAdded();
+		}
 	}
 	g_Au.UnlockEtheriumDelete();
 	if(clonedWorld)
