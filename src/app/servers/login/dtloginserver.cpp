@@ -699,8 +699,14 @@ void DtLoginServer::run()
 			done = true;
 
 		// Wait for more data.
-		if(!packetRead && tcpSocket.state() == QAbstractSocket::ConnectedState)
+		if(!packetRead)
+		{
+			if(tcpSocket.state() != QAbstractSocket::ConnectedState)
+				break;
 			tcpSocket.waitForReadyRead(1000);
+		}
+		else if(!done)
+			msleep(5);
 	}
 
 	// Close the socket.

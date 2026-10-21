@@ -20,6 +20,8 @@
 #include <QSqlQuery>
 #include <QTextStream>
 
+static bool IsLockedOutNow(const AuPlayerRec& player);
+
 DtLoginDb::DtLoginDb(QObject* parent) : QThread(parent), m_semAlive(1)
 {
 	m_semAlive.acquire(1);	// I live...
@@ -558,6 +560,11 @@ void DtLoginDb::PerformQueuedOperations()
 			{
 				// Failed to select player record or the account is disabled.
 				(*it).m_Result = AuLoginAttempt::Failure;
+			}
+			else if(IsLockedOutNow(player))
+			{
+				(*it).m_Result = AuLoginAttempt::LockedOut;
+				DeleteLoginCacheItem(player.Id());
 			}
 			else if((*it).m_TestCredentialsOnly)
 			{
@@ -1209,6 +1216,14 @@ void DtLoginDb::CacheLoginAttempt(const QString& clientName, const AuPlayerRec& 
 	cache.m_LastAccess = QDateTime::currentDateTime();
 	cache.m_PlayerRec = player;
 	m_LoginCache.insert(player.LoginName(), cache);
+}
+
+static bool IsLockedOutNow(const AuPlayerRec& player)
+{
+	AuPlayerRec current;
+	if(current.Select(player.Id()))
+		return AcctIsLockedOut(current.AccountType());
+	return AcctIsLockedOut(player.AccountType());
 }
 
 // Try to load player record from the cache.
