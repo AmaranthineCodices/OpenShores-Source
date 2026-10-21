@@ -26,6 +26,7 @@
 
 using namespace std;
 #include <unordered_map>
+#include <QAtomicInt>
 
 class AuAtomChatList;
 class AuAtomManagerDispatch;
@@ -929,6 +930,20 @@ public:
 		Q_ASSERT(false);	// You must override this function to use it. See AuDbGlobal
 	}
 
+	inline int DbChangeGeneration() const
+	{
+		return m_DbChangeGeneration.loadAcquire();
+	}
+
+	inline void NextDbChangeGeneration()
+	{
+		m_DbChangeGeneration.fetchAndAddOrdered(1);
+	}
+
+private:
+	QAtomicInt							m_DbChangeGeneration;
+
+public:
 	virtual void AtomChanged(const AuId& /*id*/)
 	{
 		Q_ASSERT(false);	// You must override this function to use it. See AuDbGlobal

@@ -1374,6 +1374,14 @@ void DtServerChannel::ReadPacket(const QByteArray& ba, QTcpSocket& /*tcpSocket*/
 		}
 		break;
 
+	case P_SystemSaved:
+		{
+			AuId systemId;
+			systemId << block;
+			emit SystemSaved(systemId, Id());
+		}
+		break;
+
 	case P_WormholeExplored:
 		{
 			AuId systemId, toSystem;

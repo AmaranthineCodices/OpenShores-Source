@@ -39686,20 +39686,9 @@ void DaBd::SetModified(SET_MODIFIED_BITS notifyBits)
 {
 	if((notifyBits & NOTIFY_Database) && IsNormal())
 	{
-		// Buildings get modified a LOT. Lets ignore the database update if I've been modified recently.
-		m_ModDbLock.lockForRead();
-		AuElapsedTimer tmMod(m_tmModDb);
-		m_ModDbLock.unlock();
-		// Database saves every 5 minutes, unless there is a critical update. Only permit db updates hourly per building.
-		if(tmMod.ElapsedMin() < 60)
-			notifyBits = (SET_MODIFIED_BITS)(notifyBits & ~NOTIFY_Database);	// Turn off the database notify bit.
-		else
-		{
-			// We will notify the database. Reset the time until we allow it to happen again.
-			m_ModDbLock.lockForWrite();
-			m_tmModDb.restart();
-			m_ModDbLock.unlock();
-		}
+		const int gen = g_Au.DbChangeGeneration();
+		if(m_DbQueuedGen.fetchAndStoreOrdered(gen) == gen)
+			notifyBits = (SET_MODIFIED_BITS)(notifyBits & ~NOTIFY_Database);
 	}
 	DaCapsule::SetModified(notifyBits);
 }

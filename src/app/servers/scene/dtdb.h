@@ -13,6 +13,7 @@
 #include "auid.h"
 #include <map>
 #include <QList>
+#include <QMap>
 #include <QMutex>
 #include <QReadWriteLock>
 #include <QSemaphore>
@@ -352,6 +353,7 @@ signals:
 	void HandoffElsewhere(AuId person, AuId dest, quint8 rideAlso, bool limboRescue, QByteArray atomData, AuId returnOnFail);
 	void OfficerKilled(const AuId);
 	void NewSectorStored(AuId idSector);
+	void RevokedSystemSaved(AuId systemId);
 	void PersonDeleted(AuId personId);	// only emitted on master scene server
 
 	void BdDesignDeactivated(quint32 designId);
@@ -383,7 +385,7 @@ private:
 	void ProvideCityReports();
 	void StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAtom>& atomsDeparted, QList<AuSpawnAtom>& atomsSpawned,
 			QList<AuHengeTeleportAtom>& atomsHengeTeleported);
-	void StoreDatabase();
+	bool StoreDatabase();
 	void StoreEmpires(QSqlDatabase& db, QList<quint32>& empiresChanged);
 	void StoreBdDesigns(QSqlDatabase& db, QList<quint32>& designsDeactivated);
 	void StoreBdExchange(QSqlDatabase& db);
@@ -423,6 +425,9 @@ private:
 	// On scene manager, list of sectors that I have fully loaded.
 	QMutex					m_LoadedLock;
 	AuIdList				m_Loaded;
+
+	QMutex					m_RevokedSavesLock;
+	QMap<AuId, int>			m_RevokedSaves;
 
 private:
 	// Update notifications.

@@ -2887,11 +2887,6 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 				double jump;
 				if(!PlausibleReport(system, person, pos, vec, reportSeconds, jump))
 				{
-					m_PosRejects++;
-					if(m_PosRejects <= 5 || m_PosRejects % 100 == 0)
-						qWarning("POSITION REJECTED: person %u reported a jump of %.0f in %.2f s, from parent %u to parent %u (%u refused so far).",
-								m_idUnit.GetID(), jump, reportSeconds, person->ParentId().GetID(), pos.ParentId().GetID(),
-								m_PosRejects);
 					person->ForcePos(person->Pos());
 					updatePerson = false;
 				}
@@ -3133,12 +3128,6 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 						double jump;
 						if(!PlausibleReport(system, parentControl, parentPos, parentVec, reportSeconds, jump))
 						{
-							m_PosRejects++;
-							if(m_PosRejects <= 5 || m_PosRejects % 100 == 0)
-								qWarning("POSITION REJECTED: %s %u controlled by person %u reported a jump of %.0f in %.2f s, from parent %u to parent %u (%u refused so far).",
-										(const char*)parentControl->Name().toLatin1(), parentControl->Id().GetID(),
-										m_idUnit.GetID(), jump, reportSeconds, parentControl->ParentId().GetID(),
-										parentPos.ParentId().GetID(), m_PosRejects);
 							parentControl->SetControlled(m_idUnit);
 							parentControl->ForcePos(parentControl->Pos());
 							updateControl = false;
@@ -3368,15 +3357,7 @@ void DtSceneServer::ClientEnteredWormhole(const AuId& travId, const AuWormhole& 
 			{
 				const DaAtom* person = system->FindIdRecursive(m_idUnit);
 				AuWormhole serverWh = star->ServerWormhole(wh);
-				if(!ship->IsNormal())
-				{
-				}
-				else if(!IsOrCarries(ship, person))
-					qWarning("WORMHOLE REFUSED: ship %u is not carrying person %u.", ship->Id().GetID(), m_idUnit.GetID());
-				else if(!serverWh.IsValid())
-					qWarning("WORMHOLE REFUSED: ship %u (person %u) named a wormhole to %u that system %u does not have.",
-							ship->Id().GetID(), m_idUnit.GetID(), wh.ToSystem().GetID(), m_idSystem.GetID());
-				else
+				if(ship->IsNormal() && IsOrCarries(ship, person) && serverWh.IsValid())
 					star->TraverseWormhole(ship, serverWh, entryAngle);
 			}
 		}
@@ -3402,9 +3383,6 @@ void DtSceneServer::ClientCollision(const AuId& myId, const AuPoint& myChange, c
 				IsFinitePoint(hitFromLoc) && IsFinitePoint(hitResultVec) && hitResultVec.Length() <= maxSpeed;
 		if(me && hit && sane && IsOrCarries(me, system->FindIdRecursive(m_idUnit)))
 			me->Collide(myChange, myHitLoc, hit, hitChange, hitFromLoc, hitResultVec, hitShield);
-		else if(me && hit)
-			qWarning("COLLISION REFUSED: atom %u hitting %u, reported by person %u (%s).", myId.GetID(), hitId.GetID(),
-					m_idUnit.GetID(), sane ? "not theirs" : "impossible numbers");
 	}
 	g_Au.UnlockEtheriumDelete();
 }
@@ -3437,9 +3415,7 @@ void DtSceneServer::ClientDeadheaded(const AuId& travId, const AuPoint& departur
 	if(system)
 	{
 		DaAtom* travAtom = system->FindIdRecursive(travId);
-		if(travAtom && !IsOrCarries(travAtom, system->FindIdRecursive(m_idUnit)))
-			qWarning("DEADHEAD REFUSED: atom %u is not carrying person %u.", travId.GetID(), m_idUnit.GetID());
-		else if(travAtom)
+		if(travAtom && IsOrCarries(travAtom, system->FindIdRecursive(m_idUnit)))
 		{
 			AuPoint departLoc(departureLoc);
 			AuPoint serverLoc;
@@ -3450,8 +3426,6 @@ void DtSceneServer::ClientDeadheaded(const AuId& travId, const AuPoint& departur
 				const double gap = IsFinitePoint(departureLoc) ? serverLoc.Distance(departureLoc) : -1;
 				if(gap < 0 || gap > limit)
 				{
-					qWarning("DEADHEAD CORRECTED: atom %u (person %u) reported departing %.0f from where the server has it; "
-							"the server's position is used.", travId.GetID(), m_idUnit.GetID(), gap);
 					departLoc = serverLoc;
 				}
 			}

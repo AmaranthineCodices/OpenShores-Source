@@ -741,6 +741,8 @@ void AuSceneServerApp::StartThreads()
 
 		connect(m_tDb, SIGNAL(NewSectorStored(AuId)), SLOT(NewSectorStored(AuId)),
 				Qt::QueuedConnection);
+		connect(m_tDb, SIGNAL(RevokedSystemSaved(AuId)), SLOT(RevokedSystemSaved(AuId)),
+				Qt::QueuedConnection);
 		connect(m_tDb, SIGNAL(OfficerKilled(const AuId)), SLOT(OfficerKilledDown(const AuId)),
 				Qt::QueuedConnection);
 		if(g_Au.IsSceneMaster())
@@ -1939,8 +1941,12 @@ void AuSceneServerApp::AssignSolarSystems()
 	g_Au.UnlockEtheriumDelete();
 
 	// Create the assignment records.
+	const AuIdList awaitingSave = SystemsAwaitingSave();
 	for(QMap<AuId,AuMySystem>::const_iterator it = idSystemsToAssign.cbegin(); it != idSystemsToAssign.cend(); it++)
 	{
+		if(awaitingSave.Contains(it.key()))
+			continue;
+
 		// Determine if it was revoked from a server.
 		unsigned int avoidServerId = 0;
 		unordered_map<AuId, unsigned int, AuIdHash>::iterator ri = m_Revokations.find(it.key());
@@ -2152,6 +2158,73 @@ void AuSceneServerApp::SystemAssigned(AuId idSector, AuId idSystem, quint8 galax
 	if(m_MySystems.find(idSystem) == m_MySystems.end())			// true if the system is already assigned to me.
 		m_MySystems.insert(pair<AuId, AuAtomManaged*>(idSystem, new AuAtomManaged(idSystem, idSector, (GALAXY)galaxy)));
 	m_rwAtomManagers.unlock();
+}
+
+void AuSceneServerApp::RevokedSystemSaved(AuId idSystem)
+{
+	if(!g_Au.IsSceneWorker() || !m_tClientChannel)
+		return;
+	QByteArray ba;
+	QDataStream out(&ba, QIODevice::WriteOnly);
+	out.setVersion(QDataStream::Qt_4_1);
+	out << (quint8)DtServerChannel::P_SystemSaved;
+	out << idSystem;
+	m_tClientChannel->SendPacket(ba);
+	if(g_Au.m_LogMessages & LOG_LoadBalance)
+		g_Au.Log(tr("Revoked solar system %1 saved; told the manager").arg(idSystem.GetID()));
+}
+
+void AuSceneServerApp::RevokedSystemSavedUp(AuId idSystem, unsigned int serverId)
+{
+	if(!g_Au.IsSceneManager())
+		return;
+	m_AssignmentsLock.lock();
+	unordered_map<AuId, AuSystemAwaitingSave, AuIdHash>::iterator it = m_SystemsAwaitingSave.find(idSystem);
+	if(it != m_SystemsAwaitingSave.end() && (*it).second.m_FromServer == serverId)
+	{
+		qint64 ms = (*it).second.m_Since.elapsed();
+		m_SystemsAwaitingSave.erase(it);
+		if(g_Au.m_LogMessages & LOG_LoadBalance)
+			g_Au.Log(tr("Solar system %1 saved by worker %2 after %3 ms; it may be reassigned")
+					.arg(idSystem.GetID()).arg(serverId).arg(ms));
+	}
+	m_AssignmentsLock.unlock();
+}
+
+void AuSceneServerApp::AwaitSave(const AuId& systemId, unsigned int fromServer)
+{
+	AuSystemAwaitingSave wait;
+	wait.m_FromServer = fromServer;
+	wait.m_Since.start();
+	m_SystemsAwaitingSave[systemId] = wait;
+}
+
+AuIdList AuSceneServerApp::SystemsAwaitingSave()
+{
+	AuIdList waiting;
+	m_ServerChannel.LockServerList(__FILE__, __LINE__);
+	m_AssignmentsLock.lock();
+	unordered_map<AuId, AuSystemAwaitingSave, AuIdHash>::iterator it = m_SystemsAwaitingSave.begin();
+	while(it != m_SystemsAwaitingSave.end())
+	{
+		DtServerChannel* server = m_ServerChannel.ServerChannel((*it).second.m_FromServer);
+		if(!server || server->isFinished())
+		{
+			it = m_SystemsAwaitingSave.erase(it);
+		}
+		else if((*it).second.m_Since.elapsed() > 2 * d_MSecPerMin)
+		{
+			it = m_SystemsAwaitingSave.erase(it);
+		}
+		else
+		{
+			waiting.append((*it).first);
+			it++;
+		}
+	}
+	m_AssignmentsLock.unlock();
+	m_ServerChannel.UnlockServerList(__FILE__, __LINE__);
+	return waiting;
 }
 
 void AuSceneServerApp::SystemRevoked(AuId idSystem)
@@ -3693,6 +3766,7 @@ void AuSceneServerApp::ReassignSystem(AuId systemId, QString wrkServerName, quin
 				out << (quint8)DtServerChannel::P_SystemRevoked;
 				out << systemId;
 				server->SendPacket(ba);
+				AwaitSave(systemId, server->Id());
 
 				// Remove the assignment record.
 				// Deassigned systems will be reassigned in the next call to AssignSolarSystems.
@@ -3794,6 +3868,7 @@ void AuSceneServerApp::RevokeSolarSystem(const AuId& systemId)
 			out << (quint8)DtServerChannel::P_SystemRevoked;
 			out << systemId;
 			server->SendPacket(ba);
+			AwaitSave(systemId, server->Id());
 		}
 
 		// Remove the assignment record.

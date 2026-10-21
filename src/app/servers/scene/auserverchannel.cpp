@@ -346,6 +346,10 @@ void AuServerChannel::incomingConnection(qintptr socketDescriptor)
 			auSceneServerApp, SLOT(RenameWormhole(AuId, AuId, qint8, quint32, QString)),
 			Qt::QueuedConnection);
 
+	connect(tserver, SIGNAL(SystemSaved(AuId, unsigned int)),
+			auSceneServerApp, SLOT(RevokedSystemSavedUp(AuId, unsigned int)),
+			Qt::QueuedConnection);
+
 	//connect(tserver, SIGNAL(SectorVisited(AuId, quint32)),
 			//auSceneServerApp, SLOT(SectorVisitedUp(AuId, quint32)),
 			//Qt::QueuedConnection);

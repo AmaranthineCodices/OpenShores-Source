@@ -8282,14 +8282,12 @@ void DaAtom::SetPosAndOrientByEther(const AuAtomPos& pos, const AuEther* ether)
 
 static bool PosIsNumber(const DaAtom& atom, const AuAtomPos& pos, const char* where)
 {
+	Q_UNUSED(atom);
+	Q_UNUSED(where);
 	const AuMatrix4x4& t = pos.Transform();
 	for(int i = 0; i < 16; i++)
 		if(!std::isfinite(t[i]))
-		{
-			qWarning("POSITION NOT A NUMBER: %s refused it for atom %u %s (parent %u); the atom stays where it was.", where,
-					atom.Id().GetID(), (const char*)atom.Name().toLatin1(), pos.ParentId().GetID());
 			return false;
-		}
 	return true;
 }
 

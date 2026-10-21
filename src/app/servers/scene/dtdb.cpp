@@ -225,8 +225,37 @@ void DtDb::run()
 						g_AuDb.m_muAtomTransactions.unlock();
 						if(hasCrit || m_LastSave.ElapsedSec() > secsInterval)
 						{
-							StoreDatabase();
+							m_RevokedSavesLock.lock();
+							const QList<AuId> revoked = m_RevokedSaves.keys();
+							m_RevokedSavesLock.unlock();
+
+							bool committed = StoreDatabase();
 							m_LastSave.restart();	// Time DONE.
+
+							if(committed && !revoked.isEmpty())
+							{
+								AuIdList saved;
+								bool another = false;
+								m_RevokedSavesLock.lock();
+								for(const AuId& systemId : revoked)
+								{
+									QMap<AuId, int>::iterator ri = m_RevokedSaves.find(systemId);
+									if(ri == m_RevokedSaves.end())
+										continue;
+									if(++(*ri) >= 2)
+									{
+										saved.append(systemId);
+										m_RevokedSaves.erase(ri);
+									}
+									else
+										another = true;
+								}
+								m_RevokedSavesLock.unlock();
+								if(another)
+									g_AuDb.PostCriticalUpdates();
+								for(const AuId& systemId : saved)
+									emit RevokedSystemSaved(systemId);
+							}
 						}
 					}
 
@@ -298,11 +327,12 @@ void DtDb::run()
 	//qDebug("DtDb::run - finished");
 }
 
-void DtDb::StoreDatabase()
+bool DtDb::StoreDatabase()
 {
 	QSqlDatabase db = QSqlDatabase::database("AuUniverse", false);
 	if(!OpenDatabase(db))
-		return;	// Failed to open database?
+		return false;	// Failed to open database?
+	bool committed = true;
 
 	// Lists of things that need to be signaled after the changes are committed.
 	QList<quint32> empiresChanged;
@@ -323,6 +353,7 @@ void DtDb::StoreDatabase()
 	// This also insures that none of the data becomes visible until all of the data in the batch is saved.
 	if(!db.transaction())
 	{
+		committed = false;
 		QSqlError err = db.lastError();
 		qWarning("DtDb::StoreDatabase BEGIN TRANSACTION FAILED. '%s'", (const char*)err.text().toLatin1());
 	}
@@ -347,6 +378,7 @@ void DtDb::StoreDatabase()
 	// Commit our SQL batch.
 	if(!db.commit())
 	{
+		committed = false;
 		QSqlError err = db.lastError();
 		qWarning("DtDb::StoreDatabase COMMIT FAILED. '%s'", (const char*)err.text().toLatin1());
 	}
@@ -462,6 +494,7 @@ void DtDb::StoreDatabase()
 
 	// Save complete. Next save is not the first one anymore.
 	m_FirstSave = false;
+	return committed;
 }
 
 void DtDb::LoadScDesigns()
@@ -1605,6 +1638,7 @@ void DtDb::StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAt
 	}
 
 	// Grab copies of the lists of atom ids that need to be updated.
+	g_Au.NextDbChangeGeneration();
 	AuIdList addedAtomIds(g_AuDb.m_AddedAtomIds);
 	g_AuDb.m_AddedAtomIds.clear();
 	AuIdList changedAtomIds(g_AuDb.m_ChangedAtomIds);
@@ -4442,9 +4476,11 @@ void DtDb::SectorAssignmentRevoked(AuId sectorId)
 
 void DtDb::SystemAssignmentRevoked(AuId systemId)
 {
-	Q_UNUSED(systemId);
 	if(g_Au.m_LogMessages & LOG_Database)
 		qDebug() << "DtDb::SystemAssignmentRevoked" << systemId;
+	m_RevokedSavesLock.lock();
+	m_RevokedSaves.insert(systemId, 0);
+	m_RevokedSavesLock.unlock();
 	// Clear loaded systems list to force reeval of loaded systems.
 	m_LoadedLock.lock();
 	m_Loaded.clear();

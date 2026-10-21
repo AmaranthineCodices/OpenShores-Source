@@ -155,6 +155,7 @@ public:
 		P_RequestItemDesignIds,	// Sent by sub to boss to get more item design ids.
 		P_ItDesignDeactivated,
 		P_GovSetJoinPass,	// Sent by sub to boss with empire and passCrypt
+		P_SystemSaved,
 	};
 
 public:
@@ -607,6 +608,8 @@ signals:
 	void RenameSystem(AuId systemId, QString nuName);
 
 	void RenameWormhole(AuId systemId, AuId toSystem, qint8 polarity, quint32 empire, QString nuName);
+
+	void SystemSaved(AuId systemId, unsigned int serverId);
 
 	//void SectorVisited(AuId sectorId, quint32 empireId);
 

@@ -8,6 +8,7 @@
 #define DaBd_H
 
 #include "auatom.h"
+#include <QAtomicInt>
 #include "aubdreport.h"
 #include "aubank.h"
 #include "audamage.h"
@@ -527,6 +528,7 @@ protected:
 private:
 	mutable QReadWriteLock				m_ModDbLock;
 	AuElapsedTimer						m_tmModDb;
+	QAtomicInt							m_DbQueuedGen{-1};
 
 protected:
 	mutable QReadWriteLock				m_VesselLock;

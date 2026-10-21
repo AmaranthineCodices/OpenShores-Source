@@ -1374,6 +1374,10 @@ public slots:
 
 	void SystemRevoked(AuId idSystem);
 
+	void RevokedSystemSaved(AuId idSystem);
+
+	void RevokedSystemSavedUp(AuId idSystem, unsigned int serverId);
+
 	//void TravelElsewhere(AuId id, AuId destSystem, AuId destSector, QByteArray atomData);
 
 	//void TransferAtomUp(AuId id, AuId destSystem, AuId destSector, QByteArray atomData);
@@ -1750,6 +1754,15 @@ private:
 	unordered_map<AuId, unsigned int, AuIdHash>				m_Revokations;			// Revokations from subordinate servers.
 	unordered_map<AuId, AuSectorAssignment, AuIdHash>		m_SectorAssignments;	// Sectors assigned to subs of master server.
 	unordered_map<AuId, AuSystemAssignment, AuIdHash>		m_SystemAssignments;	// Systems assigned to subs of manager server.
+
+	struct AuSystemAwaitingSave
+	{
+		unsigned int						m_FromServer;
+		AuElapsedTimer						m_Since;
+	};
+	unordered_map<AuId, AuSystemAwaitingSave, AuIdHash>	m_SystemsAwaitingSave;
+	void AwaitSave(const AuId& systemId, unsigned int fromServer);
+	AuIdList SystemsAwaitingSave();
 
 private:
 	AuServerChannel	m_ServerChannel;	// Connections with worker servers.
