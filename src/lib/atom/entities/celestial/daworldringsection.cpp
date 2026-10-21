@@ -4726,7 +4726,7 @@ QColor DaWorldRingSection::AtmosphereColor() const
 			genSeed = 1;
 
 		m_RingSectionLock.lockForWrite();
-		m_AtmColor = DaWorldLL::AtmosphereColor(m_AtmType, m_byAtmDensity, genSeed);
+		m_AtmColor = AtmosphereColorStatic(m_AtmType, m_byAtmDensity, genSeed);
 		//qDebug() << "DaWorldRingSection::AtmosphereColor" << Id() << Name() << "color" << m_AtmColor;
 	}
 	QColor v(m_AtmColor);
@@ -4914,7 +4914,7 @@ void DaWorldRingSection::AnimateDeviceObjects(AuAtomRenderInfo& ari, const DaPer
 		tBody.RotateX(PI/2.);								// Stand the ring section on its edge.
 		tBody.RotateY(rangle - PI/2.);						// Orient to face the sun.
 	}
-	ChangePos(AuAtomPos(ParentId(), tBody));
+	ChangePosNotParent(AuAtomPos(ParentId(), tBody));
 
 	// Update shadow square rotation angle.
 	m_RotationAngle = CalcAngleOfRotation();
@@ -5007,7 +5007,7 @@ void DaWorldRingSection::Tick(const AuElapsedTimer& last, const AuElapsedTimer& 
 		m_RotationAngle = m_ThinkRotation;
 		AuMatrix4x4 tBody(m_ThinkTransform);
 		m_RingSectionLock.unlock();
-		ChangePos(AuAtomPos(ParentId(), tBody));
+		ChangePosNotParent(AuAtomPos(ParentId(), tBody));
 	}
 	DaWorldLL::Tick(last, now);
 }
@@ -5099,7 +5099,7 @@ void DaWorldRingSection::InitSystemPosition()
 	m_RingSectionLock.unlock();
 	m_ThinkRotation = v;
 	m_ThinkTransform = tBody;
-	ChangePos(AuAtomPos(ParentId(), tBody));
+	ChangePosNotParent(AuAtomPos(ParentId(), tBody));
 }
 
 // Provides information about the planet's terrain at a given surface location.
@@ -5269,7 +5269,7 @@ bool DaWorldRingSection::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int el
 			// Combine the movement vectors.
 			AuPoint nuMove(pMove->Vector());
 			if(!pHit->Vector().IsZero())
-				nuMove -= pMove->Transform().UnProjectVector(pHit->Vector());
+				nuMove -= pMove->Transform().UnProjectVector(pHit->Transform().ProjectVector(pHit->Vector()));
 			pMove->ForcePosMove(AuAtomPos(pHit->Id(), t), nuMove);
 			pMove->SetModified();
 			pMove->InvalidateEnvironment();	// Refresh environment on atom when it moves, in this thread.
@@ -5344,7 +5344,8 @@ bool DaWorldRingSection::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int el
 				AuMatrix4x4 tBody;
 				tBody.Translate(fnuloc-foldloc);
 				tBody *= pMove->Transform();
-				pMove->ChangePos(AuAtomPos(Id(), tBody));
+				if(!pMove->ChangePosNotParent(AuAtomPos(Id(), tBody)))
+					return false;
 				pMove->InvalidateEnvironmentRecursive();
 			}
 
@@ -5361,7 +5362,7 @@ bool DaWorldRingSection::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int el
 				pMove->ForcePosMove(AuAtomPos(ParentId(), t), nuMove);
 
 				// Immediately try moving into the next atom domain.
-				if(pMove->IsNormal())
+				if(pMove->IsNormal() && Parent())
 					Parent()->MoveSubatom(pMove, AuPoint(0,0,0), 0);
 			}
 			else

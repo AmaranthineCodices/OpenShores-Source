@@ -1523,6 +1523,13 @@ unsigned int DaSc::CargoCapacityVolume() const
 bool DaSc::CheckChildExit(const AuPoint &oldloc, const AuPoint &nuloc, const DaAtom* who) const
 {
 	Q_UNUSED(oldloc);
+	m_DesignLock.lockForRead();
+	const bool haveDesign = LockDesign() != 0;
+	UnlockDesign();
+	m_DesignLock.unlock();
+	if(!haveDesign)
+		return false;
+
 	const DaCreature* c = dynamic_cast<const DaCreature*>(who);
 	if(c)
 	{
@@ -7422,7 +7429,7 @@ bool DaSc::MoveSubatom(DaAtom* pMove, const AuPoint& vMove, int elapsedMs)
 			// Combine the movement vectors.
 			AuPoint nuMove(pMove->Vector());
 			if(!pHit->Vector().IsZero())
-				nuMove -= pMove->Transform().UnProjectVector(pHit->Vector());
+				nuMove -= pMove->Transform().UnProjectVector(pHit->Transform().ProjectVector(pHit->Vector()));
 			pMove->ForcePosMove(AuAtomPos(pHit->Id(), t), nuMove);
 			pMove->SetModified();
 			pMove->InvalidateEnvironmentRecursive();	// Refresh environment on atom when it moves, in this thread.
@@ -7441,7 +7448,8 @@ bool DaSc::MoveSubatom(DaAtom* pMove, const AuPoint& vMove, int elapsedMs)
 				AuMatrix4x4 tBody;
 				tBody.Translate(fnuloc-foldloc);
 				tBody *= pMove->Transform();
-				pMove->ForcePos(AuAtomPos(Id(), tBody));
+				if(!pMove->ChangePosNotParent(AuAtomPos(Id(), tBody)))
+					return false;
 				pMove->InvalidateEnvironmentRecursive();
 			}
 
@@ -7457,7 +7465,7 @@ bool DaSc::MoveSubatom(DaAtom* pMove, const AuPoint& vMove, int elapsedMs)
 				pMove->ForcePosMove(AuAtomPos(ParentId(), t), nuMove);
 
 				// Immediately try moving into the next atom domain.
-				if(pMove->IsNormal())
+				if(pMove->IsNormal() && Parent())
 					Parent()->MoveSubatom(pMove, AuPoint(0,0,0), 0);
 			}
 			else

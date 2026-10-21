@@ -602,6 +602,14 @@ void AuEther::ChangeParent(const AuId& chgId, const AuAtomPos& pos, bool orient)
 		{
 			// We may have found the lock for the old parent but the lock for the nu parent was not found.
 			// Sometimes on the client an atom arrives before its parent.
+			if(oli != m_SubatomLocks.end())
+			{
+				(*oli)->lockForWrite();
+				QMultiHash<AuId, AuAtomSet*>::iterator osi = m_Subatoms.find(oldParId);
+				if(osi != m_Subatoms.end())
+					(*osi)->remove(atom);
+				(*oli)->unlock();
+			}
 			AddRunaway(pos.ParentId(), atom->Id());
 		}
 		nuParentOk = true;
@@ -704,6 +712,8 @@ void AuEther::FixRunaways(const AuId& parentId)
 			(*nsi)->insert(atom);
 
 		(*nli)->unlock();
+
+		atom->InvalidateEnvTransform();
 	}
 }
 

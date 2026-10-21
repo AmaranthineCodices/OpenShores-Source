@@ -1803,6 +1803,8 @@ void DtDb::StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAt
 #endif
 	}
 
+	QMap<AuId, AuAtomPos> travelPositions;
+
 	if(g_Au.IsSceneWorker())
 	{
 		// Atoms changes have been saved.
@@ -1821,6 +1823,9 @@ void DtDb::StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAt
 				if(trav && trav->IsTraveling())
 				{
 					// Remove the traveler from my local data. It is not deleted from the database.
+					const AuAtomPos tp(trav->TravelPos());
+					if(tp.ParentId() == (*it).m_DestSystem)
+						travelPositions.insert(trav->Id(), tp);
 					ether.TrashAtom(trav->Id());
 
 					// List the travelers we actually find and remove, so the caller can signal their departures after we
@@ -1960,12 +1965,30 @@ void DtDb::StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAt
 			qtp.addBindValue((*tpi).m_DestSystem.GetID());
 			qtp.addBindValue(0);
 			qtp.addBindValue(0);
+			qtp.addBindValue(FeetPerSolarSystem()/2);
 			qtp.addBindValue(0);
 			qtp.addBindValue(0);
 			qtp.addBindValue(0);
-			qtp.addBindValue(FeetPerSolarSystem()/2);	// Put me above the solar system at a safe distance from the largest star.
 			if(!qtp.exec())
 				qWarning() << "DtDb::StoreAtoms - UPDATE galaxyLoc traveler atom FAILED" << stp;
+		}
+		else if(travelPositions.contains((*tpi).m_Traveler))
+		{
+			const AuAtomPos tp(travelPositions.value((*tpi).m_Traveler));
+			const AuPoint loc(tp.Translation()), rot(tp.Rotation());
+			QString stp = QString("UPDATE a_Atom SET idp=?, locx=?,locy=?,locz=?, rotx=?,roty=?,rotz=? WHERE id=%1;")
+				.arg((*tpi).m_Traveler.GetID());
+			QSqlQuery qtp(db);
+			qtp.prepare(stp);
+			qtp.addBindValue((*tpi).m_DestSystem.GetID());
+			qtp.addBindValue(loc.x);
+			qtp.addBindValue(loc.y);
+			qtp.addBindValue(loc.z);
+			qtp.addBindValue(rot.x);
+			qtp.addBindValue(rot.y);
+			qtp.addBindValue(rot.z);
+			if(!qtp.exec())
+				qWarning() << "DtDb::StoreAtoms - UPDATE dead-heading traveler atom FAILED" << stp;
 		}
 		else
 		{

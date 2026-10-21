@@ -410,6 +410,8 @@ private:
 	quint16			m_PosStationId;
 	AuPoint			m_PosVec;
 	quint16			m_PosWhichConsole;
+	AuElapsedTimer	m_PosReportTimer;
+	quint32			m_PosRejects = 0;
 };
 
 #endif // DtSceneServer_H

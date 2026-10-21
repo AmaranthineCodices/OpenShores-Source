@@ -122,6 +122,8 @@ void AuAtomPos::Rx(QDataStream& in)
 	// Parent id
 	if(hasWhat & 0x01)
 		in >> m_ParentId;
+	else
+		m_ParentId = AuId();
 
 	// Rotation
 	if(hasWhat & 0x10)

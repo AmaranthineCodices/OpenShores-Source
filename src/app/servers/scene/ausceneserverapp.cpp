@@ -8250,7 +8250,12 @@ void AuSceneServerApp::AtomTraveled(AuId traveler, AuId origSystem, AuId destSys
 			}
 
 			// Add the traveling atom to its destination solar system.
-			trav->ForcePos(AuAtomPos(destSystem, trav->Transform()));
+			const AuAtomPos travelPos(trav->TravelPos());
+			if(travelPos.ParentId() == destSystem)
+				trav->ForcePos(travelPos);
+			else
+				trav->ForcePos(AuAtomPos(destSystem, trav->Transform()));
+			trav->SetTravelPos(AuAtomPos());
 			if(destSys->FindPersonOnLineRecursive())
 				destSys->SetLastPersonVisited();
 			if(destSys->FindOfficerRecursive() || destSys->FindAIPersonRecursive())
@@ -8336,11 +8341,20 @@ void AuSceneServerApp::AtomTraveledUp(AuId traveler, AuId destSystem, AuId destS
 }
 
 // m_muPendingDep must already be locked on master and manager
+static QString TravelLogAtom(const DaAtom* atom)
+{
+	if(!atom)
+		return QStringLiteral("none");
+	QString text;
+	QDebug(&text).nospace() << *atom;
+	return text;
+}
+
 void AuSceneServerApp::AtomTraveledUp2(const AuId& id, const AuId& destSystem, const AuId& destSector, DaAtom* managedAtom)
 {
 	if(g_Au.m_LogMessages & LOG_Travel)
 		qDebug() << "AuSceneServerApp::AtomTraveledUp2 id" << id << "destSystem" << destSystem << "destSector" << destSector
-			<< "managedAtom" << *managedAtom;
+			<< "managedAtom" << TravelLogAtom(managedAtom);
 	if(g_Au.IsSceneMaster())
 	{
 		// I only get this message when an atom has departed a worker server and its manager is not assigned the destination sector.
@@ -8418,7 +8432,7 @@ bool AuSceneServerApp::AtomTraveledDown2(const AuId& id, const AuId& destSystem,
 {
 	if(g_Au.m_LogMessages & LOG_Travel)
 		qDebug() << "AuSceneServerApp::AtomTraveledDown2 id" << id << "destSystem" << destSystem << "destSector" << destSector
-			<< "managedAtom" << *managedAtom;
+			<< "managedAtom" << TravelLogAtom(managedAtom);
 	if(g_Au.IsSceneMaster())
 	{
 		DhSceneServer toServer = SectorServer(destSector);
@@ -8673,7 +8687,7 @@ void AuSceneServerApp::AtomTraveledStargateUp2(const AuId& id, const AuId& destG
 {
 	if(g_Au.m_LogMessages & LOG_Travel)
 		qDebug() << "AuSceneServerApp::AtomTraveledStargateUp2 id" << id << "destGalaxy" << destGalaxy
-			<< "destGalaxyLoc" << destGalaxyLoc << "managedAtom" << *managedAtom;
+			<< "destGalaxyLoc" << destGalaxyLoc << "managedAtom" << TravelLogAtom(managedAtom);
 	if(g_Au.IsSceneMaster())
 	{
 		// I only get this message when an atom has departed a worker server and its manager is not assigned the destination sector.
@@ -13068,7 +13082,7 @@ void AuSceneServerApp::AtomTraveledGalaxyLocUp2(const AuId& id, const AuId& dest
 {
 	if(g_Au.m_LogMessages & LOG_Travel)
 		qDebug() << "AuSceneServerApp::AtomTraveledGalaxyLocUp2 id" << id << "destGalaxy" << destGalaxy << "destGalaxyLoc"
-			<< destGalaxyLoc << "managedAtom" << *managedAtom;
+			<< destGalaxyLoc << "managedAtom" << TravelLogAtom(managedAtom);
 	if(g_Au.IsSceneMaster())
 	{
 		// I only get this message when an atom has departed a worker server and its manager is not assigned the destination sector.

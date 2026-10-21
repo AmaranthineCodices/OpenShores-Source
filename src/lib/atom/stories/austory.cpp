@@ -2688,22 +2688,22 @@ bool AuScriptLine::TestBranch(DaPerson& person, quint32 storyInstance, const AuT
 				break;
 			case F_LE:
 				// Evalulate value comparison operator.
-				result = (lastResult <= evalResult);
+				result = (lastResult.toInt() <= evalResult.toInt());
 				//qDebug() << "AuScriptLine::TestBranch" << lastResult << "F_LE" << evalResult << result;
 				break;
 			case F_LT:
 				// Evalulate value comparison operator.
-				result = (lastResult < evalResult);
+				result = (lastResult.toInt() < evalResult.toInt());
 				//qDebug() << "AuScriptLine::TestBranch" << lastResult << "F_LT" << evalResult << result;
 				break;
 			case F_GE:
 				// Evalulate value comparison operator.
-				result = (lastResult >= evalResult);
+				result = (lastResult.toInt() >= evalResult.toInt());
 				//qDebug() << "AuScriptLine::TestBranch" << lastResult << "F_GE" << evalResult << result;
 				break;
 			case F_GT:
 				// Evalulate value comparison operator.
-				result = (lastResult > evalResult);
+				result = (lastResult.toInt() > evalResult.toInt());
 				//qDebug() << "AuScriptLine::TestBranch" << lastResult << "F_GT" << evalResult << result;
 				break;
 			}
@@ -5730,10 +5730,10 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 
 			const DaWorld* world = ship->FindParentPlanetInEnv();	// May be 0.
 
-			DaNpc* npc = RestoreCharacterFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
+			DaNpc* npc = RestoreNpcFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
 			if(!npc)
 			{
-				// Prepare to spawn a nu character.
+				// Prepare to spawn a nu npc.
 				// Spawn the atom in the environment, relative to the same parent as the atom.
 				npc = new DaNpc(ROLE_Citizen, *dna, gender == Male ? AuDNABase::Alpha : AuDNABase::Beta, handedness, name);
 				if(stage == Juvenile)
@@ -6050,7 +6050,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			// Empire Id
 			quint32 empireId = EmpireId(empireSpec, person);
 
-			DaNpc* npc = RestoreCharacterFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
+			DaNpc* npc = RestoreNpcFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
 			if(!npc)
 			{
 				// Prepare to spawn a nu character.
@@ -6342,7 +6342,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6364,7 +6364,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6400,7 +6400,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(env)
 			{
-				DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+				DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 				if(npc)
 					charId = npc->Id();
 			}
@@ -6420,10 +6420,10 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
-			DaNpc* othernpc = env->FindCharacterRecursive(otherChar, storyInstance);
+			DaNpc* othernpc = env->FindNpcRecursive(otherChar, storyInstance);
 			if(!othernpc)
 				break;
 
@@ -6442,7 +6442,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6462,7 +6462,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6484,7 +6484,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6516,7 +6516,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -6536,7 +6536,7 @@ void AuScriptLine::Execute(const AuScript& script, quint32 storyInstance, DaPers
 			DaAtom* env = person.FindEnvironmentAtom();
 			if(!env)
 				break;	// This should never happen.
-			DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+			DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 			if(!npc)
 				break;
 
@@ -7456,7 +7456,7 @@ QVariant AuScriptLine::AtomCreateCharacter(DaPerson& person, const QMap<QString,
 
 	const DaWorld* homeWorld = person.FindParentPlanetInEnv();	// Can be 0
 
-	DaNpc* npc = RestoreCharacterFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
+	DaNpc* npc = RestoreNpcFromMemory(person, storyInstance, env, name, ap, AuCommStdChannel::CloseRangeDistance());
 	if(!npc)
 	{
 		// Prepare to spawn a nu character.
@@ -7504,7 +7504,7 @@ QVariant AuScriptLine::AtomCreateCharacter(DaPerson& person, const QMap<QString,
 	return QVariant::fromValue(charId.GetID());
 }
 
-DaNpc* AuScriptLine::RestoreCharacter(DaPerson& person, quint32 storyInstance, const QString& charName, double range,
+DaNpc* AuScriptLine::RestoreNpc(DaPerson& person, quint32 storyInstance, const QString& charName, double range,
 		QMap<QString, QVariant>& vars) const
 {
 	DaAtom* env = person.FindEnvironmentAtom();
@@ -7524,7 +7524,7 @@ DaNpc* AuScriptLine::RestoreCharacter(DaPerson& person, quint32 storyInstance, c
 			{
 				if(g_Au.m_LogMessages & LOG_Story)
 				{
-					QString logmsg = QObject::tr("AuScriptLine::RestoreCharacter moving npc %1, is beyond %2' range")
+					QString logmsg = QObject::tr("AuScriptLine::RestoreNpc moving npc %1, is beyond %2' range")
 						.arg(npc->Name())
 						.arg(range);
 					g_Au.Log(logmsg);
@@ -7544,7 +7544,7 @@ DaNpc* AuScriptLine::RestoreCharacter(DaPerson& person, quint32 storyInstance, c
 		return 0;
 
 	// Restore the character based on the person's memory of them.
-	DaNpc* npc = RestoreCharacterFromMemory(person, storyInstance, env, charName, person.Pos(), range);
+	DaNpc* npc = RestoreNpcFromMemory(person, storyInstance, env, charName, person.Pos(), range);
 	if(!npc)
 		return 0;
 	if(g_Au.m_LogMessages & LOG_Story)
@@ -7552,7 +7552,7 @@ DaNpc* AuScriptLine::RestoreCharacter(DaPerson& person, quint32 storyInstance, c
 		DaNpc* nnpc = dynamic_cast<DaNpc*>(env->FindIdRecursive(npc->Id()));
 		if(!nnpc)
 			qDebug() << "npc" << *npc << "not found after creation";
-		QString logmsg = QObject::tr("AuScriptLine::RestoreCharacter restored %1 %2 from memory, old %3 not found")
+		QString logmsg = QObject::tr("AuScriptLine::RestoreNpc restored %1 %2 from memory, old %3 not found")
 			.arg(npc->Id().GetID())
 			.arg(npc->Name())
 			.arg(charId.GetID());
@@ -7564,10 +7564,10 @@ DaNpc* AuScriptLine::RestoreCharacter(DaPerson& person, quint32 storyInstance, c
 	return npc;
 }
 
-DaNpc* AuScriptLine::RestoreCharacterFromMemory(DaPerson& person, quint32 storyInstance, DaAtom* env,
+DaNpc* AuScriptLine::RestoreNpcFromMemory(DaPerson& person, quint32 storyInstance, DaAtom* env,
 		const QString& charName, const AuAtomPos& charPos, double range) const
 {
-	DaNpc* npc = env->FindCharacterRecursive(charName, storyInstance);
+	DaNpc* npc = env->FindNpcRecursive(charName, storyInstance);
 	if(npc)
 	{
 		// Existing character atom was found.

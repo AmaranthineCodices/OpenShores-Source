@@ -883,7 +883,7 @@ void DaSolarSystem::PrepareForResourceScan(const QString& catalogName, const QSt
 	m_CatalogNameValid = true;
 	m_CatalogNameLock.unlock();
 
-	ChangePosAndOrient(AuAtomPos(ParentId(), systemT));
+	ChangePosAndOrientNotParent(AuAtomPos(ParentId(), systemT));
 
 	CreateContentsForScan(galaxy, genHab, genSeed, isCoreBlackHole);
 
@@ -1840,7 +1840,6 @@ bool DaSolarSystem::CheckChildExit(const AuPoint& foldloc, const AuPoint &fnuloc
 	if(ship && ship->IsInTow())
 		return false;
 
-	Q_UNUSED(foldloc);
 	Q_ASSERT(Parent());
 	const DaSector* ps = (const DaSector*)Parent();
 	if(!ps)
@@ -1859,8 +1858,13 @@ bool DaSolarSystem::CheckChildExit(const AuPoint& foldloc, const AuPoint &fnuloc
 	// the perimeter sectors that contain no solar systems; the test finds the sector that contains the loc and then returns its
 	// closest solar system to that location.
 	const DaSolarSystem* pcss = galaxy->FindClosestSolarSystemInSector(galaxyLoc);
-	if(!pcss || pcss == this)
+	if(pcss == this)
 		return false;					// Still closest to this solar system.
+	if(!pcss)
+	{
+		AuPoint oldGalaxyLoc = Location() + sysRot.Project(foldloc) / FeetPerParsec() + ps->Location();
+		return galaxy->FindClosestSolarSystemInSector(oldGalaxyLoc) != 0;
+	}
 
 	if(ship && ship->HasWarpFTLDrive() && ship->IsFTLDriveHot(ship->FTLWarpDrive()))
 	{
@@ -1991,7 +1995,7 @@ bool DaSolarSystem::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int /*elaps
 			// Combine the movement vectors.
 			AuPoint nuMove(pMove->Vector());
 			if(!pHit->Vector().IsZero())
-				nuMove -= pMove->Transform().UnProjectVector(pHit->Vector());
+				nuMove -= pMove->Transform().UnProjectVector(pHit->Transform().ProjectVector(pHit->Vector()));
 			pMove->ForcePosMove(AuAtomPos(pHit->Id(), t), nuMove);
 			pMove->SetModified();
 			pMove->InvalidateEnvironment();	// Refresh environment on atom when it moves, in this thread.
@@ -2010,7 +2014,8 @@ bool DaSolarSystem::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int /*elaps
 				AuMatrix4x4 t;
 				t.Translate(fmove);
 				pos.TransformBy(t);
-				pMove->ChangePos(pos);
+				if(!pMove->ChangePosNotParent(pos))
+					return false;
 				pMove->InvalidateEnvironmentRecursive();
 			}
 
@@ -4025,6 +4030,14 @@ bool DaSolarSystem::DepartedOnDeadHeading(DaAtom* departAtom, const AuPoint& dep
 		return true;
 	}
 
+	if(departAtom->IsTraveling())
+	{
+		if(g_Au.m_LogMessages & LOG_Travel)
+			qDebug("DaSolarSystem::DepartedOnDeadHeading %d %s is already traveling; second departure ignored.",
+					departAtom->Id().GetID(), (const char*)departAtom->Name().toLatin1());
+		return true;
+	}
+
 	// Some atoms are destroyed rather than depart the solar system.
 	if(!departAtom->DepartingSolarSystem())
 		return false;
@@ -4049,6 +4062,8 @@ bool DaSolarSystem::DepartedOnDeadHeading(DaAtom* departAtom, const AuPoint& dep
 	const DaSolarSystem* pcss = galaxy->FindClosestSolarSystemInSector(galaxyLoc);
 	if(!pcss)
 		return false;						// Prohibit movement into sectors with no solar systems.
+	if(pcss == this)
+		return false;
 
 	// Spacecraft can tow atoms with tractor beams.
 	AuIdList towed;
@@ -4078,19 +4093,25 @@ bool DaSolarSystem::DepartedOnDeadHeading(DaAtom* departAtom, const DaGalaxy* ga
 	// Change the world transformation to be subordinate to the nu parent. This can happen across sector boundaries.
 	const DaSector* phs = (const DaSector*)pcss->Parent();
 	AuMatrix4x4 ts, tm;
+	bool walked;
 	if(phs == ps)
 	{
 		// Hand it off directly to the closest solar system.
 		//qDebug("DaSolarSystem::DepartedOnDeadHeading - Handoff to nu solar system");
-		pcss->GetTransformRelativeToParent(ts, ps);
-		departAtom->GetTransformRelativeToParent(tm, ps);
+		walked = pcss->GetTransformRelativeToParent(ts, ps) && departAtom->GetTransformRelativeToParent(tm, ps);
 	}
 	else
 	{
 		// The atom is changing sectors.
 		//qDebug("DaSolarSystem::DepartedOnDeadHeading - Handoff to nu sector");
-		pcss->GetTransformRelativeToParent(ts, galaxy);
-		departAtom->GetTransformRelativeToParent(tm, galaxy);
+		walked = pcss->GetTransformRelativeToParent(ts, galaxy) && departAtom->GetTransformRelativeToParent(tm, galaxy);
+	}
+	if(!walked)
+	{
+		qWarning("DEADHEAD REFUSED: atom %u %s: its place relative to system %u could not be worked out.",
+				departAtom->Id().GetID(), (const char*)departAtom->Name().toLatin1(), pcss->Id().GetID());
+		departAtom->SetNormal();
+		return false;
 	}
 
 	// Player Statistics
@@ -4113,10 +4134,8 @@ bool DaSolarSystem::DepartedOnDeadHeading(DaAtom* departAtom, const DaGalaxy* ga
 		per->IncreaseSkill(AuSkill::SpaceExploration, 1);
 	}
 
-	//qDebug("DaSolarSystem::MoveSubatom - Handoff set transform");
 	AuMatrix4x4 t = ts.Inverse() * tm;
-	departAtom->ChangePosAndOrient(AuAtomPos(Id(), t));
-	departAtom->InvalidateEnvironmentRecursive();
+	departAtom->SetTravelPos(AuAtomPos(pcss->Id(), t));
 	departAtom->SetModified();
 
 	if(g_Au.m_LogMessages & LOG_Travel)

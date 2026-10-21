@@ -373,6 +373,8 @@ public:
 
 	bool TraverseWormhole(DaVessel* ship, const AuWormhole& wh, float entryAngle);
 
+	AuWormhole ServerWormhole(const AuWormhole& wh) const;
+
 	virtual ATOM_TYPE AtomType() const;
 
 	static QString Name(DaStar::TYPE eType, DaStar::SIZE eSize, unsigned char bySpecDec);

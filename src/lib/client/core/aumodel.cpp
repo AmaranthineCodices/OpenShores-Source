@@ -159,6 +159,10 @@ void AuModel::run()
 					// Restore locally known position of scene atom and the atom it is controlling, if any.
 					RestoreScenePosition(sceneRef);
 
+					sceneControl = sceneRef->ParentControlAtom();
+					if(sceneControl && !sceneControl->IsNormal())
+						sceneControl = 0;
+
 					// TickOnClient resolves building designs, paths, etc. at the root level; it does not move or reparent atoms.
 					ether.TickOnClient(m_LastTick);
 
@@ -593,6 +597,7 @@ void AuModel::PreserveScenePosition(DaPerson* sceneAtom)
 	{
 		m_PosParentAtRest = sceneControl->IsAtRest();
 		m_PosParent = sceneControl->Pos();
+		m_PosParentId = sceneControl->Id();
 		DaCreature* mount = dynamic_cast<DaCreature*>(sceneControl);
 		if(mount)
 		{
@@ -616,6 +621,7 @@ void AuModel::PreserveScenePosition(DaPerson* sceneAtom)
 	{
 		m_PosParentAtRest = false;
 		m_PosParent = AuAtomPos();
+		m_PosParentId = AuId();
 		for(int ps=0; ps<DpBody::PS_Count; ps++)
 			m_PosParentPose[ps] = AuPose::Init;
 		m_PosParentStationId = 0;
@@ -671,7 +677,12 @@ void AuModel::RestoreScenePosition(DaPerson* sceneAtom)
 				sceneAtom->CurrentPoses4(m_PosPose);
 			}
 		}
+	}
 
+	AuEther* posEther = sceneAtom->Ether();
+	DaAtom* posParent = m_PosValid && posEther ? posEther->FindAtom(m_Pos.ParentId()) : 0;
+	if(posParent && posParent->IsNormal())
+	{
 		// Position data is valid for scene atom.
 		sceneAtom->TiltHeadTo(m_PosHeadTilt);
 		sceneAtom->ChangePos(m_Pos);
@@ -730,7 +741,12 @@ void AuModel::RestoreScenePosition(DaPerson* sceneAtom)
 		// Position data is valid for atom controlled by the scene atom and it is still subordinate to the same parent as when the
 		// data was grabbed.
 		DaUnit* sceneControl = sceneAtom->ParentControlAtom();
-		if(sceneControl && sceneControl->Is(m_Pos.ParentId()))
+		if(sceneControl && !(sceneControl->Is(m_Pos.ParentId()) && sceneControl->Is(m_PosParentId)))
+		{
+			sceneControl->ApplySync();
+			sceneControl = 0;
+		}
+		if(sceneControl)
 		{
 			// Change parent restore parameters to match those in the sync controller data.
 			DaCreature* mount = dynamic_cast<DaCreature*>(sceneControl);
@@ -756,7 +772,8 @@ void AuModel::RestoreScenePosition(DaPerson* sceneAtom)
 				sceneControl->ControllerSync(m_PosParent, m_PosParentAtRest, m_PosParentVec, headTilt,
 						m_PosParentPose[AuAnimalPart::PS_Mouth], m_PosParentStationId, seatIndex);
 
-			if(!mount || !mount->IsBodyDyingOrDead())
+			DaAtom* controlParent = posEther ? posEther->FindAtom(m_PosParent.ParentId()) : 0;
+			if((!mount || !mount->IsBodyDyingOrDead()) && controlParent && controlParent->IsNormal())
 			{
 				// Position data is valid for controlled atom.
 				sceneControl->TiltHeadTo(headTilt);

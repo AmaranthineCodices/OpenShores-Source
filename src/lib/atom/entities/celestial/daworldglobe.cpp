@@ -4465,7 +4465,7 @@ QColor DaWorldGlobe::AtmosphereColor() const
 		m_GlobeLock.unlock();
 
 		m_GlobeLock.lockForWrite();
-		m_AtmColor = DaWorldSphere::AtmosphereColor(m_AtmType, m_byAtmDensity, Id().GetID());
+		m_AtmColor = AtmosphereColorStatic(m_AtmType, m_byAtmDensity, Id().GetID());
 	}
 	QColor v(m_AtmColor);
 	m_GlobeLock.unlock();
@@ -4879,7 +4879,7 @@ void DaWorldGlobe::Tick(const AuElapsedTimer& last, const AuElapsedTimer& now)
 		m_RotationAngle = m_ThinkRotation;
 		AuMatrix4x4 t(m_ThinkTransform);
 		m_GlobeLock.unlock();
-		ChangePos(AuAtomPos(ParentId(), t));
+		ChangePosNotParent(AuAtomPos(ParentId(), t));
 	}
 	DaWorldSphere::Tick(last, now);
 }
@@ -4964,7 +4964,7 @@ void DaWorldGlobe::InitSystemPosition()
 	m_ThinkRotation = rotationAngle;
 	m_ThinkTransform = tBody;
 	m_GlobeLock.unlock();
-	ChangePos(AuAtomPos(ParentId(), tBody));
+	ChangePosNotParent(AuAtomPos(ParentId(), tBody));
 }
 
 // Provides information about the planet's terrain at a given surface location.
@@ -5115,7 +5115,7 @@ bool DaWorldGlobe::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int elapsedM
 			// Combine the movement vectors.
 			AuPoint nuMove(pMove->Vector());
 			if(!pHit->Vector().IsZero())
-				nuMove -= pMove->Transform().UnProjectVector(pHit->Vector());
+				nuMove -= pMove->Transform().UnProjectVector(pHit->Transform().ProjectVector(pHit->Vector()));
 			pMove->ForcePosMove(AuAtomPos(pHit->Id(), t), nuMove);
 			pMove->SetModified();
 			pMove->InvalidateEnvironment();	// Refresh environment on atom when it moves, in this thread.
@@ -5190,7 +5190,8 @@ bool DaWorldGlobe::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int elapsedM
 				AuMatrix4x4 tBody;
 				tBody.Translate(fnuloc-foldloc);
 				tBody *= pMove->Transform();
-				pMove->ChangePos(AuAtomPos(Id(), tBody));
+				if(!pMove->ChangePosNotParent(AuAtomPos(Id(), tBody)))
+					return false;
 				pMove->InvalidateEnvironmentRecursive();
 			}
 
@@ -5207,7 +5208,7 @@ bool DaWorldGlobe::MoveSubatom(DaAtom *pMove, const AuPoint &vMove, int elapsedM
 				pMove->ForcePosMove(AuAtomPos(ParentId(), t), nuMove);
 
 				// Immediately try moving into the next atom domain.
-				if(pMove->IsNormal())
+				if(pMove->IsNormal() && Parent())
 					Parent()->MoveSubatom(pMove, AuPoint(0,0,0), 0);
 			}
 			else

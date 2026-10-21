@@ -274,9 +274,13 @@ double AuView::GetLocationInfo(QString& worldName, BODY_TYPE& bodyType, QString&
 		secDesc = sector->Description();
 
 		AuMatrix4x4 tsec;
-		person->GetTransformRelativeToParent(tsec, sector);
-		AuPoint secLoc = tsec.Translation();
-		secPos = QString("%1, %2, %3").arg(secLoc.x, 0,'f',4).arg(secLoc.y, 0,'f',4).arg(secLoc.z, 0,'f',4);
+		if(person->GetTransformRelativeToParent(tsec, sector))
+		{
+			AuPoint secLoc = tsec.Translation();
+			secPos = QString("%1, %2, %3").arg(secLoc.x, 0,'f',4).arg(secLoc.y, 0,'f',4).arg(secLoc.z, 0,'f',4);
+		}
+		else
+			secPos = "";
 	}
 	else
 	{
@@ -291,9 +295,13 @@ double AuView::GetLocationInfo(QString& worldName, BODY_TYPE& bodyType, QString&
 		galName = galaxy->Name();
 
 		AuMatrix4x4 tgal;
-		person->GetTransformRelativeToParent(tgal, galaxy);
-		AuPoint galLoc = tgal.Translation();
-		galPos = QString("%1, %2, %3").arg(galLoc.x, 0,'f',4).arg(galLoc.y, 0,'f',4).arg(galLoc.z, 0,'f',4);
+		if(person->GetTransformRelativeToParent(tgal, galaxy))
+		{
+			AuPoint galLoc = tgal.Translation();
+			galPos = QString("%1, %2, %3").arg(galLoc.x, 0,'f',4).arg(galLoc.y, 0,'f',4).arg(galLoc.z, 0,'f',4);
+		}
+		else
+			galPos = "";
 	}
 
 	// Weather information.

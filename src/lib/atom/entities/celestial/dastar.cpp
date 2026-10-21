@@ -2821,7 +2821,7 @@ void DaStar::InitSystemPosition()
 		tCompanion.Translate(AuPoint(OrbitRadius(m_chOrbit)*FeetPerAu(), 0));	// Translate to location relative to parent star.
 		tCompanion.RotateZ(-rangle);											// Rotate model space to the star's orbit angle.
 		tCompanion.RotateX(AxialTilt());
-		ChangePos(AuAtomPos(ParentId(), tCompanion));
+		ChangePosNotParent(AuAtomPos(ParentId(), tCompanion));
 	}
 }
 
@@ -3072,6 +3072,47 @@ bool DaStar::CheckPeerJoin(const AuPoint &/*foldloc*/, const AuPoint &fnuloc, co
 	if(rd < m_ZoneOfControl)
 		return true;
 	return false;
+}
+
+AuWormhole DaStar::ServerWormhole(const AuWormhole& wh) const
+{
+	if(wh.IsStargate())
+	{
+		AuWormhole found;
+		double best = -1;
+		m_StarLock.lockForRead();
+		for(AuStargateList::const_iterator gi = m_Stargates.cbegin(); gi != m_Stargates.cend(); gi++)
+		{
+			AuWormhole whg = AuWormhole("", (*gi).IsOrigin() ? AuWormhole::StargatePositive : AuWormhole::StargateNegative,
+					(*gi).ToGalaxy(), (*gi).ToGalaxyLoc());
+			if(whg.Polarity() != wh.Polarity() || whg.ToSystem() != wh.ToSystem())
+				continue;
+			double d = whg.GalaxyDestLoc().Distance(wh.GalaxyDestLoc());
+			if(best < 0 || d < best)
+			{
+				best = d;
+				found = whg;
+			}
+		}
+		m_StarLock.unlock();
+		if(found.IsValid())
+			found.SetStarDistance(Radius() * 1.1, AuPoint(0,0));
+		return found;
+	}
+
+	const DaSolarSystem* ss = dynamic_cast<const DaSolarSystem*>(FindEnvironmentAtom());
+	if(!ss)
+		return AuWormhole();
+	AuWormhole found;
+	const AuWormholeArray& whs = ss->LockWormholes();
+	for(AuWormholeArray::const_iterator it = whs.constBegin(); it != whs.constEnd(); it++)
+		if((*it).ToSystem() == wh.ToSystem() && (*it).Polarity() == wh.Polarity())
+		{
+			found = *it;
+			break;
+		}
+	ss->UnlockWormholes();
+	return found;
 }
 
 AuWormhole DaStar::CheckWormholeEntry(const AuPoint& oldloc, const AuPoint& nuloc, float& entryAngle) const

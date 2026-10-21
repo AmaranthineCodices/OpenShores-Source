@@ -30,6 +30,7 @@
 #include <QDataStream>
 #include <QUdpSocket>
 #include <QVariant>
+#include <cmath>
 
 DtSceneServer::DtSceneServer(unsigned int id, int socketDesc, QObject* parent) : QThread(parent)//, m_semAlive(1)
 {
@@ -2736,6 +2737,78 @@ void DtSceneServer::SwitchToCharacter(const AuId& personId)
 		qWarning() << "ERROR DtSceneServer::SwitchToCharacter current player" << m_idPlayer << "is not logged in?";
 }
 
+static bool IsFinitePoint(const AuPoint& p)
+{
+	return std::isfinite(p.x) && std::isfinite(p.y) && std::isfinite(p.z);
+}
+
+static bool SystemFrameLoc(const DaAtom* system, const DaAtom* parent, const AuPoint& loc, AuPoint& sysLoc)
+{
+	if(!parent)
+		return false;
+	if(parent == system)
+		sysLoc = loc;
+	else
+	{
+		AuMatrix4x4 t;
+		if(!parent->GetTransformRelativeToParent(t, system))
+			return false;
+		sysLoc = t.Project(loc);
+	}
+	return IsFinitePoint(sysLoc);
+}
+
+static double CarriedSpeed(const DaAtom* system, const DaAtom* atom)
+{
+	double speed = 0;
+	for(int depth = 0; atom && atom != system && depth < 16; depth++)
+	{
+		speed += atom->Vector().Length();
+		atom = atom->Parent();
+	}
+	return speed;
+}
+
+static bool PlausibleReport(DaSolarSystem* system, const DaAtom* atom, const AuAtomPos& pos, const AuPoint& vec,
+		double seconds, double& jump)
+{
+	jump = 0;
+	if(!IsFinitePoint(pos.Translation()) || !IsFinitePoint(vec))
+	{
+		jump = -1;
+		return false;
+	}
+	const DaAtom* newParent = system->FindIdRecursive(pos.ParentId());
+	for(const DaAtom* a = newParent; a && a != system; a = a->Parent())
+		if(a == atom)
+		{
+			jump = -2;
+			return false;
+		}
+	AuPoint was, now;
+	if(!SystemFrameLoc(system, atom->Parent(), atom->Pos().Translation(), was))
+		return true;
+	if(!SystemFrameLoc(system, newParent, pos.Translation(), now))
+	{
+		jump = -3;
+		return false;
+	}
+	jump = was.Distance(now);
+	const double speed = qMax(atom->Vector().Length(), qMin(vec.Length(), 10.0 * SpeedOfWarp()))
+		+ CarriedSpeed(system, atom->Parent())
+		+ (newParent != atom->Parent() ? CarriedSpeed(system, newParent) : 0.0);
+	const double limit = 1.0e6 + 4.0 * speed * qBound(0.25, seconds, 10.0);
+	return jump <= limit;
+}
+
+static bool IsOrCarries(const DaAtom* atom, const DaAtom* person)
+{
+	for(const DaAtom* a = person; a; a = a->Parent())
+		if(a == atom)
+			return true;
+	return false;
+}
+
 void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos& pos, AuPose pose[DpBody::PS_Count],
 		quint16 whichConsole, quint16 stationId, quint8 seatIndex, AuPoint& vec, bool parentAlso, bool parentAtRest,
 		AuAtomPos& parentPos, AuPose parentPose[DpBody::PS_Count], quint16 parentWhichConsole, quint16 parentStationId,
@@ -2767,6 +2840,23 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 		<< "pv" << parentVec;
 		*/
 
+	const bool rxAtRest = atRest, rxParentAlso = parentAlso, rxParentAtRest = parentAtRest;
+	const float rxHeadTilt = headTilt;
+	const AuAtomPos rxPos(pos), rxParentPos(parentPos);
+	const AuPoint rxVec(vec), rxParentVec(parentVec);
+	const quint16 rxWhichConsole = whichConsole, rxStationId = stationId;
+	const quint16 rxParentWhichConsole = parentWhichConsole, rxParentStationId = parentStationId;
+	const quint8 rxSeatIndex = seatIndex;
+	AuPose rxPose[DpBody::PS_Count], rxParentPose[DpBody::PS_Count];
+	for(int ps=0; ps<DpBody::PS_Count; ps++)
+	{
+		rxPose[ps] = pose[ps];
+		rxParentPose[ps] = parentPose[ps];
+	}
+
+	const double reportSeconds = m_PosReportTimer.isValid() ? m_PosReportTimer.elapsed() / 1000.0 : 10.0;
+	bool reportApplied = false;
+
 	AuId systemId(m_idSystem);
 	AuEther& ether = g_Au.LockEtheriumDelete();
 	DaSolarSystem* system = auSceneServerApp->AssignedSolarSystem(systemId, ether);
@@ -2790,9 +2880,26 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 				updatePerson = false;							// Scene atom's parent is a teleporter.
 			else if(!parent->IsNormal())
 				updatePerson = false;
+			else if(!person->IsNormal())
+				updatePerson = false;
+			else
+			{
+				double jump;
+				if(!PlausibleReport(system, person, pos, vec, reportSeconds, jump))
+				{
+					m_PosRejects++;
+					if(m_PosRejects <= 5 || m_PosRejects % 100 == 0)
+						qWarning("POSITION REJECTED: person %u reported a jump of %.0f in %.2f s, from parent %u to parent %u (%u refused so far).",
+								m_idUnit.GetID(), jump, reportSeconds, person->ParentId().GetID(), pos.ParentId().GetID(),
+								m_PosRejects);
+					person->ForcePos(person->Pos());
+					updatePerson = false;
+				}
+			}
 
 			if(updatePerson)
 			{
+				reportApplied = true;
 				// Apply the position updates to the person.
 				bool personChanged = false;
 				bool changedParent = false;
@@ -2831,9 +2938,14 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 							}
 						}
 
-						// Position the person.
-						person->ChangePosAndOrient(pos);
-						person->InvalidateEnvironment();
+						if(person->ChangePosFrom(curpos, pos, true))
+							person->InvalidateEnvironment();
+						else
+							personChanged = false;
+					}
+					else if(!person->ChangePosFrom(curpos, pos, true))
+					{
+						personChanged = false;
 					}
 					else
 					{
@@ -2844,7 +2956,6 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 						nloc = pos.Translation();
 
 						// Position the person.
-						person->ChangePosAndOrient(pos);
 						person->InvalidateEnvironment();
 
 						// Update turret position.
@@ -3015,6 +3126,24 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 						updateControl = false;
 						parentControl->SetControlled(m_idUnit);
 					}
+					else if(!parentControl->IsNormal())
+						updateControl = false;
+					else
+					{
+						double jump;
+						if(!PlausibleReport(system, parentControl, parentPos, parentVec, reportSeconds, jump))
+						{
+							m_PosRejects++;
+							if(m_PosRejects <= 5 || m_PosRejects % 100 == 0)
+								qWarning("POSITION REJECTED: %s %u controlled by person %u reported a jump of %.0f in %.2f s, from parent %u to parent %u (%u refused so far).",
+										(const char*)parentControl->Name().toLatin1(), parentControl->Id().GetID(),
+										m_idUnit.GetID(), jump, reportSeconds, parentControl->ParentId().GetID(),
+										parentPos.ParentId().GetID(), m_PosRejects);
+							parentControl->SetControlled(m_idUnit);
+							parentControl->ForcePos(parentControl->Pos());
+							updateControl = false;
+						}
+					}
 
 					if(updateControl)
 					{
@@ -3032,9 +3161,11 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 								// The control's parent atom is changing.
 								parentParentChanged = true;
 
-								// Position the control atom.
-								parentControl->ChangePosAndOrient(parentPos);
-								parentControl->InvalidateEnvironment();
+								if(parentControl->IsNormal() && parentControl->ChangePosFrom(curposc, parentPos, true))
+									parentControl->InvalidateEnvironment();
+							}
+							else if(!parentControl->IsNormal() || !parentControl->ChangePosFrom(curposc, parentPos, true))
+							{
 							}
 							else
 							{
@@ -3045,7 +3176,6 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 								pnloc = parentPos.Translation();
 
 								// Position the parent atom.
-								parentControl->ChangePosAndOrient(parentPos);
 								parentControl->InvalidateEnvironment();
 							}
 						}
@@ -3185,27 +3315,28 @@ void DtSceneServer::ClientPositionUpdate(bool atRest, float headTilt, AuAtomPos&
 		}
 	}
 	g_Au.UnlockEtheriumDelete();
+	if(reportApplied)
+		m_PosReportTimer.restart();
 
-	// Update last-reported position values.
-	m_PosAtRest = atRest;
-	m_PosHeadTilt = headTilt;
-	m_Pos = pos;
+	m_PosAtRest = rxAtRest;
+	m_PosHeadTilt = rxHeadTilt;
+	m_Pos = rxPos;
 	for(int ps=0; ps<DpBody::PS_Count; ps++)
-		m_PosPose[ps] = pose[ps];
-	m_PosSeatIndex = seatIndex;
-	m_PosVec = vec;
-	m_PosWhichConsole = whichConsole;
-	m_PosStationId = stationId;
-	m_PosParentAlso = parentAlso;
-	if(parentAlso)
+		m_PosPose[ps] = rxPose[ps];
+	m_PosSeatIndex = rxSeatIndex;
+	m_PosVec = rxVec;
+	m_PosWhichConsole = rxWhichConsole;
+	m_PosStationId = rxStationId;
+	m_PosParentAlso = rxParentAlso;
+	if(rxParentAlso)
 	{
-		m_PosParentAtRest = parentAtRest;
-		m_PosParent = parentPos;
+		m_PosParentAtRest = rxParentAtRest;
+		m_PosParent = rxParentPos;
 		for(int ps=0; ps<DpBody::PS_Count; ps++)
-			m_PosParentPose[ps] = parentPose[ps];
-		m_PosParentVec = parentVec;
-		m_PosParentWhichConsole = parentWhichConsole;
-		m_PosParentStationId = parentStationId;
+			m_PosParentPose[ps] = rxParentPose[ps];
+		m_PosParentVec = rxParentVec;
+		m_PosParentWhichConsole = rxParentWhichConsole;
+		m_PosParentStationId = rxParentStationId;
 	}
 	else
 	{
@@ -3234,7 +3365,20 @@ void DtSceneServer::ClientEnteredWormhole(const AuId& travId, const AuWormhole& 
 		{
 			DaVessel* ship = dynamic_cast<DaVessel*>(star->FindIdRecursive(travId));
 			if(ship)
-				star->TraverseWormhole(ship, wh, entryAngle);
+			{
+				const DaAtom* person = system->FindIdRecursive(m_idUnit);
+				AuWormhole serverWh = star->ServerWormhole(wh);
+				if(!ship->IsNormal())
+				{
+				}
+				else if(!IsOrCarries(ship, person))
+					qWarning("WORMHOLE REFUSED: ship %u is not carrying person %u.", ship->Id().GetID(), m_idUnit.GetID());
+				else if(!serverWh.IsValid())
+					qWarning("WORMHOLE REFUSED: ship %u (person %u) named a wormhole to %u that system %u does not have.",
+							ship->Id().GetID(), m_idUnit.GetID(), wh.ToSystem().GetID(), m_idSystem.GetID());
+				else
+					star->TraverseWormhole(ship, serverWh, entryAngle);
+			}
 		}
 	}
 	g_Au.UnlockEtheriumDelete();
@@ -3253,8 +3397,14 @@ void DtSceneServer::ClientCollision(const AuId& myId, const AuPoint& myChange, c
 	{
 		DaAtom* me = system->FindIdRecursive(myId);
 		DaAtom* hit = system->FindIdRecursive(hitId);
-		if(me && hit)
+		const double maxSpeed = 10.0 * SpeedOfWarp();
+		bool sane = IsFinitePoint(myChange) && IsFinitePoint(myHitLoc) && IsFinitePoint(hitChange) &&
+				IsFinitePoint(hitFromLoc) && IsFinitePoint(hitResultVec) && hitResultVec.Length() <= maxSpeed;
+		if(me && hit && sane && IsOrCarries(me, system->FindIdRecursive(m_idUnit)))
 			me->Collide(myChange, myHitLoc, hit, hitChange, hitFromLoc, hitResultVec, hitShield);
+		else if(me && hit)
+			qWarning("COLLISION REFUSED: atom %u hitting %u, reported by person %u (%s).", myId.GetID(), hitId.GetID(),
+					m_idUnit.GetID(), sane ? "not theirs" : "impossible numbers");
 	}
 	g_Au.UnlockEtheriumDelete();
 }
@@ -3287,8 +3437,26 @@ void DtSceneServer::ClientDeadheaded(const AuId& travId, const AuPoint& departur
 	if(system)
 	{
 		DaAtom* travAtom = system->FindIdRecursive(travId);
-		if(travAtom)
-			system->DepartedOnDeadHeading(travAtom, departureLoc);
+		if(travAtom && !IsOrCarries(travAtom, system->FindIdRecursive(m_idUnit)))
+			qWarning("DEADHEAD REFUSED: atom %u is not carrying person %u.", travId.GetID(), m_idUnit.GetID());
+		else if(travAtom)
+		{
+			AuPoint departLoc(departureLoc);
+			AuPoint serverLoc;
+			if(SystemFrameLoc(system, travAtom->Parent(), travAtom->Pos().Translation(), serverLoc))
+			{
+				const double seconds = m_PosReportTimer.isValid() ? m_PosReportTimer.elapsed() / 1000.0 : 10.0;
+				const double limit = 1.0e6 + CarriedSpeed(system, travAtom) * (2.0 + 4.0 * qBound(0.25, seconds, 30.0));
+				const double gap = IsFinitePoint(departureLoc) ? serverLoc.Distance(departureLoc) : -1;
+				if(gap < 0 || gap > limit)
+				{
+					qWarning("DEADHEAD CORRECTED: atom %u (person %u) reported departing %.0f from where the server has it; "
+							"the server's position is used.", travId.GetID(), m_idUnit.GetID(), gap);
+					departLoc = serverLoc;
+				}
+			}
+			system->DepartedOnDeadHeading(travAtom, departLoc);
+		}
 	}
 	g_Au.UnlockEtheriumDelete();
 }

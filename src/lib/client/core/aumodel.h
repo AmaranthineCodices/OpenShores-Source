@@ -57,6 +57,7 @@ private:
 	float								m_PosHeadTilt;			// Scene atom's head tilt.
 	AuId								m_PosId;				// Scene atom's id.
 	AuAtomPos							m_PosParent;
+	AuId								m_PosParentId;
 	bool								m_PosParentAtRest;
 	AuPose								m_PosParentPose[DpBody::PS_Count];		// Scene atom parent's current general pose.
 	quint16								m_PosParentStationId;
