@@ -14546,6 +14546,14 @@ void DaVessel::Tock(const AuTime& last, const AuTime& now, const AuScripts& scri
 		tockTrans.Add(DtTockTransaction(__FILE__, __LINE__, now));
 	}
 
+	// The scene server needs to know what channels are being monitored by atoms. This is done using the global data object.
+	// All ships with crew or troops monitor the Crew channel so they can answer beam-up requests and debark troops.
+	// All stations with transporter rooms monitor the Hail channel and and a channel named after them so they can answer
+	// beam-up requests.
+	// Channels decay after 20 minutes.
+	if(!InDesignEnvironment() && last.IsNewPeriod(now, d_MSecPerSec*10*60, Id().GetID()))
+		MonitorCommChannels();
+
 	if(IsNew())
 	{
 		// Post a request for a captain once per hour.
@@ -14803,7 +14811,13 @@ void DaVessel::Tock(const AuTime& last, const AuTime& now, const AuScripts& scri
 
 		if(IsSpaceStation())
 		{
-			if(IsOnGround() && dynamic_cast<const DaWorld*>(Parent()))
+			bool onTerrain = MoveResult() == CT_HitParent;
+			if(!onTerrain)
+			{
+				onTerrain = LockEnvironmentQuery()->IsOnGround();
+				UnlockEnvironmentQuery();
+			}
+			if(onTerrain && dynamic_cast<const DaWorld*>(Parent()))
 			{
 				// Stations that touch the terrain are destroyed instantly.
 				//qDebug("DaVessel::Tock %d destroying station on the ground", Id().GetID());
@@ -14839,14 +14853,6 @@ void DaVessel::Tock(const AuTime& last, const AuTime& now, const AuScripts& scri
 		// Monitor Damage Chance for Overclocked systems in use.
 		if(TestPowerSystem())
 			return;	// Ship was destroyed.
-
-		// The scene server needs to know what channels are being monitored by atoms. This is done using the global data object.
-		// All ships with crew or troops monitor the Crew channel so they can answer beam-up requests and debark troops.
-		// All stations with transporter rooms monitor the Hail channel and and a channel named after them so they can answer
-		// beam-up requests.
-		// Channels decay after 20 minutes. I'll refresh mine every 15 minutes.
-		if(now.MinsSinceEpoch()%15 == 0)
-			MonitorCommChannels();
 
 		if(!IsPirate() && IsSpaceStation() && SensorsWorking() && !InArena())
 		{

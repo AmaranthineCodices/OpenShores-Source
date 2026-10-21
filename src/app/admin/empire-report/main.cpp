@@ -2273,6 +2273,30 @@ bool AuEmpireReport::ReportPlayers(QSqlDatabase& dbUniverse, bool staticPages)
 	if(traceReport)
 		qDebug() << "personIds" << personIds.count() << QDateTime::currentDateTime();
 
+	{
+		QSqlDatabase dbLogin = QSqlDatabase::database("AuLogin", false);
+		if(dbLogin.isValid() && (dbLogin.isOpen() || dbLogin.open("audog", qEnvironmentVariable("AU_DB_PASSWORD", "Gold"))))
+		{
+			QSet<quint32> heldIds;
+			QSqlQuery qheld("SELECT idu1,idu2,idu3,idu4,idu5,idu6 FROM g_Player;", dbLogin);
+			bool readHeld = qheld.isActive();
+			while(qheld.next())
+				for(int slot = 0; slot < 6; slot++)
+					heldIds.insert(qheld.value(slot).toUInt());
+			if(readHeld && !qheld.lastError().isValid())
+			{
+				AuIdList heldPeople;
+				for(AuIdList::const_iterator pii = personIds.cbegin(); pii != personIds.cend(); pii++)
+					if(heldIds.contains((*pii).GetID()))
+						heldPeople.append(*pii);
+				personIds = heldPeople;
+			}
+			else
+				qWarning() << "Failed to read account avatars" << qheld.lastError();
+			dbLogin.close();
+		}
+	}
+
 	// Now load the entire person records for those people.
 	// Running in webCGI mode, DaPerson will load selfies for people who have them.
 	QMultiMap<QString, DaPerson*> players;	// Player data sorted alphabetically by upper-case name, duplicates allowed.

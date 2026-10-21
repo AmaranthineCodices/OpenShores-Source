@@ -573,8 +573,11 @@ public:
 
 	void GameSelect(quint8 gameType);
 
+public slots:
 	// The local player has started a game at a game table.
 	void GameStart(quint8 gameType, QByteArray gameSettings);
+
+public:
 
 	// The local player has finished their turn at a game table.
 	void GameTurn(quint8 gameType, QByteArray gameSettings);

@@ -2542,29 +2542,45 @@ bool DaWorldLL::IsSpawnAreaObstructed(const AuPoint& sloc, double radius) const
 	return false;
 }
 
-bool DaWorldLL::IsSpawnAreaObstructed(const AuPoint& sloc, quint32 designId, quint8 designQ, double roughRadius,
+bool DaWorldLL::IsSpawnAreaObstructed(const AuMatrix4x4& spawnAt, const AuScReport& shipDesign, const DaAtom* ignoreAtom,
 		DaVessel** replaceableShip) const
 {
 	*replaceableShip = 0;
 	if(!HasSubatoms())
 		return false;
 
+	AuMatrix4x4 place(spawnAt);
+	AuPoint sloc = spawnAt.Translation();
 	AuPoint loc(sloc);
 	float altMSL = AltitudeMSL(sloc);
 	float minConDepth = DeckHeight() * (2 + 1);
 	if(Hydrographics() && altMSL > -minConDepth && altMSL < 0)
+	{
 		ElevateLocMSL(loc, 0);	// Don't go under water except for under sea spawn.
+		place = AuMatrix4x4();
+		place.Translate(loc - sloc);
+		place = place * spawnAt;
+	}
 
-	AuBox locExt;
-	bool locExtValid = false;
-	double radius2 = roughRadius*roughRadius;	// squared
+	const double clearance = 3;
+	AuPoint hullMin, hullMax;
+	shipDesign.Extents(hullMin, hullMax);
+	double lift = -hullMin.z;
+	AuPoint boxMin(hullMin.x - clearance, hullMin.y - clearance, hullMin.z + lift);
+	AuPoint boxMax(hullMax.x + clearance, hullMax.y + clearance, hullMax.z + lift + clearance);
+	AuBox shipExt(boxMin, boxMax);
+	shipExt.Transform(place);
+
+	AuMatrix4x4 toShip = place.Inverse();
+	quint32 designId = shipDesign.DesignId();
+	quint8 designQ = shipDesign.Quality();
 	DaAtomList subs;
 	ListNormalSubatoms(subs);
 	for(DaAtomList::const_iterator ai = subs.cbegin(); ai != subs.cend(); ai++)
 	{
 		// Units are the only atoms that prevent spawning of anything.
 		DaUnit* unit = dynamic_cast<DaUnit*>(*ai);
-		if(!unit)
+		if(!unit || unit == ignoreAtom)
 			continue;
 		if(!unit->IsNormal())
 			continue;
@@ -2573,6 +2589,10 @@ bool DaWorldLL::IsSpawnAreaObstructed(const AuPoint& sloc, quint32 designId, qui
 		if(unit->AltitudeAGL() < -unit->ObstacleRadius())
 			continue;
 
+		AuPoint at = toShip.Project(unit->Location());
+		bool centerInside = at.x >= boxMin.x && at.x <= boxMax.x && at.y >= boxMin.y && at.y <= boxMax.y &&
+			at.z >= boxMin.z && at.z <= boxMax.z;
+
 		const DaCreature* creature = dynamic_cast<const DaCreature*>(*ai);
 		if(creature)
 		{
@@ -2580,48 +2600,22 @@ bool DaWorldLL::IsSpawnAreaObstructed(const AuPoint& sloc, quint32 designId, qui
 			const DaPerson* person = dynamic_cast<const DaPerson*>(*ai);
 			if(person && person->IsInvisibleOffLine())
 				continue;
-
-			double dist2 = creature->Location().Distance2(loc);
-			if(dist2 > radius2)
+			if(!centerInside)
 				continue;
 
 			// Creature is in the spawn radius.
 			return true;
 		}
 
-		bool blockedByUnit = false;
-
-		// Test center point location of unit.
-		double dist2 = unit->Location().Distance2(loc);
-		if(dist2 < radius2)
-		{
-			// Unit center point location is within the search radius of loc.
-			blockedByUnit = true;
-		}
-		else
+		bool blockedByUnit = centerInside;
+		if(!blockedByUnit)
 		{
 			// Units may be big/bulky. Check for intersection of extents boxes.
 			AuBox unitExt;
 			if(!unit->RoughExtents(unitExt))
 				continue;					// Unit has no extents box? Go with the center test result alone.
 			unitExt.Transform(unit->Transform());
-
-			if(!locExtValid)
-			{
-				// Create an extents box for the spawn location.
-				AuPoint vup = -GravityDir(loc);
-				AuPoint vx;
-				vup.ArbitraryAxis(vx);
-				AuPoint vy = vup.Cross(vx);
-				AuPoint max = vx*roughRadius + vy*roughRadius + vup*roughRadius;
-				AuPoint min = -max;
-				max += loc;
-				min += loc;
-				locExt.SetFromMinMax(min, max);
-				locExtValid = true;
-			}
-
-			if(locExt.DoesIntersect(unitExt))
+			if(shipExt.DoesIntersect(unitExt))
 				blockedByUnit = true;
 		}
 
@@ -4259,9 +4253,7 @@ int DaWorldLL::SpawnSc(DaBd* bd, const AuScReport& shipDesign, quint8 quality, c
 	for(QList<AuMatrix4x4>::iterator li = bldMs.begin(); li != bldMs.end(); li++)
 	{
 		spawnAt = bd->Transform() * *li;
-		AuPoint bldLoc = spawnAt.Translation();
-		if(!IsSpawnAreaObstructed(bldLoc, shipDesign.DesignId(), shipDesign.Quality(), shipDesign.RoughHullRadius(),
-					&replaceableShip))
+		if(!IsSpawnAreaObstructed(spawnAt, shipDesign, bd, &replaceableShip))
 		{
 			// The spawn area is not obstructed.
 			foundSpawnLoc = true;

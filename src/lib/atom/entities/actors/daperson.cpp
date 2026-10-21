@@ -1541,7 +1541,7 @@ void DaPerson::RenderLast(const AuMatrix4x4& projection, AuAtomRenderInfo& ari, 
 	else
 	{
 		// Calculate the location of the planet in eye space.
-		AuPoint globeP = rmod.Matrix(planet->Id()).Translation();
+		AuPoint globeP = model.UnProject(rmod.Matrix(planet->Id()).Translation());
 		if(bSnowShaders)
 		{
 			ari.re->GLSL().SnowShader().Select(projection);
@@ -7230,6 +7230,7 @@ void DaPerson::DecayMoveActions()
 		if(!m_tmLastBrake.isValid() || millis > controlDecayMs)
 		{
 			m_uiActions &= ~ACT_Brake;
+			m_PersonLock.unlock();
 
 			// If hovering because my brakes are on, but I can't hover, I must now resume gliding.
 			if(CurrentGeneralPose() == AuPose::Hover && !CanHover())
@@ -7247,6 +7248,8 @@ void DaPerson::DecayMoveActions()
 					mount->TickTock();
 				}
 			}
+
+			m_PersonLock.lockForWrite();
 		}
 	}
 
@@ -7872,7 +7875,10 @@ void DaPerson::Tock(const AuTime& last, const AuTime& now, const AuScripts& scri
 		// Process story lines in which this person is involved.
 		TickStories(scripts);
 
-		if(CurrentHunger())
+		if(InDesignEnvironment())
+		{
+		}
+		else if(CurrentHunger())
 		{
 			// I have food in my belly.
 			// City populations eat 20% of their hit points at every meal, which is every 13+ minutes.
@@ -16367,7 +16373,7 @@ void DaPerson::HandcraftItem(int mpid)
 
 					// Place the person aboard the vehicle.
 					ForceMountVehicle(vehicle);	// Deadlocks if gear is locked.
-					response = tr("Handcrafted %1 %2 Q%3.").arg(vehicle->Name()).arg(DbCommodity::QualityDesc(quality));
+					response = tr("Handcrafted %1 %2 Q%3.").arg(vehicle->Name()).arg(DbCommodity::QualityDesc(quality)).arg((int)quality);
 					Thought(response);
 
 					vehicle->TickTockRecursive();
@@ -19553,6 +19559,8 @@ void DaPerson::TransporterSetLongLat(const AuGlobeLLF& ll)
 // Borrow 'amount' from the bank.
 void DaPerson::BankLoan(double amount, const AuId& opBd)
 {
+	if(!(amount >= 1))
+		return;
 	if(InIndustry() != IID_Bank && InIndustry() != IID_Capitol)
 	{
 		Thought(tr("I must go to a bank to take out a loan."));
@@ -19600,6 +19608,8 @@ void DaPerson::BankLoan(double amount, const AuId& opBd)
 // Pay 'amount' toward my current bank loan debt.
 void DaPerson::BankPay(double amount, const AuId& opBd)
 {
+	if(!(amount > 0))
+		return;
 	if(InIndustry() != IID_Bank && InIndustry() != IID_Capitol)
 	{
 		Thought(tr("I must go to a bank to make a loan payment."));
@@ -19692,6 +19702,10 @@ QImage DaPerson::SelfPortrait(AuAtomRenderInfo& ari, const QSize& size, const QC
 	ari.re->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldfbo);
 	GLint oldrbo;
 	ari.re->glGetIntegerv(GL_RENDERBUFFER_BINDING, &oldrbo);
+	GLint oldViewport[4];
+	ari.re->glGetIntegerv(GL_VIEWPORT, oldViewport);
+	GLfloat oldClear[4];
+	ari.re->glGetFloatv(GL_COLOR_CLEAR_VALUE, oldClear);
 
 	// Attach the texture to the frame buffer so we can render to it
 	GLuint fbo;
@@ -19766,6 +19780,8 @@ QImage DaPerson::SelfPortrait(AuAtomRenderInfo& ari, const QSize& size, const QC
 	ari.re->glBindRenderbuffer(GL_RENDERBUFFER, oldrbo);
 	ari.re->glDeleteRenderbuffers(1, &depth_rb);
 	ari.re->glBindFramebuffer(GL_FRAMEBUFFER, oldfbo);
+	ari.re->glViewport(oldViewport[0], oldViewport[1], oldViewport[2], oldViewport[3]);
+	ari.re->glClearColor(oldClear[0], oldClear[1], oldClear[2], oldClear[3]);
 	ari.re->glDeleteFramebuffers(1, &fbo);
 
 	// At this point the texture is complete.

@@ -1476,8 +1476,8 @@ void DaWorldRingSection::RenderSeaGlobe(const AuMatrix4x4& projection, const AuM
 				// Construct a globe triangle.
 				AuGlobeTriTexN tri;
 				tri.m_Vert0 = AuGlobeVertTexN(terCoord0, terTex0, -GravityDir(terCoord0));
-				tri.m_Vert1 = AuGlobeVertTexN(terCoord1, terTex1, -GravityDir(terCoord0));
-				tri.m_Vert2 = AuGlobeVertTexN(terCoord2, terTex2, -GravityDir(terCoord0));
+				tri.m_Vert1 = AuGlobeVertTexN(terCoord1, terTex1, -GravityDir(terCoord1));
+				tri.m_Vert2 = AuGlobeVertTexN(terCoord2, terTex2, -GravityDir(terCoord2));
 
 				// Append the globe triangle to the list.
 				tris.append(tri);
@@ -1577,7 +1577,7 @@ void DaWorldRingSection::RenderSeaGlobe(const AuMatrix4x4& projection, const AuM
 			re.glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);		// Describe the data in the buffer.
 
 			// bind buffer for tangent vectors and copy data into buffer.
-			re.glBindBuffer(GL_ARRAY_BUFFER, m_SeaGlobe.Buffer(3));
+			re.glBindBuffer(GL_ARRAY_BUFFER, m_UnderseaGlobe.Buffer(3));
 			re.glBufferData(GL_ARRAY_BUFFER, globeTanIdx*sizeof(GLfloat), globeTan, GL_STATIC_DRAW);
 			re.glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);		// Describe the data in the buffer.
 

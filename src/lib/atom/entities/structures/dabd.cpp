@@ -38934,8 +38934,17 @@ void DaBd::SurveySite(const DaWorldLL& world, QHash<COMMODITYID, quint32>& rocks
 	if(iid != IID_DrillingRig && iid != IID_Mine && iid != IID_Well)
 		return;
 
+	AuPoint centre = SiteCenter();
+	double radius = RoughSiteRadius();
+	if(Structure() == BD_SeaSurfaceBuilding)
+	{
+		m_DesignLock.lockForRead();
+		centre = (m_Design.HullMin() + m_Design.HullMax()) / 2;
+		radius = m_Design.RoughHullRadius();
+		m_DesignLock.unlock();
+	}
 	QMap<AuResKey, AuGlobeRock> renderRocks;
-	world.CreateRocks(renderRocks, Transform().Project(SiteCenter()), world.GenSeed(), RoughSiteRadius(), false);
+	world.CreateRocks(renderRocks, Transform().Project(centre), world.GenSeed(), radius, false);
 	for(QMap<AuResKey, AuGlobeRock>::const_iterator di = renderRocks.cbegin(); di != renderRocks.cend(); di++)
 	{
 		// Skip resources that cannot be harvested by the industry.

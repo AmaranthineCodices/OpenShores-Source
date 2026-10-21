@@ -2426,7 +2426,7 @@ public:
 	// Returns true if the area is obstructed.
 	bool IsSpawnAreaObstructed(const AuPoint& loc, double radius) const;
 
-	bool IsSpawnAreaObstructed(const AuPoint& loc, quint32 designId, quint8 designQ, double roughRadius,
+	bool IsSpawnAreaObstructed(const AuMatrix4x4& spawnAt, const AuScReport& shipDesign, const DaAtom* ignoreAtom,
 			DaVessel** replaceableShip) const;
 
 	AuFloraDNA::ZONE LatitudeRegion(float latitude) const;

@@ -1087,12 +1087,14 @@ public:
 	{
 		for(unsigned int ilight=0; ilight<MaxLights(); ilight++)
 			m_Lights[ilight].m_bEnabled = false;
+		GLSL().InvalidateLights();
 	}
 
 	inline void DisableSuns()					// all suns without changing settings
 	{
 		for(int isun=0; isun<MAX_SUNS; isun++)
 			m_Suns[isun].m_Enabled = false;
+		GLSL().InvalidateSuns();
 		GLSL().InvalidateLights();
 	}
 
@@ -1104,6 +1106,7 @@ public:
 				m_Suns[isun].m_Enabled = false;
 				sunsDisabled.append(isun);
 			}
+		GLSL().InvalidateSuns();
 		GLSL().InvalidateLights();
 	}
 
