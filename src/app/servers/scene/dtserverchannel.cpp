@@ -2385,14 +2385,11 @@ void DtServerChannel::ListSystemsToRevoke(float loadToRevoke, AuIdList& revokeSy
 	// Take a guess at loads based on tick/tock times.
 	quint64 totalTick = 0;
 	quint64 emptyTick = 0;
-	quint64 peopleTick = 0;
 	for(unordered_map<AuId, AuSystemStatus, AuIdHash>::const_iterator sci = m_SubSystemClients.cbegin();
 			sci != m_SubSystemClients.cend(); sci++)
 	{
 		totalTick += (*sci).second.m_Tick;
-		if((*sci).second.m_Clients)
-			peopleTick += (*sci).second.m_Tick;
-		else
+		if(!(*sci).second.m_Clients)
 			emptyTick += (*sci).second.m_Tick;
 	}
 
@@ -2405,23 +2402,6 @@ void DtServerChannel::ListSystemsToRevoke(float loadToRevoke, AuIdList& revokeSy
 		{
 			if((*sci).second.m_Clients)
 				continue;	// Skip systems that have people logged into them in this pass.
-			if(!(*sci).second.m_Tick)
-				continue;	// Skip systems that are not ticking.
-			if((*sci).second.m_Tick <= tickToRevoke)
-			{
-				revokeSystems.append((*sci).first);
-				tickToRevoke -= (*sci).second.m_Tick;
-			}
-		}
-	}
-	if(peopleTick)
-	{
-		// Look for systems with people in them.
-		for(unordered_map<AuId, AuSystemStatus, AuIdHash>::const_iterator sci = m_SubSystemClients.cbegin();
-				sci != m_SubSystemClients.cend(); sci++)
-		{
-			if(!(*sci).second.m_Clients)
-				continue;	// Skip systems that have no people logged into them in this pass.
 			if(!(*sci).second.m_Tick)
 				continue;	// Skip systems that are not ticking.
 			if((*sci).second.m_Tick <= tickToRevoke)
