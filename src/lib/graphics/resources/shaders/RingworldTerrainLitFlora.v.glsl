@@ -6,6 +6,7 @@
 
 #version 150
 
+#ifndef PER_PIXEL_LIGHTING
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 // Lighting Structures and Functions
 
@@ -64,7 +65,7 @@ void computeSunLight(SunLight sun,
 
 	// Account for radius of solar disk.
 	float diskang = atan(sun.radius, distSun);
-	float sunang = acos(NdotL);
+	float sunang = acos(clamp(NdotL, -1., 1.));
 	float rd1 = cos(sunang + diskang);
 	float rd2 = cos(sunang - diskang);
 	NdotL = max(rd1, NdotL);
@@ -181,11 +182,14 @@ vec3 computeLighting(LightSources light,
 	// Clamp color values
 	return clamp(color, vec3(0,0,0), vec3(1,1,1));
 }
+#endif
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
 uniform float							fogDensity;				// Fog density for exponential fog calculation.
+#ifndef PER_PIXEL_LIGHTING
 uniform LightSources					light;					// Light sources.
+#endif
 uniform mat4							p;						// Projection matrix.
 uniform mat4							mv;						// Model view matrix.
 
@@ -194,7 +198,15 @@ in vec4									position;				// Incoming vertex location(xyz), snow coverage(w)
 in vec4									texCoordAltVeg;			// Incoming texture coordinate(xy), altitude(z), veg density(w)
 in vec2									paveCity;				// Pavement coverage(x), city presence(y)
 
+#ifdef PER_PIXEL_LIGHTING
+out vec4								vertLitScale;
+out vec3								vertLitP;
+out vec3								vertLitN;
+out float								vertLitCity;
+out float								vertLitVegDensity;
+#else
 out vec4								vertColor;				// Outgoing vertex color.
+#endif
 out vec3								vertFogSnowPave;		// Outgoing fog density(x), snow cover(y), pavement cover(z)
 out vec4								vertTexCoordAltVeg;		// Outgoing texture coordinate(xy), altitude(z), veg density(w)
 flat out float							vertPaveType;			// Pavement type must not be interpolated.
@@ -206,7 +218,15 @@ void main()
 	vertTexCoordAltVeg = texCoordAltVeg;						// Pass unmodified texture coordinate to the fragment shader.
 
 	// Calculate lighting using object space position and normal.
+#ifdef PER_PIXEL_LIGHTING
+	vertLitScale = vec4(1, 1, 1, 1);
+	vertLitP = position.xyz;
+	vertLitN = normal.xyz;
+	vertLitCity = paveCity.y;
+	vertLitVegDensity = texCoordAltVeg.w;
+#else
 	vertColor = vec4(computeLighting(light, position.xyz, normal.xyz, paveCity.y, texCoordAltVeg.w), 1);
+#endif
 
 	// Calculate fog density but save the effect for the fragment program.
 	// Fog density value is 1 for full fog, 0 for no fog.

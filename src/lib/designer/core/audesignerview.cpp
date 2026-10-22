@@ -2102,6 +2102,8 @@ void AuDesignerView::initializeGL()
 
 void AuDesignerView::paintGL()
 {
+	if(m_RenderInfo && m_RenderInfo->re)
+		m_RenderInfo->re->GLSL().RebuildIfStale();
 	bool showWait = m_bWaitingForScene || m_SceneAtomTransition || !auApp->IsSceneConnected();
 
 	//qDebug() << "AuDesignerView::paintGL";

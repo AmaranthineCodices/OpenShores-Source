@@ -42,6 +42,8 @@ protected:
 private:
 	mutable QReadWriteLock				m_BodyLock;				// Guards m_Body vars.
 	AuAnimalia*							m_Animalia;				// Constructed from DNA. Only DNA is serialized.
+	AuMatrix4x4							m_SunShadowBody;
+	AuMatrix4x4							m_SunShadowItem;
 	DpBody*								m_Body;					// Constructed from DNA. Only DNA is serialized.
 	AuHairStyle::STYLE					m_Haircut;
 	AuHairStyle::SHAVE					m_Shave;							
@@ -55,6 +57,15 @@ private:
 	AuVisage							m_MouthFinish;			// Pose to put the mouth in after it finished animating.
 	AuPose								m_MouthStationary;		// Mouth pose after animating. This is the last stationary pose set.
 	AuElapsedTimer						m_tmPoseChange;
+
+private:
+	mutable float						m_EasedAmbientR = 0;
+	mutable float						m_EasedAmbientG = 0;
+	mutable float						m_EasedAmbientB = 0;
+	mutable float						m_EasedSunLevel = 1;
+	mutable qint64						m_EasedAt = -1;
+
+	float GradualLight(float& ambientR, float& ambientG, float& ambientB, bool sunsBlocked) const;
 
 private:
 	mutable QReadWriteLock				m_HungerLock;			// Guards m_Hunger vars.
@@ -1326,10 +1337,17 @@ public:
 			DaAtomList& shadScRingworld,
 			DaAtomList& shadScRingworldFog);
 
+	void ItemInHandTransform(AuMatrix4x4& tcon);
+
 	// 'pass' is 0 to render everything, 1 for first pass only, 2 for second pass only
 	// 'renderLast' is only used when pass is 1.
 	virtual void RenderItemInHand(const AuMatrix4x4& projection, const AuMatrix4x4& model, AuAtomRenderInfo& ari, int pass,
 			const DaAtom* sceneAtom, AuRenderLastMap* renderLast);
+
+	virtual unsigned int SunShadowFamilies() const;
+	virtual unsigned int SunShadowVariants(int family) const;
+	virtual void RenderSunShadowDepth(AuAtomRenderInfo& ari, AuModelMatrixHash& rmod, const DaPerson* sceneAtom,
+			AuSunShadowPass& sp);
 
 	virtual void RenderLast(const AuMatrix4x4& projection, AuAtomRenderInfo& ari, AuModelMatrixHash& rmod,
 			const DaPerson* sceneAtom,

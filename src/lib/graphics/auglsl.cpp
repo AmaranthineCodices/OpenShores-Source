@@ -10,6 +10,8 @@
 #include "auglslerr.h"
 #include "auscface.h"
 #include "hashpack.h"
+#include <QCursor>
+#include <QGuiApplication>
 #include <QFile>
 
 const bool s_DebugGLSL = false;									// Set true to see debug messages generated in this file.
@@ -819,6 +821,33 @@ void AuScVAO::DrawSc(const AuGLSLScBase& shader, const GLuint effectTex[EFF_Coun
 
 AuGLSL::AuGLSL()
 {
+	m_GLf = 0;
+	m_MaxLights = 0;
+	m_VariantSerial = 0;
+	m_ShadowBodyCount = 0;
+	m_ShadowBodySerial = 1;
+	m_SunShadowFramebuffer = 0;
+	m_SunShadowTexture = 0;
+	m_SunShadowSize = 0;
+	m_SunShadowFailed = false;
+	m_SunShadowMapOn = false;
+	m_SunShadowMapSerial = 1;
+	m_SunShadowCascades.m_Count = 0;
+	m_SunShadowCascades2.m_Count = 0;
+	m_SunShadowLayers = 0;
+	m_LightShadowFramebuffer = 0;
+	m_LightShadowTexture = 0;
+	m_LightShadowSize = 0;
+	m_LightShadowLayers = 0;
+	m_LightShadowFailed = false;
+	m_LightShadowMaps.m_Count = 0;
+	m_LightShadowMaps.m_Size = 0;
+	m_LightShadowSerial = 1;
+	CreatePrograms();
+}
+
+void AuGLSL::CreatePrograms()
+{
 	m_Animal = new AuGLSLAnimal;
 	m_AnimalFog = new AuGLSLAnimalFog;
 	m_AnimalGlobe = new AuGLSLAnimalGlobe;
@@ -910,6 +939,12 @@ AuGLSL::AuGLSL()
 	m_ScGlobeFog = new AuGLSLScGlobeFog;
 	m_ScRingworld = new AuGLSLScRingworld;
 	m_ScRingworldFog = new AuGLSLScRingworldFog;
+	m_ScDepth = new AuGLSLScDepth;
+	m_AnimalDepth = new AuGLSLAnimalDepth;
+	m_BodyDepth = new AuGLSLBodyDepth;
+	m_ModelDepth = new AuGLSLModelDepth;
+	m_GlobeDepth = new AuGLSLGlobeDepth;
+	m_ScDepthAlpha = new AuGLSLScDepthAlpha;
 	m_ShadowSquare = new AuGLSLShadowSquare;
 	m_Shield = new AuGLSLShield;
 	m_ShieldHits = new AuGLSLShieldHits;
@@ -938,6 +973,136 @@ AuGLSL::AuGLSL()
 
 AuGLSL::~AuGLSL()
 {
+	DestroyPrograms(false);
+}
+
+void AuGLSL::DestroyPrograms(bool deleteGLPrograms)
+{
+	if(deleteGLPrograms)
+	{
+		m_Animal->DeleteProgram();
+		m_AnimalFog->DeleteProgram();
+		m_AnimalGlobe->DeleteProgram();
+		m_AnimalGlobeFog->DeleteProgram();
+		m_AnimalRingworld->DeleteProgram();
+		m_AnimalRingworldFog->DeleteProgram();
+		m_AnimalClothing->DeleteProgram();
+		m_AnimalClothingFog->DeleteProgram();
+		m_AnimalClothingGlobe->DeleteProgram();
+		m_AnimalClothingGlobeFog->DeleteProgram();
+		m_AnimalClothingRingworld->DeleteProgram();
+		m_AnimalClothingRingworldFog->DeleteProgram();
+		m_AnimalHair->DeleteProgram();
+		m_AnimalHairFog->DeleteProgram();
+		m_AnimalHairGlobe->DeleteProgram();
+		m_AnimalHairGlobeFog->DeleteProgram();
+		m_AnimalHairRingworld->DeleteProgram();
+		m_AnimalHairRingworldFog->DeleteProgram();
+		m_AquaticFlora->DeleteProgram();
+		m_AquaticFloraRingworld->DeleteProgram();
+		m_Atmosphere->DeleteProgram();
+		m_AtmosphereRingworld->DeleteProgram();
+		m_BlackHole->DeleteProgram();
+		m_BlackHoleSphere->DeleteProgram();
+		m_Body->DeleteProgram();
+		m_BodyFog->DeleteProgram();
+		m_BodyFogGlobe->DeleteProgram();
+		m_BodyGlobe->DeleteProgram();
+		m_BodyFogRingworld->DeleteProgram();
+		m_BodyRingworld->DeleteProgram();
+		m_Cloud->DeleteProgram();
+		m_CloudRingworld->DeleteProgram();
+		m_Color->DeleteProgram();
+		m_FarGlobe->DeleteProgram();
+		m_FarGlobeLit->DeleteProgram();
+		m_FarGlobeLitClouds->DeleteProgram();
+		m_FarGlobeLitLava->DeleteProgram();
+		m_FarGlobeLitLavaClouds->DeleteProgram();
+		m_FarRingworldLit->DeleteProgram();
+		m_FarRingworldLitClouds->DeleteProgram();
+		m_FarStar->DeleteProgram();
+		m_Flag->DeleteProgram();
+		m_Flora->DeleteProgram();
+		m_FloraRingworld->DeleteProgram();
+		m_GalaxyCloud->DeleteProgram();
+		m_GalaxyStar->DeleteProgram();
+		m_GasGiant->DeleteProgram();
+		m_GasGiantLayer->DeleteProgram();
+		m_Globe->DeleteProgram();
+		m_GlobeFlora->DeleteProgram();
+		m_GlobeLit->DeleteProgram();
+		m_GlobeLitFlora->DeleteProgram();
+		m_Lava->DeleteProgram();
+		m_LavaNoBump->DeleteProgram();
+		m_Line->DeleteProgram();
+		m_LineFog->DeleteProgram();
+		m_Model->DeleteProgram();
+		m_ModelTex->DeleteProgram();
+		m_ModelTexColor->DeleteProgram();
+		m_ModelTexFog->DeleteProgram();
+		m_ModelTexFogGlobe->DeleteProgram();
+		m_ModelTexFogRingworld->DeleteProgram();
+		m_NearGlobe->DeleteProgram();
+		m_NearGlobeFog->DeleteProgram();
+		m_NearGlobeLava->DeleteProgram();
+		m_NearGlobeLavaFog->DeleteProgram();
+		m_NearRingworld->DeleteProgram();
+		m_NearRingworldFog->DeleteProgram();
+		m_NearRingworldGlow->DeleteProgram();
+		m_NearRingworldGlowFog->DeleteProgram();
+		m_NearStar->DeleteProgram();
+		m_Nebula->DeleteProgram();
+		m_PhotonSphere->DeleteProgram();
+		m_Rain->DeleteProgram();
+		m_RainRingworld->DeleteProgram();
+		m_RingworldFlag->DeleteProgram();
+		m_RingworldFlora->DeleteProgram();
+		m_RingworldHull->DeleteProgram();
+		m_RingworldHullFog->DeleteProgram();
+		m_RingworldLitFlora->DeleteProgram();
+		m_RingworldStatue->DeleteProgram();
+		m_RingworldTerrainLitFlora->DeleteProgram();
+		m_RingworldTerrainStatue->DeleteProgram();
+		m_Rock->DeleteProgram();
+		m_RockRingworld->DeleteProgram();
+		m_Sc->DeleteProgram();
+		m_ScFog->DeleteProgram();
+		m_ScGlobe->DeleteProgram();
+		m_ScGlobeFog->DeleteProgram();
+		m_ScRingworld->DeleteProgram();
+		m_ScRingworldFog->DeleteProgram();
+		m_ScDepth->DeleteProgram();
+		m_AnimalDepth->DeleteProgram();
+		m_BodyDepth->DeleteProgram();
+		m_ModelDepth->DeleteProgram();
+		m_GlobeDepth->DeleteProgram();
+		m_ScDepthAlpha->DeleteProgram();
+		m_ShadowSquare->DeleteProgram();
+		m_Shield->DeleteProgram();
+		m_ShieldHits->DeleteProgram();
+		m_SkyBox->DeleteProgram();
+		m_Snow->DeleteProgram();
+		m_SnowRingworld->DeleteProgram();
+		m_Splat->DeleteProgram();
+		m_SpriteActualSize->DeleteProgram();
+		m_SpriteSize->DeleteProgram();
+		m_SpriteSizeColor->DeleteProgram();
+		m_TerrainLit->DeleteProgram();
+		m_TerrainLitFlora->DeleteProgram();
+		m_TexBar->DeleteProgram();
+		m_TexOffset->DeleteProgram();
+		m_Texture->DeleteProgram();
+		m_WarpTunnel->DeleteProgram();
+		m_Water->DeleteProgram();
+		m_WaterNoBump->DeleteProgram();
+		m_WaterNoBumpNoHole->DeleteProgram();
+		m_WaterNoHole->DeleteProgram();
+		m_WaterRingworld->DeleteProgram();
+		m_WaterRingworldNoBump->DeleteProgram();
+		m_WaterRingworldNoBumpNoHole->DeleteProgram();
+		m_WaterRingworldNoHole->DeleteProgram();
+	}
+
 	delete m_Animal;
 	delete m_AnimalFog;
 	delete m_AnimalGlobe;
@@ -1029,6 +1194,12 @@ AuGLSL::~AuGLSL()
 	delete m_ScGlobeFog;
 	delete m_ScRingworld;
 	delete m_ScRingworldFog;
+	delete m_ScDepth;
+	delete m_AnimalDepth;
+	delete m_BodyDepth;
+	delete m_ModelDepth;
+	delete m_GlobeDepth;
+	delete m_ScDepthAlpha;
 	delete m_ShadowSquare;
 	delete m_Shield;
 	delete m_ShieldHits;
@@ -1055,10 +1226,128 @@ AuGLSL::~AuGLSL()
 	delete m_WaterRingworldNoHole;
 }
 
+void AuGLSL::SetShadowBodies(int count, const float* centersAndRadii)
+{
+	if(count < 0 || !centersAndRadii)
+		count = 0;
+	if(count > MAX_SHADOW_BODIES)
+		count = MAX_SHADOW_BODIES;
+	if(count == 0 && m_ShadowBodyCount == 0)
+		return;
+	for(int i=0; i<4*count; i++)
+		m_ShadowBodies[i] = centersAndRadii[i];
+	m_ShadowBodyCount = count;
+	m_ShadowBodySerial++;
+}
+
+bool AuGLSL::BeginSunShadowMap(int size, int suns)
+{
+	if(!m_GLf || size < 16)
+		return false;
+	int layers = SUN_SHADOW_CASCADES*qBound(1, suns, SUN_SHADOW_SUNS);
+	if(m_SunShadowSize != size || m_SunShadowLayers != layers)
+	{
+		AuSunShadowMapDelete(m_GLf, m_SunShadowFramebuffer, m_SunShadowTexture);
+		m_SunShadowSize = size;
+		m_SunShadowLayers = layers;
+		m_SunShadowFailed = !AuSunShadowMapCreate(m_GLf, size, m_SunShadowFramebuffer, m_SunShadowTexture, layers);
+		if(m_SunShadowFailed)
+			qWarning() << "error: AuGLSL::BeginSunShadowMap Unable to make a depth framebuffer of size" << size;
+	}
+	if(m_SunShadowFailed || !m_SunShadowFramebuffer)
+		return false;
+	AuSunShadowMapBegin(m_GLf, m_SunShadowFramebuffer, m_SunShadowSize, m_SunShadowSaved);
+	return true;
+}
+
+void AuGLSL::SunShadowMapLayer(int layer)
+{
+	AuSunShadowMapLayer(m_GLf, m_SunShadowTexture, layer);
+}
+
+void AuGLSL::EndSunShadowMap(const AuSunShadowCascades& cascades, const AuSunShadowCascades& cascades2)
+{
+	AuSunShadowMapEnd(m_GLf, m_SunShadowSaved, m_SunShadowTexture);
+	m_SunShadowCascades = cascades;
+	m_SunShadowCascades2 = cascades2;
+	if(m_SunShadowLayers < SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS)
+		m_SunShadowCascades2.m_Count = 0;
+	m_SunShadowMapOn = cascades.m_Count > 0;
+	m_SunShadowMapSerial++;
+}
+
+void AuGLSL::ClearSunShadowMap()
+{
+	if(!m_SunShadowMapOn)
+		return;
+	m_SunShadowMapOn = false;
+	m_SunShadowMapSerial++;
+}
+
+bool AuGLSL::BeginLightShadowMaps(int size, int lamps)
+{
+	if(!m_GLf || size < 16 || slots < 1)
+		return false;
+	int layers = LIGHT_SHADOW_FACES*qMin(lamps, LIGHT_SHADOW_SLOTS);
+	if(m_LightShadowSize != size || m_LightShadowLayers != layers)
+	{
+		AuSunShadowMapDelete(m_GLf, m_LightShadowFramebuffer, m_LightShadowTexture);
+		m_LightShadowSize = size;
+		m_LightShadowLayers = layers;
+		m_LightShadowFailed = !AuSunShadowMapCreate(m_GLf, size, m_LightShadowFramebuffer, m_LightShadowTexture, layers);
+		if(m_LightShadowFailed)
+			qWarning() << "error: AuGLSL::BeginLightShadowMaps Unable to make a depth framebuffer of size" << size;
+	}
+	if(m_LightShadowFailed || !m_LightShadowFramebuffer)
+		return false;
+	AuSunShadowMapBegin(m_GLf, m_LightShadowFramebuffer, m_LightShadowSize, m_LightShadowSaved);
+
+	m_GLf->glDisable(GL_DEPTH_CLAMP);
+	return true;
+}
+
+void AuGLSL::LightShadowMapLayer(int layer)
+{
+	AuSunShadowMapLayer(m_GLf, m_LightShadowTexture, layer);
+}
+
+void AuGLSL::EndLightShadowMaps(const AuLightShadowMaps& maps)
+{
+	AuSunShadowMapEnd(m_GLf, m_LightShadowSaved, m_LightShadowTexture, LIGHT_SHADOW_MAP_UNIT);
+	m_LightShadowMaps = maps;
+	m_LightShadowSerial++;
+}
+
+void AuGLSL::ClearLightShadowMaps()
+{
+	if(m_LightShadowMaps.m_Count < 1)
+		return;
+	m_LightShadowMaps.m_Count = 0;
+	m_LightShadowSerial++;
+}
+
+bool AuGLSL::RebuildIfStale()
+{
+	if(!m_GLf || m_VariantSerial == AuGLSLShader::VariantSerial())
+		return false;
+
+	QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+	AuOpenGLFunctions* glf = m_GLf;
+	glf->glUseProgram(0);
+	DestroyPrograms(true);
+	CreatePrograms();
+	Initialize(*glf, m_MaxLights);
+
+	QGuiApplication::restoreOverrideCursor();
+	return true;
+}
+
 void AuGLSL::Initialize(AuOpenGLFunctions& GLf, unsigned int maxLights)
 {
 	m_GLf = &GLf;
 	m_MaxLights = maxLights;
+	m_VariantSerial = AuGLSLShader::VariantSerial();
 
 	// Load program source from our compressed hash archive. This is not due to the size of the source code, which is not large. 
 	// The source code is compressed so it is not easily visible in the final executable to the idly curious.
@@ -1068,7 +1357,13 @@ void AuGLSL::Initialize(AuOpenGLFunctions& GLf, unsigned int maxLights)
 	if(s_GLSLProgramSrc.empty())
 		return;
 
-	AuGLSLProgramOpt opt(maxLights);
+	GLint textureUnits = 0;
+	GLf.glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+	AuGLSLShader::SetShadowMapsSupported(textureUnits > SUN_SHADOW_MAP_UNIT);
+	if(s_DebugGLSL || textureUnits <= SUN_SHADOW_MAP_UNIT)
+		qDebug() << "GLSL fragment texture units" << textureUnits << "sun shadow map needs" << SUN_SHADOW_MAP_UNIT + 1;
+
+	AuGLSLProgramOpt opt(maxLights, this);
 	m_Animal->Build(GLf, opt);
 	m_AnimalFog->Build(GLf, opt);
 	m_AnimalGlobe->Build(GLf, opt);
@@ -1160,6 +1455,12 @@ void AuGLSL::Initialize(AuOpenGLFunctions& GLf, unsigned int maxLights)
 	m_ScGlobeFog->Build(GLf, opt);
 	m_ScRingworld->Build(GLf, opt);
 	m_ScRingworldFog->Build(GLf, opt);
+	m_ScDepth->Build(GLf, opt);
+	m_AnimalDepth->Build(GLf, opt);
+	m_BodyDepth->Build(GLf, opt);
+	m_ModelDepth->Build(GLf, opt);
+	m_GlobeDepth->Build(GLf, opt);
+	m_ScDepthAlpha->Build(GLf, opt);
 	m_ShadowSquare->Build(GLf, opt);
 	m_Shield->Build(GLf, opt);
 	m_ShieldHits->Build(GLf, opt);
@@ -1432,6 +1733,214 @@ void AuGLSL::InvalidateSuns()
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
+bool AuRenderCounters::s_On = false;
+quint64 AuRenderCounters::s_DrawCalls = 0;
+quint64 AuRenderCounters::s_Vertices = 0;
+
+bool AuGLSLShader::s_PerPixelLighting = false;
+float AuGLSLShader::s_PerPixelSkinGloss = .4f;
+float AuGLSLShader::s_PerPixelClothGloss = .1f;
+float AuGLSLShader::s_PerPixelHairGloss = .5f;
+bool AuGLSLShader::s_Shadows = false;
+bool AuGLSLShader::s_ShadowsDebug = false;
+bool AuGLSLShader::s_ShadowMaps = true;
+bool AuGLSLShader::s_ShadowMapsSupported = true;
+int AuGLSLShader::s_ShadowMapSoftness = 1;
+int AuGLSLShader::s_ShadowMapSize = 2048;
+double AuGLSLShader::s_ShadowMapRadius = 500 * 3.28083989501312;
+double AuGLSLShader::s_ShadowMapBias = 1;
+unsigned int AuGLSLShader::s_ShadowCasters = (1u << SSF_Count) - 1;
+bool AuGLSLShader::s_ShadowSecondSun = false;
+int AuGLSLShader::s_ShadowLights = 0;
+double AuGLSLShader::s_ShadowCasterLimit[SSF_Count] = { 5000 * 3.28083989501312, 5000 * 3.28083989501312,
+		100 * 3.28083989501312, 150 * 3.28083989501312 };
+
+static float ValidGloss(float gloss)
+{
+	if(!(gloss >= 0.f))
+		return 0.f;
+	return gloss > 1.f ? 1.f : gloss;
+}
+unsigned int AuGLSLShader::s_VariantSerial = 1;
+
+void AuGLSLShader::SetPerPixelLighting(bool on)
+{
+	if(s_PerPixelLighting != on)
+		s_VariantSerial++;
+	s_PerPixelLighting = on;
+}
+
+void AuGLSLShader::SetPerPixelSkinGloss(float gloss)
+{
+	if(!(gloss >= 0.f))
+		gloss = 0.f;
+	if(gloss > 1.f)
+		gloss = 1.f;
+	if(s_PerPixelSkinGloss != gloss)
+		s_VariantSerial++;
+	s_PerPixelSkinGloss = gloss;
+}
+
+void AuGLSLShader::SetPerPixelClothGloss(float gloss)
+{
+	gloss = ValidGloss(gloss);
+	if(s_PerPixelClothGloss != gloss)
+		s_VariantSerial++;
+	s_PerPixelClothGloss = gloss;
+}
+
+void AuGLSLShader::SetPerPixelHairGloss(float gloss)
+{
+	gloss = ValidGloss(gloss);
+	if(s_PerPixelHairGloss != gloss)
+		s_VariantSerial++;
+	s_PerPixelHairGloss = gloss;
+}
+
+void AuGLSLShader::SetShadows(bool on)
+{
+	if(s_Shadows != on)
+		s_VariantSerial++;
+	s_Shadows = on;
+}
+
+void AuGLSLShader::SetShadowsDebug(bool on)
+{
+	if(s_ShadowsDebug != on)
+		s_VariantSerial++;
+	s_ShadowsDebug = on;
+}
+
+void AuGLSLShader::SetShadowMaps(bool on)
+{
+	if(s_ShadowMaps != on)
+		s_VariantSerial++;
+	s_ShadowMaps = on;
+}
+
+bool AuGLSLShader::ShadowMaps()
+{
+	return s_PerPixelLighting && s_Shadows && s_ShadowMaps && s_ShadowMapsSupported;
+}
+
+void AuGLSLShader::SetShadowMapsSupported(bool supported)
+{
+	s_ShadowMapsSupported = supported;
+}
+
+void AuGLSLShader::SetShadowMapSoftness(int texels)
+{
+	texels = texels < 0 ? 0 : (texels > 2 ? 2 : texels);
+	if(s_ShadowMapSoftness != texels)
+		s_VariantSerial++;
+	s_ShadowMapSoftness = texels;
+}
+
+void AuGLSLShader::SetShadowMapSize(int texels)
+{
+	s_ShadowMapSize = texels < 512 ? 512 : (texels > 8192 ? 8192 : texels);
+}
+
+int AuGLSLShader::ShadowMapSize()
+{
+	return s_ShadowMapSize;
+}
+
+void AuGLSLShader::SetShadowMapRadiusMeters(double meters)
+{
+	if(!(meters >= 20))
+		meters = 20;
+	if(meters > 5000)
+		meters = 5000;
+	s_ShadowMapRadius = meters * 3.28083989501312;
+}
+
+double AuGLSLShader::ShadowMapRadiusFeet()
+{
+	return s_ShadowMapRadius;
+}
+
+void AuGLSLShader::SetShadowMapBias(double bias)
+{
+	if(!(bias >= 0))
+		bias = 0;
+	s_ShadowMapBias = bias > 10 ? 10 : bias;
+}
+
+double AuGLSLShader::ShadowMapBias()
+{
+	return s_ShadowMapBias;
+}
+
+void AuGLSLShader::SetShadowCasters(unsigned int families)
+{
+	s_ShadowCasters = families & ((1u << SSF_Count) - 1);
+}
+
+unsigned int AuGLSLShader::ShadowCasters()
+{
+	return s_ShadowCasters;
+}
+
+void AuGLSLShader::SetShadowSecondSun(bool on)
+{
+	s_ShadowSecondSun = on;
+}
+
+bool AuGLSLShader::ShadowSecondSun()
+{
+	return s_ShadowSecondSun;
+}
+
+void AuGLSLShader::SetShadowLights(int count)
+{
+	count = count < 0 ? 0 : (count > LIGHT_SHADOW_SLOTS ? LIGHT_SHADOW_SLOTS : count);
+	if((s_ShadowLights > 0) != (count > 0))
+		s_VariantSerial++;
+	s_ShadowLights = count;
+}
+
+int AuGLSLShader::ShadowLights()
+{
+	return s_ShadowLights;
+}
+
+void AuGLSLShader::SetShadowCasterLimitMeters(int family, double meters)
+{
+	if(family < 0 || family >= SSF_Count)
+		return;
+	if(!(meters >= 5))
+		meters = 5;
+	if(meters > 5000)
+		meters = 5000;
+	s_ShadowCasterLimit[family] = meters * 3.28083989501312;
+}
+
+double AuGLSLShader::ShadowCasterLimitFeet(int family)
+{
+	return (family < 0 || family >= SSF_Count) ? 0 : s_ShadowCasterLimit[family];
+}
+
+bool AuGLSLShader::Shadows()
+{
+	return s_Shadows;
+}
+
+float AuGLSLShader::PerPixelSkinGloss()
+{
+	return s_PerPixelSkinGloss;
+}
+
+unsigned int AuGLSLShader::VariantSerial()
+{
+	return s_VariantSerial;
+}
+
+bool AuGLSLShader::PerPixelLighting()
+{
+	return s_PerPixelLighting;
+}
+
 AuGLSLShader::AuGLSLShader(AuOpenGLFunctions& GLf, GLenum shaderType, const QString& shaderName, unsigned int maxLights)
 {
 	if(s_DebugGLSL)
@@ -1481,6 +1990,31 @@ AuGLSLShader::AuGLSLShader(AuOpenGLFunctions& GLf, GLenum shaderType, const QStr
 		src.replace(QByteArray("#version 150"), QByteArray("#version 440"));
 	else if(GLMajorVersion == 4 && GLMinorVersion == 5)
 		src.replace(QByteArray("#version 150"), QByteArray("#version 450"));
+
+	if(s_PerPixelLighting)
+	{
+		int versionAt = src.indexOf("#version");
+		int lineEnd = versionAt < 0 ? -1 : src.indexOf('\n', versionAt);
+		if(lineEnd >= 0)
+		{
+			QByteArray defines("#define PER_PIXEL_LIGHTING 1\n");
+			defines += "#define PER_PIXEL_SKIN_GLOSS " + QByteArray::number((double)s_PerPixelSkinGloss, 'f', 4) + "\n";
+			defines += "#define PER_PIXEL_CLOTH_GLOSS " + QByteArray::number((double)s_PerPixelClothGloss, 'f', 4) + "\n";
+			defines += "#define PER_PIXEL_HAIR_GLOSS " + QByteArray::number((double)s_PerPixelHairGloss, 'f', 4) + "\n";
+			if(s_Shadows)
+				defines += "#define SHADOWS 1\n";
+			if(s_Shadows && s_ShadowsDebug)
+				defines += "#define SHADOWS_DEBUG 1\n";
+			if(s_Shadows && s_ShadowMaps && s_ShadowMapsSupported)
+			{
+				defines += "#define SHADOW_MAPS 1\n";
+				defines += "#define SHADOW_MAP_PCF " + QByteArray::number(s_ShadowMapSoftness) + "\n";
+				if(s_ShadowLights > 0)
+					defines += "#define LIGHT_SHADOW_MAPS 1\n";
+			}
+			src.insert(lineEnd + 1, defines);
+		}
+	}
 
 	// Resolve our special includes.
 	if(src.contains("#SunLightGlobe"))
@@ -1622,6 +2156,37 @@ AuGLSLProgram::AuGLSLProgram()
 {
 	m_Program = 0;
 	m_GLf = 0;
+	m_Owner = 0;
+	m_shadowBodyCount = -1;
+	m_shadowBody = -1;
+	m_ShadowBodiesLooked = false;
+	m_ShadowBodySerial = 0;
+	m_shadowBodyLocalCount = -1;
+	m_shadowBodyLocal = -1;
+	m_ShadowBodiesLocalLooked = false;
+	m_ShadowBodiesLocalSent = -1;
+	m_sunShadowMap = -1;
+	m_sunShadowMapMatrix = -1;
+	m_sunShadowMapCascade = -1;
+	m_sunShadowMapCascadeLocal = -1;
+	m_sunShadowMapDir = -1;
+	m_sunShadowMapDir2 = -1;
+	m_sunShadowMapDir2Local = -1;
+	m_lightShadowMap = -1;
+	m_lightShadowOf = -1;
+	m_lightShadowRot = -1;
+	m_lightShadowRotLocal = -1;
+	m_lightShadowInfo = -1;
+	m_lightShadowParams = -1;
+	m_LightShadowLooked = false;
+	m_LightShadowSerial = 0;
+	m_sunShadowMapInfo = -1;
+	m_sunShadowMapMatrixLocal = -1;
+	m_sunShadowMapDirLocal = -1;
+	m_sunShadowMapInfoLocal = -1;
+	m_SunShadowMapLooked = false;
+	m_SunShadowMapSerial = 0;
+	m_SunShadowMapLocalOn = -1;
 }
 
 AuGLSLProgram::~AuGLSLProgram()
@@ -1631,6 +2196,260 @@ AuGLSLProgram::~AuGLSLProgram()
 void AuGLSLProgram::Select()
 {
 	m_GLf->glUseProgram(m_Program);	// Select this shader program.
+	SendShadowBodies();
+	SendSunShadowMap();
+	SendLightShadowMaps();
+}
+
+void AuGLSLProgram::SendSunShadowMap()
+{
+	if(!m_SunShadowMapLooked)
+	{
+		m_sunShadowMap = m_GLf->glGetUniformLocation(m_Program, "sunShadowMap");
+		m_sunShadowMapMatrix = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapMatrix");
+		m_sunShadowMapCascade = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapCascade");
+		m_sunShadowMapCascadeLocal = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapCascadeLocal");
+		m_sunShadowMapDir = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapDir");
+		m_sunShadowMapDir2 = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapDir2");
+		m_sunShadowMapDir2Local = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapDir2Local");
+		m_sunShadowMapInfo = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapInfo");
+		m_sunShadowMapMatrixLocal = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapMatrixLocal");
+		m_sunShadowMapDirLocal = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapDirLocal");
+		m_sunShadowMapInfoLocal = m_GLf->glGetUniformLocation(m_Program, "sunShadowMapInfoLocal");
+		if(m_sunShadowMap >= 0)
+			m_GLf->glUniform1i(m_sunShadowMap, SUN_SHADOW_MAP_UNIT);
+		m_SunShadowMapLooked = true;
+	}
+	if(!m_Owner || m_sunShadowMapInfo < 0 || m_SunShadowMapSerial == m_Owner->SunShadowMapSerial())
+		return;
+	m_SunShadowMapSerial = m_Owner->SunShadowMapSerial();
+
+	if(!m_Owner->SunShadowMapOn())
+	{
+		m_GLf->glUniform4f(m_sunShadowMapInfo, 0, 0, 0, 0);
+		return;
+	}
+	const AuSunShadowCascades& cascades = m_Owner->SunShadowMapCascades();
+	const AuSunShadowCascades& cascades2 = m_Owner->SunShadowMapCascades2();
+	const int all = SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS;
+	GLfloat mf[16*SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS];
+	GLfloat cf[4*SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS];
+	for(int i=0; i<16*all; i++)
+		mf[i] = 0;
+	for(int i=0; i<4*all; i++)
+		cf[i] = 0;
+	for(int sun=0; sun<SUN_SHADOW_SUNS; sun++)
+	{
+		const AuSunShadowCascades& of = sun ? cascades2 : cascades;
+		for(int k=0; k<of.m_Count; k++)
+		{
+			const AuSunShadowFit& fit = of.m_Fit[k];
+			int at = sun*SUN_SHADOW_CASCADES + k;
+			for(int i=0; i<16; i++)
+				mf[16*at + i] = (GLfloat)fit.m_EyeToTex[i];
+			cf[4*at] = (GLfloat)fit.m_TexelWorld;
+			cf[4*at + 1] = (GLfloat)fit.m_DepthBias;
+		}
+	}
+	const AuSunShadowFit& fit0 = cascades.m_Fit[0];
+	m_GLf->glUniformMatrix4fv(m_sunShadowMapMatrix, all, GL_FALSE, mf);
+	m_GLf->glUniform4fv(m_sunShadowMapCascade, all, cf);
+	m_GLf->glUniform3f(m_sunShadowMapDir, (GLfloat)fit0.m_Dir[0], (GLfloat)fit0.m_Dir[1], (GLfloat)fit0.m_Dir[2]);
+	if(m_sunShadowMapDir2 >= 0)
+	{
+		if(cascades2.m_Count > 0)
+		{
+			const AuSunShadowFit& fit2 = cascades2.m_Fit[0];
+			m_GLf->glUniform3f(m_sunShadowMapDir2, (GLfloat)fit2.m_Dir[0], (GLfloat)fit2.m_Dir[1], (GLfloat)fit2.m_Dir[2]);
+		}
+		else
+			m_GLf->glUniform3f(m_sunShadowMapDir2, 0, 0, 0);
+	}
+	m_GLf->glUniform4f(m_sunShadowMapInfo, (GLfloat)cascades.m_Count, (GLfloat)fit0.m_TexelUV, (GLfloat)cascades2.m_Count, 0);
+}
+
+void AuGLSLProgram::SendSunShadowMapLocal(const AuMatrix4x4& model)
+{
+	if(!m_Owner || !m_SunShadowMapLooked || m_sunShadowMapInfoLocal < 0)
+		return;
+	if(!m_Owner->SunShadowMapOn())
+	{
+		if(m_SunShadowMapLocalOn != 0)
+			m_GLf->glUniform4f(m_sunShadowMapInfoLocal, 0, 0, 0, 0);
+		m_SunShadowMapLocalOn = 0;
+		return;
+	}
+	const AuSunShadowCascades& cascades = m_Owner->SunShadowMapCascades();
+	const AuSunShadowCascades& cascades2 = m_Owner->SunShadowMapCascades2();
+	const int all = SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS;
+	double localToTex[16], dirs[SUN_SHADOW_SUNS][3] = { { 0, 0, 1 }, { 0, 0, 0 } }, scale = 1;
+	GLfloat mf[16*SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS];
+	GLfloat cf[4*SUN_SHADOW_CASCADES*SUN_SHADOW_SUNS];
+	for(int i=0; i<16*all; i++)
+		mf[i] = 0;
+	for(int i=0; i<4*all; i++)
+		cf[i] = 0;
+	for(int sun=0; sun<SUN_SHADOW_SUNS; sun++)
+	{
+		const AuSunShadowCascades& of = sun ? cascades2 : cascades;
+		for(int k=0; k<of.m_Count; k++)
+		{
+			const AuSunShadowFit& fit = of.m_Fit[k];
+			int at = sun*SUN_SHADOW_CASCADES + k;
+			AuSunShadowFitLocal(fit, model.GLMatrix(), localToTex, dirs[sun], scale);
+			for(int i=0; i<16; i++)
+				mf[16*at + i] = (GLfloat)localToTex[i];
+			cf[4*at] = (GLfloat)(fit.m_TexelWorld/scale);
+			cf[4*at + 1] = (GLfloat)fit.m_DepthBias;
+		}
+	}
+	m_GLf->glUniformMatrix4fv(m_sunShadowMapMatrixLocal, all, GL_FALSE, mf);
+	m_GLf->glUniform4fv(m_sunShadowMapCascadeLocal, all, cf);
+	m_GLf->glUniform3f(m_sunShadowMapDirLocal, (GLfloat)dirs[0][0], (GLfloat)dirs[0][1], (GLfloat)dirs[0][2]);
+	if(m_sunShadowMapDir2Local >= 0)
+		m_GLf->glUniform3f(m_sunShadowMapDir2Local, (GLfloat)dirs[1][0], (GLfloat)dirs[1][1], (GLfloat)dirs[1][2]);
+	m_GLf->glUniform4f(m_sunShadowMapInfoLocal, (GLfloat)cascades.m_Count, (GLfloat)cascades.m_Fit[0].m_TexelUV,
+			(GLfloat)cascades2.m_Count, 0);
+	m_SunShadowMapLocalOn = 1;
+}
+
+void AuGLSLProgram::SendLightShadowMaps()
+{
+	if(!m_LightShadowLooked)
+	{
+		m_lightShadowMap = m_GLf->glGetUniformLocation(m_Program, "lightShadowMap");
+		m_lightShadowOf = m_GLf->glGetUniformLocation(m_Program, "lightShadowOf");
+		m_lightShadowRot = m_GLf->glGetUniformLocation(m_Program, "lightShadowRot");
+		m_lightShadowRotLocal = m_GLf->glGetUniformLocation(m_Program, "lightShadowRotLocal");
+		m_lightShadowInfo = m_GLf->glGetUniformLocation(m_Program, "lightShadowInfo");
+		m_lightShadowParams = m_GLf->glGetUniformLocation(m_Program, "lightShadowParams");
+		if(m_lightShadowMap >= 0)
+			m_GLf->glUniform1i(m_lightShadowMap, LIGHT_SHADOW_MAP_UNIT);
+		m_LightShadowLooked = true;
+	}
+	if(!m_Owner || m_lightShadowParams < 0 || m_LightShadowSerial == m_Owner->LightShadowSerial())
+		return;
+	m_LightShadowSerial = m_Owner->LightShadowSerial();
+
+	const AuLightShadowMaps& maps = m_Owner->LightShadowMaps();
+	if(maps.m_Count < 1 || maps.m_Size < 1)
+	{
+		m_GLf->glUniform4f(m_lightShadowParams, 0, 0, 0, 0);
+		return;
+	}
+	GLfloat of[MAX_POINT_LIGHTS];
+	int lights = qMin((int)m_Owner->MaxLights(), MAX_POINT_LIGHTS);
+	for(int l=0; l<lights; l++)
+		of[l] = -1;
+	GLfloat info[4*LIGHT_SHADOW_SLOTS];
+	GLfloat rot[9*LIGHT_SHADOW_SLOTS];
+	for(int s=0; s<maps.m_Count; s++)
+	{
+		const AuLightShadowSlot& slot = maps.m_Slot[s];
+		if(slot.m_Light >= 0 && slot.m_Light < lights)
+			of[slot.m_Light] = (GLfloat)s;
+		info[4*s] = (GLfloat)(LIGHT_SHADOW_FACES*s);
+		info[4*s + 1] = slot.m_ForwardOnly ? 1.f : 0.f;
+		info[4*s + 2] = (GLfloat)slot.m_Near;
+		info[4*s + 3] = (GLfloat)slot.m_Far;
+		for(int row=0; row<3; row++)
+			for(int col=0; col<3; col++)
+				rot[9*s + col*3 + row] = (GLfloat)slot.m_Rot[row*3 + col];
+	}
+	if(m_lightShadowOf >= 0 && lights > 0)
+		m_GLf->glUniform1fv(m_lightShadowOf, lights, of);
+	if(m_lightShadowInfo >= 0)
+		m_GLf->glUniform4fv(m_lightShadowInfo, maps.m_Count, info);
+	if(m_lightShadowRot >= 0)
+		m_GLf->glUniformMatrix3fv(m_lightShadowRot, maps.m_Count, GL_FALSE, rot);
+	m_GLf->glUniform4f(m_lightShadowParams, (GLfloat)maps.m_Count, (GLfloat)(2*LIGHT_SHADOW_FACE_TAN/maps.m_Size),
+			1.f/maps.m_Size, (GLfloat)LIGHT_SHADOW_FACE_TAN);
+}
+
+void AuGLSLProgram::SendLightShadowMapsLocal(const AuMatrix4x4& model)
+{
+	if(!m_Owner || !m_LightShadowLooked || m_lightShadowRotLocal < 0)
+		return;
+	const AuLightShadowMaps& maps = m_Owner->LightShadowMaps();
+	if(maps.m_Count < 1)
+		return;
+	const double* g = model.GLMatrix();
+	GLfloat rot[9*LIGHT_SHADOW_SLOTS];
+	for(int s=0; s<maps.m_Count; s++)
+	{
+		const AuLightShadowSlot& slot = maps.m_Slot[s];
+		for(int row=0; row<3; row++)
+			for(int col=0; col<3; col++)
+				rot[9*s + col*3 + row] = (GLfloat)(slot.m_Rot[row*3]*g[col*4] + slot.m_Rot[row*3 + 1]*g[col*4 + 1] +
+						slot.m_Rot[row*3 + 2]*g[col*4 + 2]);
+	}
+	m_GLf->glUniformMatrix3fv(m_lightShadowRotLocal, maps.m_Count, GL_FALSE, rot);
+}
+
+void AuGLSLProgram::SendShadowBodies()
+{
+	if(!m_Owner || m_ShadowBodySerial == m_Owner->ShadowBodySerial())
+		return;
+	m_ShadowBodySerial = m_Owner->ShadowBodySerial();
+
+	if(!m_ShadowBodiesLooked)
+	{
+		m_shadowBodyCount = m_GLf->glGetUniformLocation(m_Program, "shadowBodyCount");
+		m_shadowBody = m_GLf->glGetUniformLocation(m_Program, "shadowBody");
+		m_ShadowBodiesLooked = true;
+	}
+	if(m_shadowBodyCount < 0)
+		return;
+
+	int count = m_shadowBody < 0 ? 0 : m_Owner->ShadowBodyCount();
+	m_GLf->glUniform1i(m_shadowBodyCount, count);
+	if(count > 0)
+		m_GLf->glUniform4fv(m_shadowBody, count, m_Owner->ShadowBodies());
+}
+
+void AuGLSLProgram::SetShadowBodiesLocal(const AuMatrix4x4& model)
+{
+	if(!m_Owner)
+		return;
+	SendSunShadowMapLocal(model);
+	SendLightShadowMapsLocal(model);
+	if(!m_ShadowBodiesLocalLooked)
+	{
+		m_shadowBodyLocalCount = m_GLf->glGetUniformLocation(m_Program, "shadowBodyLocalCount");
+		m_shadowBodyLocal = m_GLf->glGetUniformLocation(m_Program, "shadowBodyLocal");
+		m_ShadowBodiesLocalLooked = true;
+	}
+	if(m_shadowBodyLocalCount < 0 || m_shadowBodyLocal < 0)
+		return;
+
+	const float* eye = m_Owner->ShadowBodies();
+	GLfloat local[4*MAX_SHADOW_BODIES];
+	int count = 0;
+	for(int b=0; b<m_Owner->ShadowBodyCount(); b++)
+	{
+		AuPoint center = model.UnProject(eye[4*b], eye[4*b+1], eye[4*b+2]);
+		double radius = eye[4*b+3];
+		if(center.Length() < radius*.5)
+			continue;
+		local[4*count] = (GLfloat)center.x;
+		local[4*count+1] = (GLfloat)center.y;
+		local[4*count+2] = (GLfloat)center.z;
+		local[4*count+3] = (GLfloat)radius;
+		count++;
+	}
+	if(count == 0 && m_ShadowBodiesLocalSent == 0)
+		return;
+	m_GLf->glUniform1i(m_shadowBodyLocalCount, count);
+	if(count > 0)
+		m_GLf->glUniform4fv(m_shadowBodyLocal, count, local);
+	m_ShadowBodiesLocalSent = count;
+}
+
+void AuGLSLProgram::DeleteProgram()
+{
+	if(m_Program && m_GLf)
+		m_GLf->glDeleteProgram(m_Program);
+	m_Program = 0;
 }
 
 void AuGLSLProgram::Deselect()
@@ -1723,7 +2542,7 @@ void AuGLSLColor::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Color.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Color.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Color.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -1782,7 +2601,7 @@ void AuGLSLLine::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Line.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Line.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Line.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -1842,7 +2661,7 @@ void AuGLSLLineFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "LineFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "LineFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "LineFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -1903,7 +2722,7 @@ void AuGLSLNearStar::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearStar.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearStar.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearStar.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -1963,7 +2782,7 @@ void AuGLSLFarStar::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarStar.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarStar.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarStar.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2023,7 +2842,7 @@ void AuGLSLGalaxyStar::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GalaxyStar.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GalaxyStar.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GalaxyStar.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2086,7 +2905,7 @@ void AuGLSLGalaxyCloud::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GalaxyCloud.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GalaxyCloud.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GalaxyCloud.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2148,7 +2967,7 @@ void AuGLSLNebula::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Nebula.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Nebula.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Nebula.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2209,7 +3028,7 @@ void AuGLSLSkyBox::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "SkyBox.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SkyBox.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SkyBox.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2280,7 +3099,7 @@ void AuGLSLNearGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobe.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobe.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2353,7 +3172,7 @@ void AuGLSLNearRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2430,7 +3249,7 @@ void AuGLSLNearGlobeFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& o
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearGlobeFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2505,7 +3324,7 @@ void AuGLSLNearRingworldFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearRingworldFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2584,7 +3403,7 @@ void AuGLSLNearGlobeLava::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearGlobeLava.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeLava.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeLava.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2657,7 +3476,7 @@ void AuGLSLNearGlobeLavaFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearGlobeLavaFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeLavaFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearGlobeLavaFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2732,7 +3551,7 @@ void AuGLSLNearRingworldGlow::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramO
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearRingworldGlow.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldGlow.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldGlow.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2809,7 +3628,7 @@ void AuGLSLNearRingworldGlowFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgr
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "NearRingworldGlowFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldGlowFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "NearRingworldGlowFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2888,7 +3707,7 @@ void AuGLSLGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Globe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Globe.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Globe.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -2954,7 +3773,7 @@ void AuGLSLGlobeFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GlobeFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3019,7 +3838,7 @@ void AuGLSLRingworldFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3084,7 +3903,7 @@ void AuGLSLGlobeLit::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GlobeLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeLit.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeLit.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3166,7 +3985,7 @@ void AuGLSLGlobeLitFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GlobeLitFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeLitFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeLitFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3249,7 +4068,7 @@ void AuGLSLRingworldLitFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramO
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldLitFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldLitFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldLitFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3336,7 +4155,7 @@ void AuGLSLTerrainLit::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "TerrainLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("TerrainLit.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("TerrainLit.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3469,7 +4288,7 @@ void AuGLSLTerrainLitFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "TerrainLitFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("TerrainLitFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("TerrainLitFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3607,7 +4426,7 @@ void AuGLSLRingworldTerrainLitFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLP
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldTerrainLitFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldTerrainLitFlora.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("RingworldTerrainLitFlora.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3749,7 +4568,7 @@ void AuGLSLWater::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Water.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Water.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Water.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3854,7 +4673,7 @@ void AuGLSLWaterRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -3964,7 +4783,7 @@ void AuGLSLWaterNoBump::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterNoBump.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoBump.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoBump.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4065,7 +4884,7 @@ void AuGLSLWaterRingworldNoBump::Build(AuOpenGLFunctions& GLf, const AuGLSLProgr
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterRingworldNoBump.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoBump.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoBump.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4171,7 +4990,7 @@ void AuGLSLWaterNoHole::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterNoHole.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoHole.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoHole.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4274,7 +5093,7 @@ void AuGLSLWaterRingworldNoHole::Build(AuOpenGLFunctions& GLf, const AuGLSLProgr
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterRingworldNoHole.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoHole.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoHole.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4382,7 +5201,7 @@ void AuGLSLWaterNoBumpNoHole::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramO
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterNoBumpNoHole.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoBumpNoHole.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterNoBumpNoHole.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4481,7 +5300,7 @@ void AuGLSLWaterRingworldNoBumpNoHole::Build(AuOpenGLFunctions& GLf, const AuGLS
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WaterRingworldNoBumpNoHole.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoBumpNoHole.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WaterRingworldNoBumpNoHole.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4585,7 +5404,7 @@ void AuGLSLLava::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Lava.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Lava.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Lava.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4687,7 +5506,7 @@ void AuGLSLAtmosphere::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Atmosphere.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Atmosphere.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Atmosphere.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4757,7 +5576,7 @@ void AuGLSLAtmosphereRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgra
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AtmosphereRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AtmosphereRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AtmosphereRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4832,7 +5651,7 @@ void AuGLSLCloud::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Cloud.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Cloud.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Cloud.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4911,7 +5730,7 @@ void AuGLSLCloudRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "CloudRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "CloudRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "CloudRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -4994,7 +5813,7 @@ void AuGLSLFarGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobe.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobe.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5060,7 +5879,7 @@ void AuGLSLFarGlobeLit::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarGlobeLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLit.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLit.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5133,7 +5952,7 @@ void AuGLSLFarGlobeLitClouds::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramO
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarGlobeLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitClouds.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitClouds.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5210,7 +6029,7 @@ void AuGLSLFarGlobeLitLava::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarGlobeLitLava.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitLava.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitLava.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5283,7 +6102,7 @@ void AuGLSLFarGlobeLitLavaClouds::Build(AuOpenGLFunctions& GLf, const AuGLSLProg
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarGlobeLitLava.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitLavaClouds.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarGlobeLitLavaClouds.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5360,7 +6179,7 @@ void AuGLSLFarRingworldLit::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarRingworldLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarRingworldLit.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarRingworldLit.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5437,7 +6256,7 @@ void AuGLSLFarRingworldLitClouds::Build(AuOpenGLFunctions& GLf, const AuGLSLProg
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FarRingworldLit.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarRingworldLitClouds.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FarRingworldLitClouds.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5518,7 +6337,7 @@ void AuGLSLFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Flora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Flora.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Flora.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5644,7 +6463,7 @@ void AuGLSLFloraRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "FloraRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FloraRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "FloraRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5774,7 +6593,7 @@ void AuGLSLAquaticFlora::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& o
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AquaticFlora.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AquaticFlora.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AquaticFlora.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -5900,7 +6719,7 @@ void AuGLSLAquaticFloraRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProg
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AquaticFloraRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AquaticFloraRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AquaticFloraRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6030,7 +6849,7 @@ void AuGLSLRock::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Rock.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Rock.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Rock.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6155,7 +6974,7 @@ void AuGLSLRockRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RockRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RockRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RockRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6284,7 +7103,7 @@ void AuGLSLSpriteActualSize::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "SpriteActualSize.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteActualSize.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteActualSize.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6344,7 +7163,7 @@ void AuGLSLSpriteSize::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "SpriteSize.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteSize.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteSize.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6405,7 +7224,7 @@ void AuGLSLSpriteSizeColor::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "SpriteSizeColor.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteSizeColor.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SpriteSizeColor.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6465,7 +7284,7 @@ void AuGLSLFlag::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Flag.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Flag.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Flag.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6589,7 +7408,7 @@ void AuGLSLRingworldFlag::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldFlag.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldFlag.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldFlag.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6717,7 +7536,7 @@ void AuGLSLShadowSquare::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& o
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ShadowSquare.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ShadowSquare.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ShadowSquare.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6789,7 +7608,7 @@ void AuGLSLRingworldHull::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldHull.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldHull.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldHull.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6865,7 +7684,7 @@ void AuGLSLRingworldHullFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldHullFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldHullFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldHullFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -6943,7 +7762,7 @@ void AuGLSLRingworldStatue::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldStatue.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldStatue.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldStatue.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7033,7 +7852,7 @@ void AuGLSLRingworldTerrainStatue::Build(AuOpenGLFunctions& GLf, const AuGLSLPro
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RingworldTerrainStatue.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldTerrainStatue.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RingworldTerrainStatue.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7122,7 +7941,7 @@ void AuGLSLRain::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Rain.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Rain.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Rain.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7206,7 +8025,7 @@ void AuGLSLRainRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "RainRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RainRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "RainRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7292,7 +8111,7 @@ void AuGLSLSnow::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Snow.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Snow.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Snow.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7391,7 +8210,7 @@ void AuGLSLSnowRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "SnowRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SnowRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "SnowRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7492,7 +8311,7 @@ void AuGLSLBlackHole::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BlackHole.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BlackHole.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BlackHole.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7554,7 +8373,7 @@ void AuGLSLBlackHoleSphere::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BlackHoleSphere.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BlackHoleSphere.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BlackHoleSphere.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7612,7 +8431,7 @@ void AuGLSLPhotonSphere::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& o
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "PhotonSphere.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "PhotonSphere.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "PhotonSphere.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7672,7 +8491,7 @@ void AuGLSLModelTexColor::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelTexColor.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexColor.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexColor.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7799,7 +8618,7 @@ void AuGLSLModelTexFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelTexFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -7922,7 +8741,7 @@ void AuGLSLModelTexFogGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelTexFogGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFogGlobe.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFogGlobe.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8046,7 +8865,7 @@ void AuGLSLModelTexFogRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgr
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelTexFogRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFogRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTexFogRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8174,7 +8993,7 @@ void AuGLSLModelTex::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelTex.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTex.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ModelTex.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8295,7 +9114,7 @@ void AuGLSLModel::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Model.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Model.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Model.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8411,7 +9230,7 @@ void AuGLSLTexture::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Texture.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Texture.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Texture.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8481,7 +9300,7 @@ void AuGLSLTexBar::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "TexBar.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "TexBar.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "TexBar.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8545,7 +9364,7 @@ void AuGLSLTexOffset::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "TexOffset.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "TexOffset.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "TexOffset.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8607,7 +9426,7 @@ void AuGLSLWarpTunnel::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "WarpTunnel.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WarpTunnel.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "WarpTunnel.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8669,7 +9488,7 @@ void AuGLSLShield::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Shield.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Shield.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Shield.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8737,7 +9556,7 @@ void AuGLSLShieldHits::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ShieldHits.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ShieldHits.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "ShieldHits.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8810,7 +9629,7 @@ void AuGLSLGasGiant::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GasGiant.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GasGiant.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GasGiant.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8896,7 +9715,7 @@ void AuGLSLGasGiantLayer::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GasGiantLayer.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GasGiantLayer.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "GasGiantLayer.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -8984,7 +9803,7 @@ void AuGLSLSplat::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Splat.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Splat.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Splat.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9046,7 +9865,7 @@ void AuGLSLAnimal::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Animal.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Animal.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Animal.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9192,7 +10011,7 @@ void AuGLSLAnimalFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9345,7 +10164,7 @@ void AuGLSLAnimalGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalGlobe.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalGlobe.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9492,7 +10311,7 @@ void AuGLSLAnimalGlobeFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalGlobeFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalGlobeFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalGlobeFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9646,7 +10465,7 @@ void AuGLSLAnimalRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalRingworld.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalRingworld.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9797,7 +10616,7 @@ void AuGLSLAnimalRingworldFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgram
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalRingworldFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalRingworldFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalRingworldFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -9955,7 +10774,7 @@ void AuGLSLAnimalClothing::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothing.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothing.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothing.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10102,7 +10921,7 @@ void AuGLSLAnimalClothingFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramO
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothingFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10251,7 +11070,7 @@ void AuGLSLAnimalClothingGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgra
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothingGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingGlobe.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingGlobe.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10399,7 +11218,7 @@ void AuGLSLAnimalClothingGlobeFog::Build(AuOpenGLFunctions& GLf, const AuGLSLPro
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothingGlobeFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingGlobeFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingGlobeFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10549,7 +11368,7 @@ void AuGLSLAnimalClothingRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLPr
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothingRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingRingworld.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingRingworld.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10701,7 +11520,7 @@ void AuGLSLAnimalClothingRingworldFog::Build(AuOpenGLFunctions& GLf, const AuGLS
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalClothingRingworldFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingRingworldFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("AnimalClothingRingworldFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10855,7 +11674,7 @@ void AuGLSLAnimalHair::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHair.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHair.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHair.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -10986,7 +11805,7 @@ void AuGLSLAnimalHairFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHairFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11119,7 +11938,7 @@ void AuGLSLAnimalHairGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHairGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairGlobe.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairGlobe.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11251,7 +12070,7 @@ void AuGLSLAnimalHairGlobeFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgram
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHairGlobeFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairGlobeFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairGlobeFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11385,7 +12204,7 @@ void AuGLSLAnimalHairRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgra
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHairRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairRingworld.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairRingworld.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11521,7 +12340,7 @@ void AuGLSLAnimalHairRingworldFog::Build(AuOpenGLFunctions& GLf, const AuGLSLPro
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalHairRingworldFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairRingworldFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "AnimalHairRingworldFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11659,7 +12478,7 @@ void AuGLSLBody::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Body.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Body.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Body.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11789,7 +12608,7 @@ void AuGLSLBodyFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BodyFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BodyFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -11921,7 +12740,7 @@ void AuGLSLBodyGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Body.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, AuGLSLShader::PerPixelLighting() ? "BodyGlobe.f" : "Body.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12052,7 +12871,7 @@ void AuGLSLBodyFogGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& o
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyFogGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BodyFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, AuGLSLShader::PerPixelLighting() ? "BodyFogGlobe.f" : "BodyFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12185,7 +13004,7 @@ void AuGLSLBodyRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& 
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "Body.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, AuGLSLShader::PerPixelLighting() ? "BodyRingworld.f" : "Body.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12320,7 +13139,7 @@ void AuGLSLBodyFogRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOp
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyFogRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "BodyFog.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, AuGLSLShader::PerPixelLighting() ? "BodyFogRingworld.f" : "BodyFog.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12443,6 +13262,298 @@ void AuGLSLBodyFogRingworld::Select(const AuMatrix4x4& projection, const AuGLEff
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
+void AuGLSLScDepthAlpha::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLScBase::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLScDepthAlpha::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScDepthAlpha.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScDepthAlpha.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 0, "positionShine");
+	m_GLf->glBindAttribLocation(m_Program, 2, "texCoordIndex");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("ScDepthAlpha"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	m_mvA = GetUniformLoc("mv");
+	m_pA = GetUniformLoc("p");
+	for(int t=0; t<SCTEXI_Count; t++)
+	{
+		m_texSurface[t] = GetUniformLoc(QString("texSurface[%1]").arg(t));
+		m_GLf->glUniform1i(m_texSurface[t], 1 + t);
+	}
+}
+
+void AuGLSLAnimalDepth::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLProgram::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLAnimalDepth::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "AnimalDepth.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScDepth.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 0, "positionShine");
+	m_GLf->glBindAttribLocation(m_Program, 2, "boneIndex");
+	m_GLf->glBindAttribLocation(m_Program, 3, "boneWeight");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("AnimalDepth"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	for(int bm=0; bm<MAX_ANIMAL_BONES; bm++)
+		m_bM[bm] = GetUniformLoc(QString("bM[%1]").arg(bm));
+	m_mv = GetUniformLoc("mv");
+	m_p = GetUniformLoc("p");
+}
+
+void AuGLSLBodyDepth::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLProgram::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLBodyDepth::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "BodyDepth.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScDepth.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 0, "position");
+	m_GLf->glBindAttribLocation(m_Program, 3, "boneIndex");
+	m_GLf->glBindAttribLocation(m_Program, 4, "boneWeight");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("BodyDepth"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	for(int bm=0; bm<MAX_BONES; bm++)
+		m_bM[bm] = GetUniformLoc(QString("bM[%1]").arg(bm));
+	m_mv = GetUniformLoc("mv");
+	m_p = GetUniformLoc("p");
+}
+
+void AuGLSLModelDepth::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLProgram::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLModelDepth::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ModelDepth.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScDepth.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 1, "position");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("ModelDepth"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	m_mv = GetUniformLoc("mv");
+	m_p = GetUniformLoc("p");
+}
+
+void AuGLSLGlobeDepth::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLProgram::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLGlobeDepth::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "GlobeDepth.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("GlobeDepth.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 0, "position");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("GlobeDepth"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	m_clipCos = GetUniformLoc("clipCos");
+	m_clipUp = GetUniformLoc("clipUp");
+	m_mv = GetUniformLoc("mv");
+	m_p = GetUniformLoc("p");
+}
+
+void AuGLSLScDepth::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
+{
+	AuGLSLScBase::Build(GLf, opt);
+
+	if(s_DebugGLSL)
+		qDebug() << "AuGLSLScDepth::Build";
+	Q_ASSERT(!m_Program);
+	m_Program = m_GLf->glCreateProgram();
+
+	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScDepth.v", opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, vs.Id());
+
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScDepth.f"), opt.MaxLights());
+	m_GLf->glAttachShader(m_Program, fs.Id());
+
+	m_GLf->glBindAttribLocation(m_Program, 0, "positionShine");
+
+	m_GLf->glLinkProgram(m_Program);
+	GLint linked;
+	m_GLf->glGetProgramiv(m_Program, GL_LINK_STATUS, &linked);
+#if !defined(QT_NO_DEBUG)
+	DumpProgramInfoLog();
+#endif
+	if(!linked)
+	{
+		AuGLSLErr mb(QObject::tr("Shader Linking Error"),
+				QObject::tr("<html>Failed to link <b>%2</b> shader.<br>"
+					"This is a critical error. "
+					"The program must abort.<br><br>%1</html>")
+				.arg(GetProgramInfoLog())
+				.arg("ScDepth"));
+		mb.exec();
+	}
+
+	m_GLf->glDetachShader(m_Program, vs.Id());
+	m_GLf->glDeleteShader(vs.Id());
+
+	m_GLf->glDetachShader(m_Program, fs.Id());
+	m_GLf->glDeleteShader(fs.Id());
+
+	m_GLf->glUseProgram(m_Program);
+
+	m_mv = GetUniformLoc("mv");
+	m_p = GetUniformLoc("p");
+}
+
 void AuGLSLSc::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 {
 	AuGLSLScBase::Build(GLf, opt);
@@ -12457,7 +13568,7 @@ void AuGLSLSc::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "Sc.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Sc.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("Sc.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12590,7 +13701,7 @@ void AuGLSLScFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12725,7 +13836,7 @@ void AuGLSLScGlobe::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt)
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScGlobe.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScGlobe.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScGlobe.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12859,7 +13970,7 @@ void AuGLSLScGlobeFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScGlobeFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScGlobeFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScGlobeFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -12995,7 +14106,7 @@ void AuGLSLScRingworld::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& op
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScRingworld.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScRingworld.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScRingworld.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -13133,7 +14244,7 @@ void AuGLSLScRingworldFog::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt&
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "ScRingworldFog.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScRingworldFog.f"));
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, QString("ScRingworldFog.f"), opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.
@@ -13273,7 +14384,7 @@ void AuGLSLLavaNoBump::Build(AuOpenGLFunctions& GLf, const AuGLSLProgramOpt& opt
 	AuGLSLShader vs(*m_GLf, GL_VERTEX_SHADER, "LavaNoBump.v", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, vs.Id());
 
-	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "LavaNoBump.f");
+	AuGLSLShader fs(*m_GLf, GL_FRAGMENT_SHADER, "LavaNoBump.f", opt.MaxLights());
 	m_GLf->glAttachShader(m_Program, fs.Id());
 
 	// Bind user defined 'in' variables to vertex attribute indices.

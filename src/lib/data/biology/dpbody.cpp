@@ -1875,6 +1875,22 @@ void DpBody::CreateSkin(AuGLEffects& re, AuGLModelCache& mc)
 	*/
 }
 
+bool DpBody::RenderSunShadowDepth(const AuMatrix4x4& model, AuGLEffects& re)
+{
+	if(m_Models.isEmpty() || CurrentGeneralPose().HeadOnly())
+		return false;
+
+	AuGLSLBodyDepth& shader = re.GLSL().BodyDepthShader();
+	shader.SetModelView(model);
+
+	for(int bone=0; bone<DhDNA::BONE_Max && bone<MAX_BONES; bone++)
+		shader.SetBone(bone, m_Bones[bone]);
+
+	for(QVector<Au3dsGLSLModelInstance*>::const_iterator mii = m_Models.constBegin(); mii != m_Models.constEnd(); mii++)
+		(*mii)->Render(re, false);
+	return true;
+}
+
 // One of many RenderSkin variations. If you change this one, be sure to apply those changes to the others.
 void DpBody::RenderSkin(const AuMatrix4x4& projection, const AuMatrix4x4& model, AuGLEffects& re, const AuPoint& ambientLightUp,
 		bool headless)
