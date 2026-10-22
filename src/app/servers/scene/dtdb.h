@@ -11,12 +11,15 @@
 #include "auelapsedtimer.h"
 #include "auhash.h"
 #include "auid.h"
+#include "autime.h"
 #include <map>
+#include <QHash>
 #include <QList>
 #include <QMap>
 #include <QMutex>
 #include <QReadWriteLock>
 #include <QSemaphore>
+#include <QSet>
 #include <QThread>
 
 class AuEther;
@@ -386,6 +389,12 @@ private:
 	void StoreAtoms(QSqlDatabase& db, AuIdList& sectorsAdded, QList<AuTravelAtom>& atomsDeparted, QList<AuSpawnAtom>& atomsSpawned,
 			QList<AuHengeTeleportAtom>& atomsHengeTeleported);
 	bool StoreDatabase();
+	bool StoreDesigns();
+	void NotifyDesignsDeactivated(const QList<quint32>& scDesigns, const QList<quint32>& itDesigns,
+			const QList<quint32>& bdDesigns);
+	void NoteDesignLoad(QHash<quint32, AuTime>& firstMissing, quint32 designId, bool found, bool spacecraft);
+	bool SavedDesignIds(QSqlDatabase& db, const QString& table, const QList<quint32>& designIds, QSet<quint32>& saved);
+	void DropUnsavedPublishedDesigns();
 	void StoreEmpires(QSqlDatabase& db, QList<quint32>& empiresChanged);
 	void StoreBdDesigns(QSqlDatabase& db, QList<quint32>& designsDeactivated);
 	void StoreBdExchange(QSqlDatabase& db);
@@ -428,6 +437,12 @@ private:
 
 	QMutex					m_RevokedSavesLock;
 	QMap<AuId, int>			m_RevokedSaves;
+
+	QHash<quint32, AuTime>	m_FirstMissingSc;
+	QHash<quint32, AuTime>	m_FirstMissingBd;
+	QSet<quint32>			m_PublishedSavedSc;
+	QSet<quint32>			m_PublishedSavedBd;
+	AuElapsedTimer			m_LastPublishedCheck;
 
 private:
 	// Update notifications.

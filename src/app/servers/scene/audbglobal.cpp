@@ -645,6 +645,45 @@ void AuDbGlobal::ScDesignNeeded(quint32 designId)
 	m_muDbDesignsNeededSc.unlock();
 }
 
+bool AuDbGlobal::ScDesignMissing(quint32 designId)
+{
+	m_muDbDesignsNeededSc.lock();
+	bool missing = m_MissingSc.contains(designId);
+	m_muDbDesignsNeededSc.unlock();
+	return missing;
+}
+
+void AuDbGlobal::SetScDesignMissing(quint32 designId, bool missing)
+{
+	m_muDbDesignsNeededSc.lock();
+	if(missing)
+		m_MissingSc.insert(designId);
+	else
+		m_MissingSc.remove(designId);
+	m_muDbDesignsNeededSc.unlock();
+}
+
+bool AuDbGlobal::HasDesignTransactions()
+{
+	bool pending = false;
+	m_muDbDesignTransSc.lock();
+	pending = pending || !m_DesignTransactionsSc.isEmpty();
+	m_muDbDesignTransSc.unlock();
+	m_muDbExchangeTransSc.lock();
+	pending = pending || !m_ExchangeTransactionsSc.isEmpty();
+	m_muDbExchangeTransSc.unlock();
+	m_muDbDesignTransBd.lock();
+	pending = pending || !m_DesignTransactionsBd.isEmpty();
+	m_muDbDesignTransBd.unlock();
+	m_muDbExchangeTransBd.lock();
+	pending = pending || !m_ExchangeTransactionsBd.isEmpty();
+	m_muDbExchangeTransBd.unlock();
+	m_muDbDesignTransIt.lock();
+	pending = pending || !m_DesignTransactionsIt.isEmpty();
+	m_muDbDesignTransIt.unlock();
+	return pending;
+}
+
 void AuDbGlobal::ScDesignsNeeded(const AuId& architectId)
 {
 	m_muDbDesignsNeededSc.lock();
@@ -686,6 +725,24 @@ void AuDbGlobal::BdDesignNeeded(quint32 designId)
 	m_muDbDesignsNeededBd.lock();
 	if(!m_DesignsNeededBd.contains(designId))
 		m_DesignsNeededBd.append(designId);
+	m_muDbDesignsNeededBd.unlock();
+}
+
+bool AuDbGlobal::BdDesignMissing(quint32 designId)
+{
+	m_muDbDesignsNeededBd.lock();
+	bool missing = m_MissingBd.contains(designId);
+	m_muDbDesignsNeededBd.unlock();
+	return missing;
+}
+
+void AuDbGlobal::SetBdDesignMissing(quint32 designId, bool missing)
+{
+	m_muDbDesignsNeededBd.lock();
+	if(missing)
+		m_MissingBd.insert(designId);
+	else
+		m_MissingBd.remove(designId);
 	m_muDbDesignsNeededBd.unlock();
 }
 

@@ -366,6 +366,9 @@ public:
 			const AuId& fromSector, GALAXY fromGalaxy, const AuId& idTo, bool connectBeyondSolarSystem);
 
 	void PostCriticalUpdates();
+	bool HasDesignTransactions();
+	void SetBdDesignMissing(quint32 designId, bool missing);
+	void SetScDesignMissing(quint32 designId, bool missing);
 
 	virtual void RateBlueprintBd(const AuExchangeRatingRec& rating);
 
@@ -391,6 +394,7 @@ public:
 	virtual void BdDesignDeactivated(quint32 designId);
 	virtual void BdDesignDeleted(quint32 designId);
 	virtual void BdDesignNeeded(quint32 designId);
+	virtual bool BdDesignMissing(quint32 designId);
 	virtual void BdDesignsNeeded(const AuId& architectId);
 
 	virtual void BdExchangeEntryAdded(quint32 designId);
@@ -409,6 +413,7 @@ public:
 	virtual void ScDesignDeactivated(quint32 designId);
 	virtual void ScDesignDeleted(quint32 designId);
 	virtual void ScDesignNeeded(quint32 designId);
+	virtual bool ScDesignMissing(quint32 designId);
 	virtual void ScDesignsNeeded(const AuId& architectId);
 
 	virtual void ScExchangeEntryAdded(quint32 designId);
@@ -557,6 +562,7 @@ public:
 	// m_muDbDesignsNeededSc controls these.
 	QList<quint32>						m_DesignsNeededSc;						// Individual designs.
 	QList<AuId>							m_ArchDesignsNeededSc;					// Designs by an architect.
+	QSet<quint32>						m_MissingSc;
 
 	// Bd design record changes.
 	QList<AuDesignTransaction>			m_DesignTransactionsBd;					// Guarded by m_muDbDesignTransBd
@@ -569,6 +575,7 @@ public:
 	// m_muDbDesignsNeededBd controls these.
 	QList<quint32>						m_DesignsNeededBd;						// Individual designs.
 	QList<AuId>							m_ArchDesignsNeededBd;					// Designs by an architect.
+	QSet<quint32>						m_MissingBd;
 
 	// It design record changes.
 	QList<AuDesignTransaction>			m_DesignTransactionsIt;					// Guarded by m_muDbDesignTransIt

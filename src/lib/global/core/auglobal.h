@@ -2753,6 +2753,12 @@ public:
 		Q_UNUSED(designId);
 	}
 
+	virtual bool BdDesignMissing(quint32 designId)
+	{
+		Q_UNUSED(designId);
+		return false;
+	}
+
 	// You must override this to use it. See AuDbGlobal.
 	virtual void BdDesignsNeeded(const AuId& architectId)
 	{
@@ -2841,6 +2847,12 @@ public:
 	virtual void ScDesignNeeded(quint32 designId)
 	{
 		Q_UNUSED(designId);
+	}
+
+	virtual bool ScDesignMissing(quint32 designId)
+	{
+		Q_UNUSED(designId);
+		return false;
 	}
 
 	// You must override this to use it. See AuDbGlobal.

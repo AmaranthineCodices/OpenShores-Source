@@ -1205,7 +1205,7 @@ int DaDesigner::LoadBdDesign(quint32 designId, const AuId& idLoader, bool viewOn
 		// Design not found. Database load requested.
 		g_Au.BdDesignNeeded(designId);
 		//qWarning() << "warning: DaDesigner::LoadBdDesign design not found. Load requested." << designId;
-		return 1;
+		return g_Au.BdDesignMissing(designId) ? 99 : 1;
 	}
 
 	int result = LoadDesign(d, idLoader, viewOnly);
@@ -1251,7 +1251,7 @@ int DaDesigner::LoadScDesign(quint32 designId, const AuId& idLoader, bool viewOn
 		// Design not found. Database load requested.
 		g_Au.ScDesignNeeded(designId);
 		//qWarning() << "warning: DaDesigner::LoadScDesign design not found. Load requested." << designId;
-		return 1;
+		return g_Au.ScDesignMissing(designId) ? 99 : 1;
 	}
 
 	int result = LoadDesign(d, idLoader, viewOnly);

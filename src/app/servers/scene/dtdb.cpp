@@ -43,6 +43,11 @@
 #include <qsqldatabase.h>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QStringList>
+
+static const int s_DesignMissingSecs = 60;
+static const int s_PublishedCheckSecs = 60;
+static const int s_PublishedGraceSecs = 300;
 
 // Must call qRegisterMetaType in order to use this class type in queued signal and slot connections.
 // The Q_DECLARE_METATYPE macro is also required.
@@ -257,6 +262,8 @@ void DtDb::run()
 									emit RevokedSystemSaved(systemId);
 							}
 						}
+						else if(g_Au.IsSceneWorker() && g_AuDb.HasDesignTransactions())
+							StoreDesigns();
 					}
 
 					// Attempt to load any empire records that have changed.
@@ -283,6 +290,7 @@ void DtDb::run()
 						LoadScDesigns();
 						LoadItDesigns();
 						LoadBdDesigns();
+						DropUnsavedPublishedDesigns();
 					}
 
 					// Attempt to load any atoms that have been assigned to me.
@@ -439,6 +447,53 @@ bool DtDb::StoreDatabase()
 	for(QList<AuHengeTeleportAtom>::const_iterator it = atomsHengeTeleported.cbegin(); it != atomsHengeTeleported.cend(); it++)
 		emit AtomHengeTeleported(*it);
 
+	NotifyDesignsDeactivated(scDesignsDeactivated, itDesignsDeactivated, bdDesignsDeactivated);
+
+	// Save complete. Next save is not the first one anymore.
+	m_FirstSave = false;
+	return committed;
+}
+
+bool DtDb::StoreDesigns()
+{
+	QSqlDatabase db = QSqlDatabase::database("AuUniverse", false);
+	if(!OpenDatabase(db))
+		return false;
+	bool committed = true;
+
+	QList<quint32> bdDesignsDeactivated;
+	QList<quint32> itDesignsDeactivated;
+	QList<quint32> scDesignsDeactivated;
+
+	if(!db.transaction())
+	{
+		committed = false;
+		QSqlError err = db.lastError();
+		qWarning("DtDb::StoreDesigns BEGIN TRANSACTION FAILED. '%s'", (const char*)err.text().toLatin1());
+	}
+
+	StoreScDesigns(db, scDesignsDeactivated);
+	StoreScExchange(db);
+	StoreItDesigns(db, itDesignsDeactivated);
+	StoreBdDesigns(db, bdDesignsDeactivated);
+	StoreBdExchange(db);
+
+	if(!db.commit())
+	{
+		committed = false;
+		QSqlError err = db.lastError();
+		qWarning("DtDb::StoreDesigns COMMIT FAILED. '%s'", (const char*)err.text().toLatin1());
+	}
+
+	db.close();
+
+	NotifyDesignsDeactivated(scDesignsDeactivated, itDesignsDeactivated, bdDesignsDeactivated);
+	return committed;
+}
+
+void DtDb::NotifyDesignsDeactivated(const QList<quint32>& scDesignsDeactivated, const QList<quint32>& itDesignsDeactivated,
+		const QList<quint32>& bdDesignsDeactivated)
+{
 	// Notify other servers of sc designs that appear to have been deactivated.
 	if(!scDesignsDeactivated.isEmpty())
 	{
@@ -491,10 +546,113 @@ bool DtDb::StoreDatabase()
 			g_Au.Log(logmsg);
 		}
 	}
+}
 
-	// Save complete. Next save is not the first one anymore.
-	m_FirstSave = false;
-	return committed;
+void DtDb::NoteDesignLoad(QHash<quint32, AuTime>& firstMissing, quint32 designId, bool found, bool spacecraft)
+{
+	if(found)
+	{
+		if(firstMissing.remove(designId))
+		{
+			if(spacecraft)
+				g_AuDb.SetScDesignMissing(designId, false);
+			else
+				g_AuDb.SetBdDesignMissing(designId, false);
+		}
+		return;
+	}
+	QHash<quint32, AuTime>::const_iterator mi = firstMissing.constFind(designId);
+	if(mi == firstMissing.constEnd())
+		firstMissing.insert(designId, AuTime::Now());
+	else if(mi.value().ElapsedSec() >= s_DesignMissingSecs)
+	{
+		if(spacecraft)
+			g_AuDb.SetScDesignMissing(designId, true);
+		else
+			g_AuDb.SetBdDesignMissing(designId, true);
+	}
+}
+
+bool DtDb::SavedDesignIds(QSqlDatabase& db, const QString& table, const QList<quint32>& designIds, QSet<quint32>& saved)
+{
+	if(designIds.isEmpty())
+		return true;
+	QStringList ids;
+	for(quint32 designId : designIds)
+		ids.append(QString::number(designId));
+	QSqlQuery qry(QString(), db);
+	if(!qry.exec(QString("SELECT id FROM %1 WHERE id IN (%2);").arg(table, ids.join(','))))
+	{
+		qWarning() << "DtDb::SavedDesignIds - SELECT FAILED" << table << qry.lastError().text();
+		return false;
+	}
+	while(qry.next())
+		saved.insert(qry.value(0).toUInt());
+	return true;
+}
+
+void DtDb::DropUnsavedPublishedDesigns()
+{
+	if(m_LastPublishedCheck.isValid() && m_LastPublishedCheck.ElapsedSec() < s_PublishedCheckSecs)
+		return;
+	m_LastPublishedCheck.start();
+
+	QList<quint32> scSuspects;
+	const DgData& sx = g_Au.LockScExchangeForRead();
+	for(AuScDesignExchange::const_iterator it = sx.m_ScExchange->cbegin(); it != sx.m_ScExchange->cend(); ++it)
+		if(!m_PublishedSavedSc.contains(it.key()) && it.value().WhenPublished().ElapsedSec() >= s_PublishedGraceSecs)
+			scSuspects.append(it.key());
+	g_Au.UnlockScExchange();
+
+	QList<quint32> bdSuspects;
+	const DgData& bx = g_Au.LockBdExchangeForRead();
+	for(AuBdDesignExchange::const_iterator it = bx.m_BdExchange->cbegin(); it != bx.m_BdExchange->cend(); ++it)
+		if(!m_PublishedSavedBd.contains(it.key()) && it.value().WhenPublished().ElapsedSec() >= s_PublishedGraceSecs)
+			bdSuspects.append(it.key());
+	g_Au.UnlockBdExchange();
+
+	if(scSuspects.isEmpty() && bdSuspects.isEmpty())
+		return;
+
+	QSqlDatabase db = QSqlDatabase::database("AuUniverse", false);
+	if(!OpenDatabase(db))
+		return;
+	QSet<quint32> scSaved;
+	QSet<quint32> bdSaved;
+	bool scOk = SavedDesignIds(db, "n_ScDesign", scSuspects, scSaved);
+	bool bdOk = SavedDesignIds(db, "n_BdDesign", bdSuspects, bdSaved);
+	db.close();
+
+	if(scOk)
+	{
+		m_PublishedSavedSc.unite(scSaved);
+		QList<quint32> dropped;
+		DgData& sw = g_Au.LockScExchangeForWrite();
+		for(quint32 designId : qAsConst(scSuspects))
+			if(!scSaved.contains(designId) && sw.m_ScExchange->Remove(designId))
+				dropped.append(designId);
+		g_Au.UnlockScExchange();
+		for(quint32 designId : qAsConst(dropped))
+		{
+			g_AuDb.SetScDesignMissing(designId, true);
+			g_Au.Warning(QString("Published spacecraft blueprint %1 was never saved. Removed from the library.").arg(designId));
+		}
+	}
+	if(bdOk)
+	{
+		m_PublishedSavedBd.unite(bdSaved);
+		QList<quint32> dropped;
+		DgData& bw = g_Au.LockBdExchangeForWrite();
+		for(quint32 designId : qAsConst(bdSuspects))
+			if(!bdSaved.contains(designId) && bw.m_BdExchange->Remove(designId))
+				dropped.append(designId);
+		g_Au.UnlockBdExchange();
+		for(quint32 designId : qAsConst(dropped))
+		{
+			g_AuDb.SetBdDesignMissing(designId, true);
+			g_Au.Warning(QString("Published building blueprint %1 was never saved. Removed from the library.").arg(designId));
+		}
+	}
 }
 
 void DtDb::LoadScDesigns()
@@ -555,17 +713,24 @@ void DtDb::LoadScDesigns()
 	{
 		// These are only requested in DaSc::LoadSubatoms and DaSc to insure the design is loaded.
 		if(justLoaded.contains(*it))
+		{
+			NoteDesignLoad(m_FirstMissingSc, *it, true, true);
 			continue;	// We just loaded the design into our temporary data so we don't need to load it again right now.
+		}
 
 		// We can avoid repeatedly reloading ship designs here because we know that if the design is loaded at all, it's ok.
 		const DgData& sdd = g_Au.LockScDesignsForRead();
 		bool alreadyLoaded = sdd.ScDesignIsLoaded(*it);
 		g_Au.UnlockScDesigns();
 		if(alreadyLoaded)
+		{
+			NoteDesignLoad(m_FirstMissingSc, *it, true, true);
 			continue;	// The design is already in the global data.
+		}
 
 		// Load the individual design.
 		designs.Load(*it);
+		NoteDesignLoad(m_FirstMissingSc, *it, designs.find(*it) != designs.end(), true);
 	}
 
 	db.close();
@@ -723,17 +888,24 @@ void DtDb::LoadBdDesigns()
 	{
 		// These are only requested in DaBd::LoadSubatoms and DaBd to insure the design is loaded.
 		if(justLoaded.contains(*it))
+		{
+			NoteDesignLoad(m_FirstMissingBd, *it, true, false);
 			continue;	// We just loaded the design into our temporary data so we don't need to load it again right now.
+		}
 
 		// We can avoid repeatedly reloading ship designs here because we know that if the design is loaded at all, it's ok.
 		const DgData& sdd = g_Au.LockBdDesignsForRead();
 		bool alreadyLoaded = sdd.BdDesignIsLoaded(*it);
 		g_Au.UnlockBdDesigns();
 		if(alreadyLoaded)
+		{
+			NoteDesignLoad(m_FirstMissingBd, *it, true, false);
 			continue;	// The design is already in the global data.
+		}
 
 		// Load the individual design.
 		designs.Load(*it);
+		NoteDesignLoad(m_FirstMissingBd, *it, designs.find(*it) != designs.end(), false);
 	}
 
 	db.close();
