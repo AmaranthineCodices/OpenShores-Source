@@ -8,7 +8,7 @@ The original game was created by **David Hoeft (“Haxus”)**. David’s passio
 
 Support David by purchasing [Hazeron Starship on Steam](https://store.steampowered.com/app/2239520/Hazeron_Starship/), the official single-player version of the game.
 
-Shores of Hazeron is copyright © 2026 **Hazeron Freehold LLC**. See [LICENSE](LICENSE) for usage and distribution terms.
+Shores of Hazeron is copyright © 2026 **Hazeron Freehold LLC**. See [LICENSE](LICENSE) for usage and distribution terms. You can find the original source repository provided by David [here](https://github.com/Hazeron-Freehold-LLC/Shores-of-Hazeron).
 
 Original project notes: [README-legacy.md](README-legacy.md).
 
