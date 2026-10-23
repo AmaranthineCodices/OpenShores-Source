@@ -1221,6 +1221,9 @@ static bool SelectSunShadowFamily(AuGLSL& glsl, int family, int variant, const A
 		case SSF_Creatures:
 			glsl.AnimalDepthShader().Select(lightProjection);
 			return true;
+		case SSF_Plants:
+			glsl.FloraDepthShader().Select(lightProjection);
+			return true;
 		}
 		return false;
 	case SSV_Body:
@@ -1254,6 +1257,9 @@ static void DeselectSunShadowFamily(AuGLSL& glsl, int family, int variant)
 			break;
 		case SSF_Creatures:
 			glsl.AnimalDepthShader().Deselect();
+			break;
+		case SSF_Plants:
+			glsl.FloraDepthShader().Deselect();
 			break;
 		}
 		break;
