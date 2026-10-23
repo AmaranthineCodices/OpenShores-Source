@@ -317,6 +317,15 @@ inline QDataStream& operator>>(QDataStream& in, AuScPathSegList& o)
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
+struct AuScSpot
+{
+	quint16								m_PartId;
+	COMMODITYID							m_Commodity;
+	quint8								m_Switch;
+	QString								m_Group;
+	AuMatrix4x4							m_Position;
+};
+
 // Key is a unique identifier for each part.
 class AUDATA_DLL AuScParts : public QHash<quint16, AuScPart*>
 {
@@ -729,6 +738,12 @@ public:	// Methods
 	void ListRoomNames(QStringList& roomNames) const;
 
 	void LivestockPostLocs(QHash<quint16, AuPoint>& locs) const;
+
+	void ItemSpots(QList<AuScSpot>& spots) const;
+
+	void VehicleSpots(QList<AuScSpot>& spots) const;
+
+	void VehicleSpots(COMMODITYID cid, QList<AuMatrix4x4>& spots) const;
 
 	void LivestockPosts(AuScPartSet& posts) const;
 
@@ -1317,6 +1332,8 @@ public:
 		Part_LightLens,
 		Part_BerthName,
 		Part_BuildZone,
+		Part_ItemSpot = 92,
+		Part_VehicleSpot,
 		PART_Count							// LAST ITEM MUST BE <= 255
 	};
 
@@ -2341,6 +2358,21 @@ public:	// Methods
 	virtual bool IsLivestockPost() const
 	{
 		return false;
+	}
+
+	virtual bool IsItemSpot() const
+	{
+		return false;
+	}
+
+	virtual bool IsVehicleSpot() const
+	{
+		return false;
+	}
+
+	virtual COMMODITYID SpotCommodity() const
+	{
+		return CID_Invalid;
 	}
 
 	virtual bool IsLocked() const
@@ -8459,6 +8491,227 @@ public:	// Methods
 
 			Q_UNUSED(c);
 
+			AuScIcon::Update(part);
+		}
+		catch(const bad_cast&)
+		{
+			// dynamic_cast failed
+		}
+	}
+};
+
+//-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
+
+class AUDATA_DLL AuScItemSpot : public AuScIcon
+{
+public:
+	enum SWITCH
+	{
+		Switch_Off,
+		Switch_On,
+		Switch_None,
+	};
+
+private:
+	quint16								m_Commodity;
+	double								m_Rotation;
+	quint8								m_Switch;
+
+public:	// Constructors
+	AuScItemSpot();
+	AuScItemSpot(const AuScItemSpot& c);
+	AuScItemSpot(const AuScItemSpot& c, const AuScSelectInfo& selInfo);
+
+public:	// Operators
+	virtual void operator>>(QDataStream& out) const;
+	virtual void operator<<(QDataStream& in);
+	virtual bool operator==(const AuScPart& c) const;
+
+public:	// Methods
+	virtual AuScPart* Clone() const;
+
+	virtual AuScPart* CloneParts(const AuScSelectInfo& selInfo) const;
+
+	inline COMMODITYID Commodity() const
+	{
+		return (COMMODITYID)m_Commodity;
+	}
+
+	virtual double IconBack() const;
+	virtual double IconFore() const;
+	virtual double IconLeft() const;
+	virtual double IconRight() const;
+
+	virtual bool IsItemSpot() const
+	{
+		return true;
+	}
+
+	virtual bool IsValid() const;
+
+	virtual quint64 MemoryUsage() const;
+
+	virtual AuMatrix4x4 PositionMatrix() const;
+
+	inline double Rotation() const
+	{
+		return m_Rotation;
+	}
+
+	virtual QString SelectedDesc(const AuScParts& parts) const;
+
+	inline void SetCommodity(COMMODITYID cid)
+	{
+		m_Commodity = (quint16)cid;
+	}
+
+	inline void SetRotation(double rot)
+	{
+		m_Rotation = rot;
+	}
+
+	inline void SetSwitch(SWITCH sw)
+	{
+		m_Switch = sw;
+	}
+
+	virtual bool Sight(quint16 partId, const AuPoint& eyeLoc, AuPoint& sightLoc, const AuDoorStateHash& doorStates,
+			const AuLandingGearStateHash& landingGearStates, const AuLiftHash& liftStops, AuPoint& sightSurfaceNormal) const;
+
+	virtual COMMODITYID SpotCommodity() const
+	{
+		return Commodity();
+	}
+
+	inline SWITCH Switch() const
+	{
+		return m_Switch <= Switch_None ? (SWITCH)m_Switch : Switch_None;
+	}
+
+	static QString SwitchName(SWITCH sw);
+
+	virtual PART_TYPE Type() const
+	{
+		return TypeStatic();
+	}
+
+	virtual QString TypeIcon() const;
+
+	virtual QString TypeName() const;
+
+	inline static PART_TYPE TypeStatic()
+	{
+		return Part_ItemSpot;
+	}
+
+	virtual void Update(const AuScPart& part)
+	{
+		try
+		{
+			const AuScItemSpot& c = dynamic_cast<const AuScItemSpot&>(part);
+			m_Commodity = c.m_Commodity;
+			m_Rotation = c.m_Rotation;
+			m_Switch = c.m_Switch;
+			AuScIcon::Update(part);
+		}
+		catch(const bad_cast&)
+		{
+			// dynamic_cast failed
+		}
+	}
+};
+
+//-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
+
+class AUDATA_DLL AuScVehicleSpot : public AuScIcon
+{
+	quint16								m_Commodity;
+	double								m_Rotation;
+
+public:	// Constructors
+	AuScVehicleSpot();
+	AuScVehicleSpot(const AuScVehicleSpot& c);
+	AuScVehicleSpot(const AuScVehicleSpot& c, const AuScSelectInfo& selInfo);
+
+public:	// Operators
+	virtual void operator>>(QDataStream& out) const;
+	virtual void operator<<(QDataStream& in);
+	virtual bool operator==(const AuScPart& c) const;
+
+public:	// Methods
+	virtual void BuildingCursorSegments(AuPointArray& edges) const;
+
+	virtual AuScPart* Clone() const;
+
+	virtual AuScPart* CloneParts(const AuScSelectInfo& selInfo) const;
+
+	inline COMMODITYID Commodity() const
+	{
+		return (COMMODITYID)m_Commodity;
+	}
+
+	virtual double IconBack() const;
+	virtual double IconFore() const;
+	virtual double IconLeft() const;
+	virtual double IconRight() const;
+
+	virtual bool IsValid() const;
+
+	virtual bool IsVehicleSpot() const
+	{
+		return true;
+	}
+
+	virtual quint64 MemoryUsage() const;
+
+	virtual AuMatrix4x4 PositionMatrix() const;
+
+	inline double Rotation() const
+	{
+		return m_Rotation;
+	}
+
+	virtual QString SelectedDesc(const AuScParts& parts) const;
+
+	inline void SetCommodity(COMMODITYID cid)
+	{
+		m_Commodity = (quint16)cid;
+	}
+
+	inline void SetRotation(double rot)
+	{
+		m_Rotation = rot;
+	}
+
+	virtual bool Sight(quint16 partId, const AuPoint& eyeLoc, AuPoint& sightLoc, const AuDoorStateHash& doorStates,
+			const AuLandingGearStateHash& landingGearStates, const AuLiftHash& liftStops, AuPoint& sightSurfaceNormal) const;
+
+	virtual COMMODITYID SpotCommodity() const
+	{
+		return Commodity();
+	}
+
+	virtual PART_TYPE Type() const
+	{
+		return TypeStatic();
+	}
+
+	virtual QString TypeIcon() const;
+
+	virtual QString TypeName() const;
+
+	inline static PART_TYPE TypeStatic()
+	{
+		return Part_VehicleSpot;
+	}
+
+	virtual void Update(const AuScPart& part)
+	{
+		try
+		{
+			const AuScVehicleSpot& c = dynamic_cast<const AuScVehicleSpot&>(part);
+			m_Commodity = c.m_Commodity;
+			m_Rotation = c.m_Rotation;
 			AuScIcon::Update(part);
 		}
 		catch(const bad_cast&)

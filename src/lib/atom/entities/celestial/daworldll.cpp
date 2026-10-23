@@ -3996,7 +3996,8 @@ DaVehicle* DaWorldLL::FindNewVehicle(COMMODITYID vehicleCID, unsigned int empire
 }
 
 // Used by DaSc to fetch a vehicle.
-DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity)
+DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity,
+		COMMODITYID onlyCid)
 {
 	if(!HasSubatoms())
 		return 0;
@@ -4036,7 +4037,7 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned in
 				}
 			}
 
-			DaVehicle* vehicle = bd->FindNewVehicleType(spotType, 0);
+			DaVehicle* vehicle = bd->FindNewVehicleType(spotType, 0, onlyCid);
 			if(!vehicle)
 				continue;										// Building has no nu vehicles of that type in town.
 
@@ -4088,6 +4089,8 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned in
 			continue;
 		if(!vehicle->CanFetch(spotType))
 			continue;
+		if(onlyCid != CID_Invalid && vehicle->CommodityId() != onlyCid)
+			continue;
 		if(onSlabInCity.IsNull() || cityIds.contains(vehicle->InBdCity()))
 			return vehicle;
 	}
@@ -4098,7 +4101,7 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned in
 		DaWorld* moon = dynamic_cast<DaWorld*>(*it);
 		if(!moon)
 			continue;
-		DaVehicle* vehicle = moon->FindNewVehicleType(spotType, empireId, onSlabInCity);
+		DaVehicle* vehicle = moon->FindNewVehicleType(spotType, empireId, onSlabInCity, onlyCid);
 		if(vehicle)
 			return vehicle;
 	}
@@ -4106,7 +4109,7 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned in
 }
 
 // Used by DaBd to fetch a vehicle.
-DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher)
+DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid)
 {
 	if(!HasSubatoms())
 		return 0;
@@ -4120,6 +4123,8 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd*
 		if(vehicle)
 		{
 			if(!vehicle->CanBdFetch(spotType, fetcher))
+				continue;
+			if(onlyCid != CID_Invalid && vehicle->CommodityId() != onlyCid)
 				continue;
 			if(fetcher->Is(vehicle->BdId()))
 				continue;	// Don't fetch vehicles from my own site.
@@ -4151,7 +4156,7 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd*
 			DaBd* bd = dynamic_cast<DaBd*>(*it);
 			if(bd && !bd->Is(fetcher->Id()) && fetcher->HasTradeConnection(bd->Id()))
 			{
-				vehicle = bd->FindNewVehicleType(spotType, fetcher);
+				vehicle = bd->FindNewVehicleType(spotType, fetcher, onlyCid);
 				if(vehicle)
 					return vehicle;
 			}
@@ -4164,7 +4169,7 @@ DaVehicle* DaWorldLL::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd*
 		DaWorld* moon = dynamic_cast<DaWorld*>(*it);
 		if(!moon)
 			continue;
-		DaVehicle* vehicle = moon->FindNewVehicleType(spotType, fetcher);
+		DaVehicle* vehicle = moon->FindNewVehicleType(spotType, fetcher, onlyCid);
 		if(vehicle)
 			return vehicle;
 	}

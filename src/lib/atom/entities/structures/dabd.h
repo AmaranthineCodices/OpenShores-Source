@@ -1199,7 +1199,7 @@ public:	// Methods
 
 	DaVehicle* FindNewVehicle(COMMODITYID vehicleCID);
 
-	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher);
+	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid=CID_Invalid);
 
 	virtual DaBd* FindParentBdInEnv();
 
@@ -3471,6 +3471,15 @@ protected:
 
 	bool VehicleParkingSpot(VEHICLE_SPOT_TYPE spotType, AuMatrix4x4& parkPosM, const AuBdDesign* scd, DaWorldLL* llworld,
 			DaAtomList& vehiclesAtWorld);
+
+	bool TypedVehicleParkingSpot(COMMODITYID cid, AuMatrix4x4& parkPosM);
+
+	bool VacantParkingSpot(VEHICLE_SPOT_TYPE spotType, const QList<AuMatrix4x4>& parkingSpots, AuMatrix4x4& parkPosM,
+			DaWorldLL* llworld, DaAtomList& vehiclesAtWorld);
+
+	void FillItemSpots();
+
+	void TypedVehicleSpots(QList<AuScSpot>& spots) const;
 
 	void WindowSurfaceGlow(const QString& windowName, float& glowR, float& glowG, float& glowB) const;
 

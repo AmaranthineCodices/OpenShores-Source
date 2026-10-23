@@ -4272,7 +4272,7 @@ DaVehicle* DaStar::FindNewVehicle(COMMODITYID vehicleCID, unsigned int empireId)
 	return 0;
 }
 
-DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId)
+DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, COMMODITYID onlyCid)
 {
 	DaAtomList subs;
 	ListNormalSubatoms(subs);
@@ -4282,7 +4282,7 @@ DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int e
 		DaStar* pStar = dynamic_cast<DaStar *>(pAtom);
 		if(pStar)
 		{
-			DaVehicle* vehicle = pStar->FindNewVehicleType(spotType, empireId);
+			DaVehicle* vehicle = pStar->FindNewVehicleType(spotType, empireId, onlyCid);
 			if(vehicle)
 				return vehicle;
 		}
@@ -4291,7 +4291,7 @@ DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int e
 			DaWorld* pPlanet = dynamic_cast<DaWorld *>(pAtom);
 			if(pPlanet)
 			{
-				DaVehicle* vehicle = pPlanet->FindNewVehicleType(spotType, empireId, AuId(0));
+				DaVehicle* vehicle = pPlanet->FindNewVehicleType(spotType, empireId, AuId(0), onlyCid);
 				if(vehicle)
 					return vehicle;
 			}
@@ -4300,7 +4300,7 @@ DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int e
 	return 0;
 }
 
-DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher)
+DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid)
 {
 	DaAtomList subs;
 	ListNormalSubatoms(subs);
@@ -4310,7 +4310,7 @@ DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fe
 		DaStar* pStar = dynamic_cast<DaStar *>(pAtom);
 		if(pStar)
 		{
-			DaVehicle* vehicle = pStar->FindNewVehicleType(spotType, fetcher);
+			DaVehicle* vehicle = pStar->FindNewVehicleType(spotType, fetcher, onlyCid);
 			if(vehicle)
 				return vehicle;
 		}
@@ -4319,7 +4319,7 @@ DaVehicle* DaStar::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fe
 			DaWorld* pPlanet = dynamic_cast<DaWorld *>(pAtom);
 			if(pPlanet)
 			{
-				DaVehicle* vehicle = pPlanet->FindNewVehicleType(spotType, fetcher);
+				DaVehicle* vehicle = pPlanet->FindNewVehicleType(spotType, fetcher, onlyCid);
 				if(vehicle)
 					return vehicle;
 			}

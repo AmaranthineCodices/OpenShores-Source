@@ -17,17 +17,21 @@
 #include "auscdeletestopdlg.h"
 #include "auscparts.h"
 #include "auscrenamestopdlg.h"
+#include "auscspotdlg.h"
 #include "auslider.h"
 #include "autablewidgetitem.h"
 #include "dadesigner.h"
 #include "daperson.h"
 #include "dgdata.h"
+#include "auapp.h"
+#include "auframe.h"
 #include <QHeaderView>
 #include <QIcon>
 #include <QInputDialog>
 #include <QMenu>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <memory>
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
 
@@ -884,6 +888,35 @@ void AuDesignerParts::PartsRightClicked()
 		}
 	}
 
+	QAction* changeCommodity = 0;
+	std::unique_ptr<AuScPart> spotPart;
+	if(selIds.m_Ids.size() == 1)
+	{
+		DaPerson* person;
+		view->LockSceneAtom(&person);
+		if(person)
+		{
+			DaDesigner* de = person->FindParentDesignerInEnv();
+			if(de)
+			{
+				const AuScParts* parts = de->LockPartsForRead();
+				if(parts)
+				{
+					AuScParts::const_iterator pi = parts->find(*selIds.m_Ids.begin());
+					if(pi != parts->cend() && ((*pi)->IsItemSpot() || (*pi)->IsVehicleSpot()))
+						spotPart.reset((*pi)->Clone());
+				}
+				de->UnlockParts();
+			}
+		}
+		view->UnlockSceneAtom();
+		if(spotPart)
+		{
+			changeCommodity = menu.addAction(QIcon(spotPart->TypeIcon()), tr("Change Commodity..."));
+			menu.addSeparator();
+		}
+	}
+
 	QAction* gotoSel = 0;
 	if(!selIds.m_Ids.empty())
 	{
@@ -950,6 +983,24 @@ void AuDesignerParts::PartsRightClicked()
 	else if(action == gotoSel)
 	{
 		emit GoToSelection();
+	}
+	else if(action == changeCommodity && spotPart)
+	{
+		AuScItemSpot* itemSpot = dynamic_cast<AuScItemSpot*>(spotPart.get());
+		AuScVehicleSpot* vehicleSpot = dynamic_cast<AuScVehicleSpot*>(spotPart.get());
+		AuScSpotDlg dlg(vehicleSpot != 0, this);
+		dlg.SetChoice(spotPart->SpotCommodity(), itemSpot ? itemSpot->Switch() : AuScItemSpot::Switch_None);
+		if(auApp->Frame()->ExecDialog(dlg) == QDialog::Accepted)
+		{
+			if(itemSpot)
+			{
+				itemSpot->SetCommodity(dlg.Commodity());
+				itemSpot->SetSwitch(dlg.Switch());
+			}
+			else if(vehicleSpot)
+				vehicleSpot->SetCommodity(dlg.Commodity());
+			auApp->DesignerPartUpdate(*selIds.m_Ids.begin(), *spotPart);
+		}
 	}
 	else if(action == showSel)
 	{

@@ -11,6 +11,8 @@
 #include "auterraininfo.h"
 #include "daatomlist.h"
 #include "dabd.h"
+#include "auscparts.h"
+#include "daitem.h"
 #include "danpc.h"
 #include "daperson.h"
 #include "dasc.h"
@@ -31,6 +33,71 @@ DaCapsule::DaCapsule()
 
 DaCapsule::~DaCapsule()
 {
+}
+
+void DaCapsule::PlaceItemsAtSpots(const QList<AuScSpot>& spots)
+{
+	if(spots.empty() || InArena() || InDesignPreview() || g_Au.IsSceneClient())
+		return;
+	AuEther* ether = Ether();
+	if(!ether)
+		return;
+
+	DaAtomList items;
+	FindItemsRecursive(items, true);
+	const double reach = FeetPerMeter()*0.5;
+	for(QList<AuScSpot>::const_iterator si = spots.cbegin(); si != spots.cend(); si++)
+	{
+		bool occupied = false;
+		for(DaAtomList::const_iterator it = items.cbegin(); it != items.cend(); it++)
+		{
+			AuPoint loc;
+			if(!(*it)->GetLocationRelativeToParent(loc, this))
+				continue;
+			loc = (*si).m_Position.UnProject(loc);
+			if(loc.Length_2D() < reach && loc.z > -reach && loc.z < FeetPerMeter()*2)
+			{
+				occupied = true;
+				break;
+			}
+		}
+		if(occupied)
+			continue;
+
+		AuItem* item = 0;
+		AuItemHash& cargo = LockCargoForWrite();
+		AuItemHash::iterator ci = cargo.FindBest((*si).m_Commodity);
+		if(ci != cargo.end())
+		{
+			item = (*ci).second->Clone();
+			item->SetCount(1);
+		}
+		UnlockCargo();
+		if(!item)
+			continue;
+		if(!RemoveCargo(*item, 1))
+		{
+			delete item;
+			continue;
+		}
+
+		DaItem* li = new DaItem(*item);
+		delete item;
+		li->ConnectSignals();
+		li->Create();
+		AuMatrix4x4 mItem((*si).m_Position);
+		mItem.Translate(0, 0, li->GroundHeightAboveCG());
+		li->SetPosAndOrient(AuAtomPos(Id(), mItem));
+		ether->AddAtom(li);
+		li->SetStaticDisplay(Id(), Name(), (*si).m_Group);
+		li->SetAtRest();
+		li->SetInScene();
+		g_Au.AtomAdded(li->Id());
+		li->SetNormal();
+		li->TickTock();
+		li->InvalidateEnvironment();
+		items.append(li);
+	}
 }
 
 DaCapsule::DaCapsule(const DaCapsule& c) : DaUnit(c)

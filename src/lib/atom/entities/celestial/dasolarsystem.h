@@ -543,8 +543,8 @@ public:
 	DaVehicle* FindNewVehicle(COMMODITYID vehicleCID, unsigned int empireId);
 
 	// Recursive attempt to locate a 'nu' vehicle that has been manufactured.
-	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId);
-	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher);
+	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, COMMODITYID onlyCid=CID_Invalid);
+	DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid=CID_Invalid);
 
 	virtual DaBd* FindParentBdInEnv();
 

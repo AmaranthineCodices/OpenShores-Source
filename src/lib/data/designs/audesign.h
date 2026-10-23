@@ -236,6 +236,8 @@ public:	// Operators
 
 	virtual void operator<<(QDataStream& in);
 
+	static void SkipStarshipChecklist(QDataStream& in);
+
 	virtual bool operator==(const AuDesign& c) const
 	{
 		Q_ASSERT(false);				//DHH Function added to satisfy dll export build in Windows. Does anybody use it?

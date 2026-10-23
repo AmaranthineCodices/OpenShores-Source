@@ -551,6 +551,8 @@ AuDesignerFrame::AuDesignerFrame(QWidget *parent) : AuFrame(parent)
 	m_Designer_PanelWeapon = 0;
 	m_Designer_PanelsMenu = 0;
 	m_Designer_ParkGroundVehicle = 0;
+	m_Designer_ItemSpot = 0;
+	m_Designer_VehicleSpot = 0;
 	m_Designer_ParkRocket = 0;
 	m_Designer_ParkSpaceVehicle = 0;
 	m_Designer_ParkSpacecraft = 0;
@@ -3901,6 +3903,9 @@ void AuDesignerFrame::CreateDesignerMenu()
 			m_Designer_LivestockPost = m_Designer_StationsMenu->addAction(QIcon(":data/ScLivestock.png"), tr("Li&vestock Post..."),
 					m_View, SLOT(DesignerStationLivestock()));
 
+			m_Designer_ItemSpot = m_Designer_StationsMenu->addAction(QIcon(":data/it_HandCraft.png"), tr("&Item Spot..."),
+					m_View, SLOT(DesignerItemSpot()));
+
 			m_Designer_TroopPost = m_Designer_StationsMenu->addAction(QIcon(":data/ScTroop.png"), tr("T&roop Post..."),
 					m_View, SLOT(DesignerStationTroop()));
 		}
@@ -3970,6 +3975,9 @@ void AuDesignerFrame::CreateDesignerMenu()
 
 			m_Designer_ParkWaterVehicle = m_Designer_VehiclesMenu->addAction(QIcon(":data/ScParkWaterVehicle.png"),
 					tr("&Water Vehicle Parking Spot..."), m_View, SLOT(DesignerParkWaterVehicle()));
+
+			m_Designer_VehicleSpot = m_Designer_VehiclesMenu->addAction(QIcon(":data/ScParkGroundVehicle.png"),
+					tr("&Vehicle Spot..."), m_View, SLOT(DesignerVehicleSpot()));
 
 			m_Designer_VehiclesMenu->addSeparator();
 
@@ -4737,6 +4745,8 @@ void AuDesignerFrame::DesignerEnableControls()
 	m_Designer_PanelWeapon->setEnabled(dok && !objectMode);
 	m_Designer_Paste->setEnabled(dok);
 	m_Designer_ParkGroundVehicle->setEnabled(dok && !objectMode);
+	m_Designer_ItemSpot->setEnabled(dok && !objectMode);
+	m_Designer_VehicleSpot->setEnabled(dok && !objectMode);
 	m_Designer_ParkRocket->setEnabled(dok && !objectMode);
 	m_Designer_ParkSpacecraft->setEnabled(dok && !objectMode);
 	m_Designer_ParkSpaceVehicle->setEnabled(dok && !objectMode);

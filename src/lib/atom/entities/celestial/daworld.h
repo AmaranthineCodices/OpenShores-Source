@@ -511,18 +511,21 @@ public:
 
 	// Recursive attempt to locate a 'nu' vehicle that has been manufactured.
 	// 'onSlabInCity' is the id of the city in which the requestor is sitting on a road slab. May be null.
-	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity)
+	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity,
+			COMMODITYID onlyCid=CID_Invalid)
 	{
 		Q_UNUSED(spotType);
 		Q_UNUSED(empireId);
 		Q_UNUSED(onSlabInCity);
+		Q_UNUSED(onlyCid);
 		return 0;
 	}
 
-	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher)
+	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid=CID_Invalid)
 	{
 		Q_UNUSED(spotType);
 		Q_UNUSED(fetcher);
+		Q_UNUSED(onlyCid);
 		return 0;
 	}
 

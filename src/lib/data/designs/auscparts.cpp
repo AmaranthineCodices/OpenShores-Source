@@ -213,6 +213,10 @@ AuScPart* AuScPart::Create(PART_TYPE type)
 		return new AuScTroopPost;
 	case Part_GroundVehicleParkingSpot:
 		return new AuScGroundVehicleParkingSpot;
+	case Part_ItemSpot:
+		return new AuScItemSpot;
+	case Part_VehicleSpot:
+		return new AuScVehicleSpot;
 	case Part_SpacecraftParkingSpot:
 		return new AuScSpacecraftParkingSpot;
 	case Part_SpaceVehicleLauncher:
@@ -415,6 +419,8 @@ SYSTEM AuScPart::ModuleSystem(AuScPart::PART_TYPE partType)
 	case Part_WaterVehicleParkingSpot:
 	case Part_Window:
 	case Part_WindowJig:
+	case Part_ItemSpot:
+	case Part_VehicleSpot:
 		break;
 	};
 	return SYS_Count;
@@ -474,7 +480,14 @@ void AuScPart::operator<<(QDataStream& in)
 	}
 	m_Bits &= 0x0f;		// Turn off the top nibble.
 
-	if(ReadVersion() >= 0x03)
+	if(ReadVersion() >= 0x12)
+	{
+		qint64 steamId;
+		in >> steamId;
+		m_ArchId = AuId();
+		in >> m_ArchName;
+	}
+	else if(ReadVersion() >= 0x03)
 	{
 		in >> m_ArchId;
 		in >> m_ArchName;
@@ -701,6 +714,18 @@ void AuScParts::operator>>(QDataStream& out) const
 	}
 }
 
+static quint8 StarshipPartType(QDataStream& in, quint8 type)
+{
+	if(type != 90 && type != 91)
+		return type;
+	if(!in.device())
+		return type;
+	const QByteArray head = in.device()->peek(2);
+	if(head.size() != 2 || ((quint8)head[0] >> 4) != 0x0f || (quint8)head[1] < 0x12)
+		return type;
+	return type == 90 ? AuScPart::Part_ItemSpot : AuScPart::Part_VehicleSpot;
+}
+
 void AuScParts::operator<<(QDataStream& in)
 {
 	Clear();
@@ -717,6 +742,7 @@ void AuScParts::operator<<(QDataStream& in)
 	{
 		in >> id;
 		in >> type;
+		type = StarshipPartType(in, type);
 		s = AuScPart::Create((AuScPart::PART_TYPE)type);
 		if(s)
 		{
@@ -6288,6 +6314,55 @@ void AuScParts::LivestockPostLocs(QHash<quint16, AuPoint>& locs) const
 	}
 }
 
+void AuScParts::ItemSpots(QList<AuScSpot>& spots) const
+{
+	for(const_iterator pi = cbegin(); pi != cend(); pi++)
+	{
+		if((*pi)->IsOmitted())
+			continue;
+		const AuScItemSpot* spot = dynamic_cast<const AuScItemSpot*>(*pi);
+		if(!spot || spot->Commodity() == CID_Invalid)
+			continue;
+		AuScSpot s;
+		s.m_PartId = pi.key();
+		s.m_Commodity = spot->Commodity();
+		s.m_Switch = spot->Switch();
+		s.m_Group = spot->GroupName();
+		s.m_Position = spot->PositionMatrix();
+		spots.append(s);
+	}
+}
+
+void AuScParts::VehicleSpots(QList<AuScSpot>& spots) const
+{
+	for(const_iterator pi = cbegin(); pi != cend(); pi++)
+	{
+		if((*pi)->IsOmitted())
+			continue;
+		const AuScVehicleSpot* spot = dynamic_cast<const AuScVehicleSpot*>(*pi);
+		if(!spot || spot->Commodity() == CID_Invalid)
+			continue;
+		AuScSpot s;
+		s.m_PartId = pi.key();
+		s.m_Commodity = spot->Commodity();
+		s.m_Switch = AuScItemSpot::Switch_None;
+		s.m_Group = spot->GroupName();
+		s.m_Position = spot->PositionMatrix();
+		spots.append(s);
+	}
+}
+
+void AuScParts::VehicleSpots(COMMODITYID cid, QList<AuMatrix4x4>& spots) const
+{
+	for(const_iterator pi = cbegin(); pi != cend(); pi++)
+	{
+		if((*pi)->IsOmitted())
+			continue;
+		if((*pi)->IsVehicleSpot() && (*pi)->SpotCommodity() == cid)
+			spots.append((*pi)->PositionMatrix());
+	}
+}
+
 AuPoint AuScParts::HelmLocation() const
 {
 	for(const_iterator pi = cbegin(); pi != cend(); pi++)
@@ -10951,6 +11026,17 @@ void AuScDoor::operator<<(QDataStream& in)
 
 		if(hasWhat & 0x10)
 			in >> m_Access;
+
+		if(ReadVersion() >= 0x12 && (hasWhat & 0x20))
+		{
+			quint16 partId;
+			in >> partId;
+		}
+
+		if(m_Access == DOOR_Hull + 2)
+			m_Access = DOOR_Automatic;
+		else if(m_Access > DOOR_Hull)
+			m_Access = DOOR_Standard;
 	}
 	else if(ReadVersion() >= 0x06)
 	{
@@ -12208,6 +12294,11 @@ void AuScLift::operator<<(QDataStream& in)
 {
 	AuScStatePart::operator<<(in);
 	in >> m_Stop;
+	if(ReadVersion() >= 0x13)
+	{
+		quint8 settings;
+		in >> settings;
+	}
 
 	m_Stops.clear();
 	quint8 hasWhat;
@@ -18214,6 +18305,341 @@ bool AuScGroundVehicleParkingSpot::Sight(quint16 partId, const AuPoint& eyeLoc, 
 	Q_UNUSED(liftStops);
 	Q_UNUSED(sightSurfaceNormal);
 	return false;
+}
+
+//-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
+
+AuScItemSpot::AuScItemSpot()
+{
+	m_Commodity = CID_Invalid;
+	m_Rotation = 0;
+	m_Switch = Switch_None;
+}
+
+AuScItemSpot::AuScItemSpot(const AuScItemSpot& c) : AuScIcon(c)
+{
+	m_Commodity = c.m_Commodity;
+	m_Rotation = c.m_Rotation;
+	m_Switch = c.m_Switch;
+}
+
+AuScItemSpot::AuScItemSpot(const AuScItemSpot& c, const AuScSelectInfo& selInfo) :
+	AuScIcon(c, selInfo)
+{
+	m_Commodity = c.m_Commodity;
+	m_Rotation = c.m_Rotation;
+	m_Switch = c.m_Switch;
+}
+
+void AuScItemSpot::operator>>(QDataStream& out) const
+{
+	AuScIcon::operator>>(out);
+	out << (qint16)m_Commodity;
+	out << m_Rotation;
+	out << (qint8)m_Switch;
+}
+
+void AuScItemSpot::operator<<(QDataStream& in)
+{
+	AuScIcon::operator<<(in);
+	qint16 commodity;
+	in >> commodity;
+	m_Commodity = commodity > CID_Invalid && commodity < CID_Count ? (quint16)commodity : (quint16)CID_Invalid;
+	in >> m_Rotation;
+	qint8 sw;
+	in >> sw;
+	m_Switch = (quint8)sw;
+}
+
+bool AuScItemSpot::operator==(const AuScPart& p) const
+{
+	try
+	{
+		const AuScItemSpot& c = dynamic_cast<const AuScItemSpot&>(p);
+		if(!AuScIcon::operator==(c))
+			return false;
+		if(m_Commodity != c.m_Commodity)
+			return false;
+		if(m_Rotation != c.m_Rotation)
+			return false;
+		if(m_Switch != c.m_Switch)
+			return false;
+
+		return true;
+	}
+	catch(const bad_cast&)
+	{
+		// dynamic_cast failed
+		return false;
+	}
+}
+
+AuScPart* AuScItemSpot::Clone() const
+{
+	return new AuScItemSpot(*this);
+}
+
+AuScPart* AuScItemSpot::CloneParts(const AuScSelectInfo& selInfo) const
+{
+	return new AuScItemSpot(*this, selInfo);
+}
+
+QString AuScItemSpot::TypeIcon() const
+{
+	if(Commodity() != CID_Invalid)
+		return g_Au.CommodityBitmapName(Commodity());
+	return QString(":data/it_HandCraft.png");
+}
+
+QString AuScItemSpot::TypeName() const
+{
+	if(Commodity() == CID_Invalid)
+		return QObject::tr("Item Spot, %1").arg(QObject::tr("None"));
+	return QObject::tr("Item Spot, %1").arg(g_Au.CommodityName(Commodity()));
+}
+
+double AuScItemSpot::IconBack() const
+{
+	return FeetPerMeter()*0.33;
+}
+
+double AuScItemSpot::IconFore() const
+{
+	return FeetPerMeter()*0.33;
+}
+
+double AuScItemSpot::IconLeft() const
+{
+	return FeetPerMeter()*0.33;
+}
+
+double AuScItemSpot::IconRight() const
+{
+	return FeetPerMeter()*0.33;
+}
+
+bool AuScItemSpot::IsValid() const
+{
+	if(Commodity() == CID_Invalid)
+		return false;
+	return AuScIcon::IsValid();
+}
+
+quint64 AuScItemSpot::MemoryUsage() const
+{
+	quint64 mem = AuScIcon::MemoryUsage();
+	mem += sizeof(AuScItemSpot) - sizeof(AuScIcon);
+	return mem;
+}
+
+AuMatrix4x4 AuScItemSpot::PositionMatrix() const
+{
+	AuPoint o(m_Face.FaceLocation());
+	AuPoint n(m_Face.FaceNormal());
+	AuPoint x(m_Face.Vertex(3) - m_Face.Vertex(0));
+	x.Unit();
+	AuPoint y(n.Cross(x));
+	y.Unit();
+	return AuMatrix4x4(o, x, y);
+}
+
+QString AuScItemSpot::SelectedDesc(const AuScParts& parts) const
+{
+	return QObject::tr("%1, Commodity=%2, Switch=%3")
+			.arg(FullName(parts))
+			.arg(Commodity() == CID_Invalid ? QObject::tr("None") : g_Au.CommodityName(Commodity()))			.arg(SwitchName(Switch()));
+}
+
+bool AuScItemSpot::Sight(quint16 partId, const AuPoint& eyeLoc, AuPoint& sightLoc,
+		const AuDoorStateHash& doorStates, const AuLandingGearStateHash& landingGearStates, const AuLiftHash& liftStops,
+		AuPoint& sightSurfaceNormal) const
+{
+	Q_UNUSED(partId);
+	Q_UNUSED(eyeLoc);
+	Q_UNUSED(sightLoc);
+	Q_UNUSED(doorStates);
+	Q_UNUSED(landingGearStates);
+	Q_UNUSED(liftStops);
+	Q_UNUSED(sightSurfaceNormal);
+	return false;
+}
+
+//static
+QString AuScItemSpot::SwitchName(SWITCH sw)
+{
+	switch(sw)
+	{
+	case Switch_Off:
+		return QObject::tr("Off");
+	case Switch_On:
+		return QObject::tr("On");
+	case Switch_None:
+		break;
+	}
+	return QObject::tr("None");
+}
+
+//-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|
+
+AuScVehicleSpot::AuScVehicleSpot()
+{
+	m_Commodity = CID_Invalid;
+	m_Rotation = 0;
+}
+
+AuScVehicleSpot::AuScVehicleSpot(const AuScVehicleSpot& c) : AuScIcon(c)
+{
+	m_Commodity = c.m_Commodity;
+	m_Rotation = c.m_Rotation;
+}
+
+AuScVehicleSpot::AuScVehicleSpot(const AuScVehicleSpot& c, const AuScSelectInfo& selInfo) :
+	AuScIcon(c, selInfo)
+{
+	m_Commodity = c.m_Commodity;
+	m_Rotation = c.m_Rotation;
+}
+
+void AuScVehicleSpot::operator>>(QDataStream& out) const
+{
+	AuScIcon::operator>>(out);
+	out << (qint16)m_Commodity;
+	out << m_Rotation;
+}
+
+void AuScVehicleSpot::operator<<(QDataStream& in)
+{
+	AuScIcon::operator<<(in);
+	qint16 commodity;
+	in >> commodity;
+	m_Commodity = commodity > CID_Invalid && commodity < CID_Count ? (quint16)commodity : (quint16)CID_Invalid;
+	in >> m_Rotation;
+}
+
+bool AuScVehicleSpot::operator==(const AuScPart& p) const
+{
+	try
+	{
+		const AuScVehicleSpot& c = dynamic_cast<const AuScVehicleSpot&>(p);
+		if(!AuScIcon::operator==(c))
+			return false;
+		if(m_Commodity != c.m_Commodity)
+			return false;
+		if(m_Rotation != c.m_Rotation)
+			return false;
+
+		return true;
+	}
+	catch(const bad_cast&)
+	{
+		// dynamic_cast failed
+		return false;
+	}
+}
+
+AuScPart* AuScVehicleSpot::Clone() const
+{
+	return new AuScVehicleSpot(*this);
+}
+
+AuScPart* AuScVehicleSpot::CloneParts(const AuScSelectInfo& selInfo) const
+{
+	return new AuScVehicleSpot(*this, selInfo);
+}
+
+QString AuScVehicleSpot::TypeIcon() const
+{
+	if(Commodity() != CID_Invalid)
+		return g_Au.CommodityBitmapName(Commodity());
+	return QString(":data/ScParkGroundVehicle.png");
+}
+
+QString AuScVehicleSpot::TypeName() const
+{
+	if(Commodity() == CID_Invalid)
+		return QObject::tr("Vehicle Spot, %1").arg(QObject::tr("None"));
+	return QObject::tr("Vehicle Spot, %1").arg(g_Au.CommodityName(Commodity()));
+}
+
+double AuScVehicleSpot::IconBack() const
+{
+	return FeetPerMeter()*0.82;
+}
+
+double AuScVehicleSpot::IconFore() const
+{
+	return FeetPerMeter()*0.82;
+}
+
+double AuScVehicleSpot::IconLeft() const
+{
+	return FeetPerMeter()*0.82;
+}
+
+double AuScVehicleSpot::IconRight() const
+{
+	return FeetPerMeter()*0.82;
+}
+
+bool AuScVehicleSpot::IsValid() const
+{
+	if(Commodity() == CID_Invalid)
+		return false;
+	return AuScIcon::IsValid();
+}
+
+quint64 AuScVehicleSpot::MemoryUsage() const
+{
+	quint64 mem = AuScIcon::MemoryUsage();
+	mem += sizeof(AuScVehicleSpot) - sizeof(AuScIcon);
+	return mem;
+}
+
+AuMatrix4x4 AuScVehicleSpot::PositionMatrix() const
+{
+	AuPoint o(m_Face.FaceLocation());
+	AuPoint n(m_Face.FaceNormal());
+	AuPoint x(m_Face.Vertex(3) - m_Face.Vertex(0));
+	x.Unit();
+	AuPoint y(n.Cross(x));
+	y.Unit();
+	return AuMatrix4x4(o, x, y);
+}
+
+QString AuScVehicleSpot::SelectedDesc(const AuScParts& parts) const
+{
+	return QObject::tr("%1, Commodity=%2")
+			.arg(FullName(parts))
+			.arg(Commodity() == CID_Invalid ? QObject::tr("None") : g_Au.CommodityName(Commodity()));
+}
+
+bool AuScVehicleSpot::Sight(quint16 partId, const AuPoint& eyeLoc, AuPoint& sightLoc,
+		const AuDoorStateHash& doorStates, const AuLandingGearStateHash& landingGearStates, const AuLiftHash& liftStops,
+		AuPoint& sightSurfaceNormal) const
+{
+	Q_UNUSED(partId);
+	Q_UNUSED(eyeLoc);
+	Q_UNUSED(sightLoc);
+	Q_UNUSED(doorStates);
+	Q_UNUSED(landingGearStates);
+	Q_UNUSED(liftStops);
+	Q_UNUSED(sightSurfaceNormal);
+	return false;
+}
+
+void AuScVehicleSpot::BuildingCursorSegments(AuPointArray& edges) const
+{
+	edges.append(m_Face.Vertex(0));
+	edges.append(m_Face.Vertex(1));
+
+	edges.append(m_Face.Vertex(1));
+	edges.append(m_Face.Vertex(2));
+
+	edges.append(m_Face.Vertex(2));
+	edges.append(m_Face.Vertex(3));
+
+	edges.append(m_Face.Vertex(3));
+	edges.append(m_Face.Vertex(0));
 }
 
 //-+---+---+---+---+---+---+---+---+---|---+---+---+---+---+---+-==+---+---+---|---+---+---+---+---+---+---+---+---+---+---+---+---|

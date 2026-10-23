@@ -1846,11 +1846,12 @@ public:
 
 	// Recursive attempt to locate a 'nu' vehicle that has been manufactured.
 	// 'onSlabInCity' is the id of the city in which the requestor is sitting on a road slab. May be null.
-	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity);
+	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, const AuId& onSlabInCity,
+			COMMODITYID onlyCid=CID_Invalid);
 
 	// Used by DaBd
 	// 'fetcher' is the DaBd that is fetching a vehicle.
-	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher);
+	virtual DaVehicle* FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid=CID_Invalid);
 
 	// 'geoLL' is the exact LL of the geo.
 	// Returns OG_None if the geo does not override natural terrain ground, or if 'geoLL' is not found.

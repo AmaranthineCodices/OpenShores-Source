@@ -1231,6 +1231,14 @@ protected:
 
 	bool VehicleParkingSpot(VEHICLE_SPOT_TYPE spotType, AuMatrix4x4& parkPosM, const AuScDesign* scd, DaAtomList& vehiclesAboard);
 
+	bool TypedVehicleParkingSpot(COMMODITYID cid, AuMatrix4x4& parkPosM, const AuScDesign* scd, DaAtomList& vehiclesAboard);
+
+	bool VacantParkingSpot(const QList<AuMatrix4x4>& parkingSpots, AuMatrix4x4& parkPosM, DaAtomList& vehiclesAboard);
+
+	void FillItemSpots();
+
+	void TypedVehicleSpots(QList<AuScSpot>& spots) const;
+
 	void WindowSurfaceGlow(const QString& windowName, float& glowR, float& glowG, float& glowB) const;
 };
 

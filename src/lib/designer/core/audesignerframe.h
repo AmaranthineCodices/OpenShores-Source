@@ -355,6 +355,8 @@ private:
 	QMenu*								m_Designer_PanelsMenu;
 	QAction*							m_Designer_PanelWeapon;
 	QAction*							m_Designer_ParkGroundVehicle;
+	QAction*							m_Designer_ItemSpot;
+	QAction*							m_Designer_VehicleSpot;
 	QAction*							m_Designer_ParkRocket;
 	QAction*							m_Designer_ParkSpacecraft;
 	QAction*							m_Designer_ParkSpaceVehicle;

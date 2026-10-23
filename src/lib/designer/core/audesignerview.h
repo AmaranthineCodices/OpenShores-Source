@@ -1596,6 +1596,8 @@ public slots:
 	void DesignerPanelShield();
 	void DesignerPanelWeapon();
 	void DesignerParkGroundVehicle();
+	void DesignerItemSpot();
+	void DesignerVehicleSpot();
 	void DesignerParkRocket();
 	void DesignerParkSpaceVehicle();
 	void DesignerParkSpacecraft();

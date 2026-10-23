@@ -138,6 +138,7 @@
 #include "ddscopacity.h"
 #include "ddscpaint.h"
 #include "ddscparkgroundvehicle.h"
+#include "ddscspot.h"
 #include "ddscparkrocket.h"
 #include "ddscparkspacecraft.h"
 #include "ddscparkspacevehicle.h"
@@ -12616,6 +12617,20 @@ void AuDesignerView::DesignerParkGroundVehicle()
 	if(!IsInDesignEnvironment())
 		return;
 	StartCommand(new DdScParkGroundVehicle(this));
+}
+
+void AuDesignerView::DesignerItemSpot()
+{
+	if(!IsInDesignEnvironment())
+		return;
+	StartCommand(new DdScSpot(this, false));
+}
+
+void AuDesignerView::DesignerVehicleSpot()
+{
+	if(!IsInDesignEnvironment())
+		return;
+	StartCommand(new DdScSpot(this, true));
 }
 
 void AuDesignerView::DesignerParkRocket()

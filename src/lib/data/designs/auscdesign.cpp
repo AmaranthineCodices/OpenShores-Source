@@ -770,6 +770,9 @@ void AuScDesign::operator<<(QDataStream& in)
 	in >> ver;
 	ver = ver >> 4;
 
+	if(ver >= 0x07)
+		SkipStarshipChecklist(in);
+
 	if(ver == 0)
 	{
 		quint16 cryoBerths;

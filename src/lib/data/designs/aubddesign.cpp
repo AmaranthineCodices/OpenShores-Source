@@ -721,11 +721,21 @@ void AuBdDesign::operator<<(QDataStream& in)
 
 	quint8 ver;
 	in >> ver;
+
+	if(ver >= 6)
+		SkipStarshipChecklist(in);
+
 	in >> m_HullVolume;
 	in >> m_Modules;
 	in >> *m_Parts;
 	in >> m_Structure;
-	if(ver >= 3)
+	if(ver >= 5)
+	{
+		quint16 industry;
+		in >> industry;
+		m_IndustryId = industry < IID_Count ? (quint8)industry : (quint8)IID_None;
+	}
+	else if(ver >= 3)
 		in >> m_IndustryId;
 	in >> m_Arena;
 	in >> m_Armor;

@@ -3299,19 +3299,19 @@ DaVehicle* DaSolarSystem::FindNewVehicle(COMMODITYID vehicleCID, unsigned int em
 	return 0;
 }
 
-DaVehicle* DaSolarSystem::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId)
+DaVehicle* DaSolarSystem::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, unsigned int empireId, COMMODITYID onlyCid)
 {
 	DaStar* star = FindPrimaryStar();
 	if(star)
-		return star->FindNewVehicleType(spotType, empireId);
+		return star->FindNewVehicleType(spotType, empireId, onlyCid);
 	return 0;
 }
 
-DaVehicle* DaSolarSystem::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher)
+DaVehicle* DaSolarSystem::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid)
 {
 	DaStar* star = FindPrimaryStar();
 	if(star)
-		return star->FindNewVehicleType(spotType, fetcher);
+		return star->FindNewVehicleType(spotType, fetcher, onlyCid);
 	return 0;
 }
 

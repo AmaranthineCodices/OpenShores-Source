@@ -232,6 +232,22 @@ void AuDesign::operator>>(QDataStream& out) const
 	}
 }
 
+void AuDesign::SkipStarshipChecklist(QDataStream& in)
+{
+	quint8 b;
+	in >> b;
+	quint32 n;
+	in >> n;
+	for(quint32 i = 0; i < n && in.status() == QDataStream::Ok; i++)
+	{
+		quint8 b1, b2;
+		QString s1, s2;
+		in >> b1 >> b2 >> s1 >> s2;
+	}
+	QString s;
+	in >> s;
+}
+
 void AuDesign::operator<<(QDataStream& in)
 {
 	in >> m_Id;
@@ -243,6 +259,12 @@ void AuDesign::operator<<(QDataStream& in)
 	in >> verState;
 	m_State = (STATE)(verState & 0x0f);
 	quint8 ver = verState >> 4;
+
+	if(ver >= 0x05)
+	{
+		qint64 steamId;
+		in >> steamId;
+	}
 
 	if(ver >= 0x02)
 		ReadTextures(in);

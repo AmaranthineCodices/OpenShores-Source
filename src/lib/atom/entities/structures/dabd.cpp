@@ -3876,6 +3876,7 @@ bool DaBd::ClosestVehicleParkingSpot(const DaVehicle* vehicle, AuMatrix4x4& park
 		return false;
 	QList<AuMatrix4x4> spotsInRoom;
 	int spaceRocketSpots = 0;
+	int typedSpotsStart = 0;
 	VEHICLE_SPOT_TYPE vehSpotType = SPOT_Invalid;
 	const AuBdDesign* scd = LockDesign();
 	if(scd)
@@ -3903,6 +3904,8 @@ bool DaBd::ClosestVehicleParkingSpot(const DaVehicle* vehicle, AuMatrix4x4& park
 			scd->SpaceVehicleParkingSpots(roomId, spotsInRoom);	// This includes space rockets.
 			vehSpotType = SPOT_SpaceVehicle;
 		}
+		typedSpotsStart = spotsInRoom.size();
+		scd->Parts().VehicleSpots(vehicle->CommodityId(), spotsInRoom);
 	}
 	UnlockDesign();
 	if(spotsInRoom.empty())
@@ -3924,7 +3927,9 @@ bool DaBd::ClosestVehicleParkingSpot(const DaVehicle* vehicle, AuMatrix4x4& park
 			closestDist2 = dist2;
 			parkPosM = *si;
 			foundSpot = true;
-			if(index < spaceRocketSpots)
+			if(index >= typedSpotsStart)
+				spotType = DaVehicle::ParkingSpotType(vehicle->CommodityId());
+			else if(index < spaceRocketSpots)
 				spotType = SPOT_Rocket;
 			else
 				spotType = vehSpotType;
@@ -10784,6 +10789,8 @@ void DaBd::Tock(const AuTime& last, const AuTime& now, const AuScripts& scripts,
 		ChangeCitizenPopulation();
 		if(!last.IsNull())
 			ImportStorage();
+		if(!last.IsNull())
+			FillItemSpots();
 
 		if(SensorsWorking())
 		{
@@ -11792,6 +11799,16 @@ void DaBd::ConfigureHarvester()
 	// Buildings do not harvest using weapon bays.
 }
 
+
+static unsigned int TypedSpotsOfType(const QList<AuScSpot>& spots, VEHICLE_SPOT_TYPE spotType)
+{
+	unsigned int n = 0;
+	for(QList<AuScSpot>::const_iterator si = spots.cbegin(); si != spots.cend(); si++)
+		if(DaVehicle::ParkingSpotType((*si).m_Commodity) == spotType)
+			n++;
+	return n;
+}
+
 void DaBd::FetchVehicle()
 {
 	if(InArena() || InDesignPreview())
@@ -11803,6 +11820,9 @@ void DaBd::FetchVehicle()
 	m_DesignLock.lockForRead();
 	unsigned int spots = m_Design.ParkingSpotsTotal();
 	m_DesignLock.unlock();
+	QList<AuScSpot> typedSpots;
+	TypedVehicleSpots(typedSpots);
+	spots += typedSpots.size();
 	if(!spots)
 		return;
 
@@ -11889,7 +11909,7 @@ void DaBd::FetchVehicle()
 
 			// Skip vehicle type that has a full contingent.
 			QHash<VEHICLE_SPOT_TYPE, unsigned int>::const_iterator cti = countByType.find(spotType);
-			if(cti != countByType.cend() && (*cti) >= m_Design.VehicleComplement(spotType))
+			if(cti != countByType.cend() && (*cti) >= m_Design.VehicleComplement(spotType) + TypedSpotsOfType(typedSpots, spotType))
 				continue;				// Complement of that vehicle type is already full or exceeded.
 
 			AuMatrix4x4 parkPosM;
@@ -11931,6 +11951,33 @@ void DaBd::FetchVehicle()
 	}
 	UnlockDesign();
 	m_DesignLock.unlock();
+
+	for(QList<AuScSpot>::const_iterator ti = typedSpots.cbegin(); ti != typedSpots.cend() && !vehicle; ti++)
+	{
+		VEHICLE_SPOT_TYPE spotType = DaVehicle::ParkingSpotType((*ti).m_Commodity);
+		if(spotType == SPOT_Invalid)
+			continue;
+		QList<AuMatrix4x4> spot;
+		spot.append((*ti).m_Position);
+		AuMatrix4x4 parkPosM;
+		if(!VacantParkingSpot(spotType, spot, parkPosM, llworld, vehiclesAtWorld))
+			continue;
+		if(!HasAirportAccess())
+			vehicle = llworld->FindNewVehicleType(spotType, this, (*ti).m_Commodity);
+		else
+		{
+			DaSolarSystem* myss = FindParentSolarSystemInEnv();
+			if(!myss)
+				return;
+			vehicle = myss->FindNewVehicleType(spotType, this, (*ti).m_Commodity);
+		}
+		if(vehicle)
+		{
+			vehicle->Park(this, parkPosM, spotType);
+			vehicle->SetEmpireId(EmpireId());
+			vehicle->SetMotherShip(Id(), Name());
+		}
+	}
 
 	// Must query the vehicle's new environment after my locks are unlocked.
 	if(vehicle)
@@ -15129,6 +15176,50 @@ bool DaBd::VehicleParkingSpot(VEHICLE_SPOT_TYPE spotType, AuMatrix4x4& parkPosM,
 		scd->RocketParkingSpots(parkingSpots);
 	else if(spotType == SPOT_WaterVehicle)
 		scd->WaterVehicleParkingSpots(parkingSpots);
+	return VacantParkingSpot(spotType, parkingSpots, parkPosM, llworld, vehiclesAtWorld);
+}
+
+void DaBd::FillItemSpots()
+{
+	QList<AuScSpot> spots;
+	m_DesignLock.lockForRead();
+	const AuBdDesign* scd = LockDesign();
+	if(scd)
+		scd->Parts().ItemSpots(spots);
+	UnlockDesign();
+	m_DesignLock.unlock();
+	PlaceItemsAtSpots(spots);
+}
+
+void DaBd::TypedVehicleSpots(QList<AuScSpot>& spots) const
+{
+	m_DesignLock.lockForRead();
+	const AuBdDesign* scd = LockDesign();
+	if(scd)
+		scd->Parts().VehicleSpots(spots);
+	UnlockDesign();
+	m_DesignLock.unlock();
+}
+
+bool DaBd::TypedVehicleParkingSpot(COMMODITYID cid, AuMatrix4x4& parkPosM)
+{
+	DaWorldLL* llworld = FindParentWorldInEnv();
+	if(!llworld)
+		return false;
+	DaAtomList vehicles;
+	llworld->FindVehiclesRecursive(vehicles);
+
+	QList<AuMatrix4x4> parkingSpots;
+	const AuBdDesign* scd = LockDesign();
+	if(scd)
+		scd->Parts().VehicleSpots(cid, parkingSpots);
+	UnlockDesign();
+	return VacantParkingSpot(DaVehicle::ParkingSpotType(cid), parkingSpots, parkPosM, llworld, vehicles);
+}
+
+bool DaBd::VacantParkingSpot(VEHICLE_SPOT_TYPE spotType, const QList<AuMatrix4x4>& parkingSpots, AuMatrix4x4& parkPosM,
+		DaWorldLL* llworld, DaAtomList& vehiclesAtWorld)
+{
 	if(parkingSpots.empty())
 		return false;
 
@@ -21452,32 +21543,39 @@ int DaBd::SpawnVehicle(COMMODITYID cidVehicle, quint8 quality)
 			(*vci)++;										// Increase count of vehicle type.
 	}
 
-	// Skip vehicle type that has a full contingent.
 	VEHICLE_SPOT_TYPE spotType = DaVehicle::ParkingSpotType(cidVehicle);
-	QHash<VEHICLE_SPOT_TYPE, unsigned int>::const_iterator cti = countByType.find(spotType);
-	if(cti != countByType.cend())
-	{
-		m_DesignLock.lockForRead();
-		bool spotsFull;
-		if(cidVehicle == CID_SpaceRocket)
-			spotsFull = *cti >= (unsigned int)(m_Design.VehicleComplement(spotType)+m_Design.VehicleComplement(SPOT_SpaceVehicle));
-		else
-			spotsFull = *cti >= m_Design.VehicleComplement(spotType);
-		m_DesignLock.unlock();
-		if(spotsFull)
-			return 1;
-	}
-
 	AuMatrix4x4 parkPosM;
-	if(!VehicleParkingSpot(spotType, parkPosM))
+	if(!TypedVehicleParkingSpot(cidVehicle, parkPosM))
 	{
-		// Did not find any unobstructed location at which to spawn.
-		if(cidVehicle != CID_SpaceRocket)
-			return 1;
-		// Space rocket can also park in space vehicle spot.
-		spotType = SPOT_SpaceVehicle;
+		QList<AuScSpot> typedSpots;
+		TypedVehicleSpots(typedSpots);
+
+		// Skip vehicle type that has a full contingent.
+		QHash<VEHICLE_SPOT_TYPE, unsigned int>::const_iterator cti = countByType.find(spotType);
+		if(cti != countByType.cend())
+		{
+			m_DesignLock.lockForRead();
+			bool spotsFull;
+			if(cidVehicle == CID_SpaceRocket)
+				spotsFull = *cti >= (unsigned int)(m_Design.VehicleComplement(spotType)+m_Design.VehicleComplement(SPOT_SpaceVehicle)) +
+						TypedSpotsOfType(typedSpots, spotType) + TypedSpotsOfType(typedSpots, SPOT_SpaceVehicle);
+			else
+				spotsFull = *cti >= m_Design.VehicleComplement(spotType) + TypedSpotsOfType(typedSpots, spotType);
+			m_DesignLock.unlock();
+			if(spotsFull)
+				return 1;
+		}
+
 		if(!VehicleParkingSpot(spotType, parkPosM))
-			return 1;
+		{
+			// Did not find any unobstructed location at which to spawn.
+			if(cidVehicle != CID_SpaceRocket)
+				return 1;
+			// Space rocket can also park in space vehicle spot.
+			spotType = SPOT_SpaceVehicle;
+			if(!VehicleParkingSpot(spotType, parkPosM))
+				return 1;
+		}
 	}
 
 	// Create the nu vehicle.
@@ -34222,7 +34320,7 @@ DaVehicle* DaBd::FindNewVehicle(COMMODITYID vehicleCID)
 	return 0;
 }
 
-DaVehicle* DaBd::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher)
+DaVehicle* DaBd::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetcher, COMMODITYID onlyCid)
 {
 	// Buildings and spacecraft only fetch vehicles from certain buildings.
 	switch(spotType)
@@ -34257,6 +34355,8 @@ DaVehicle* DaBd::FindNewVehicleType(VEHICLE_SPOT_TYPE spotType, const DaBd* fetc
 		DaVehicle* vehicle = dynamic_cast<DaVehicle*>(*it);
 		if(vehicle)
 		{
+			if(onlyCid != CID_Invalid && vehicle->CommodityId() != onlyCid)
+				continue;
 			if(fetcher)
 			{
 				// Fetcher is a building.

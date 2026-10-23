@@ -23,6 +23,7 @@ class AuStation;
 class DaCreature;
 class DaNpc;
 class DaSentient;
+struct AuScSpot;
 
 // A capsule is a unit that other units can be subordinate to and move around inside of. Not like a vehicle where people are in
 // designated spots. DaCapsule came into existence to provide common elements of DaBd and DaVessel; it cannot be instantiated.
@@ -42,6 +43,8 @@ public:
 
 	// Be sure to call CanAddCargo first. This function doesn't check.
 	virtual void AddCargo(const AuItem& iNew) = 0;
+
+	void PlaceItemsAtSpots(const QList<AuScSpot>& spots);
 
 	// Locates an active transporter pad location in a room. Only searches for outgoing pads.
 	// Returns false if none are active.
