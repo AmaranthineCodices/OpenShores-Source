@@ -1362,6 +1362,8 @@ public:
 
 	void SetupCamera(AuMatrix4x4& camera, double& nearClip, double& farClip, AuAtomRenderInfo& ari) const;
 
+	bool IsCameraAtEyes(const AuAtomRenderInfo& ari) const;
+
 	// Physics
 	// Acceleration in ft/sec/sec.
 	virtual AuPoint Acceleration() const;
