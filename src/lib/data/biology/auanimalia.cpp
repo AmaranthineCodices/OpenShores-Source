@@ -74,7 +74,9 @@ AuAnimalia::AuAnimalia(const AuAnimalia& c) : QList<AuAnimalPart*>(), m_DNA(c.m_
 	m_AnimalClothingTex = c.m_AnimalClothingTex;
 
 	m_AnimalVAO = c.m_AnimalVAO;
+	m_AnimalNoNeckVAO = c.m_AnimalNoNeckVAO;
 	m_AnimalClothingVAO = c.m_AnimalClothingVAO;
+	m_AnimalNoNeckClothingVAO = c.m_AnimalNoNeckClothingVAO;
 	m_AnimalClothingBlendVAO = c.m_AnimalClothingBlendVAO;
 	m_AnimalHelmetBlendVAO = c.m_AnimalHelmetBlendVAO;
 	m_AnimalHairBottomVAO = c.m_AnimalHairBottomVAO;
@@ -113,7 +115,9 @@ const AuAnimalia& AuAnimalia::operator=(const AuAnimalia& c)
 	m_AnimalClothingTex = c.m_AnimalClothingTex;
 
 	m_AnimalVAO = c.m_AnimalVAO;
+	m_AnimalNoNeckVAO = c.m_AnimalNoNeckVAO;
 	m_AnimalClothingVAO = c.m_AnimalClothingVAO;
+	m_AnimalNoNeckClothingVAO = c.m_AnimalNoNeckClothingVAO;
 	m_AnimalClothingBlendVAO = c.m_AnimalClothingBlendVAO;
 	m_AnimalHelmetBlendVAO = c.m_AnimalHelmetBlendVAO;
 	m_AnimalHairBottomVAO = c.m_AnimalHairBottomVAO;
@@ -131,7 +135,9 @@ void AuAnimalia::ClearVAOs()
 {
 	//m_AnimalClothingTex.clear();
 	m_AnimalVAO = AuGLVAO();
+	m_AnimalNoNeckVAO = AuGLVAO();
 	m_AnimalClothingVAO = AuGLVAO();
+	m_AnimalNoNeckClothingVAO = AuGLVAO();
 	m_AnimalClothingBlendVAO = AuGLVAO();
 	m_AnimalHelmetBlendVAO = AuGLVAO();
 	m_AnimalHairBottomVAO = AuGLVAO();
@@ -154,7 +160,9 @@ void AuAnimalia::CopyVAOs(const AuAnimalia& c)
 	m_AnimalClothingTex = c.m_AnimalClothingTex;
 
 	m_AnimalVAO = c.m_AnimalVAO;
+	m_AnimalNoNeckVAO = c.m_AnimalNoNeckVAO;
 	m_AnimalClothingVAO = c.m_AnimalClothingVAO;
+	m_AnimalNoNeckClothingVAO = c.m_AnimalNoNeckClothingVAO;
 	m_AnimalClothingBlendVAO = c.m_AnimalClothingBlendVAO;
 	m_AnimalHelmetBlendVAO = c.m_AnimalHelmetBlendVAO;
 	m_AnimalHairBottomVAO = c.m_AnimalHairBottomVAO;
@@ -355,9 +363,10 @@ void AuAnimalia::RenderAnimal(const AuMatrix4x4& projection, const AuMatrix4x4& 
 		re.GLSL().AnimalShader().SetAmbientLightUp(ambientUp.x, ambientUp.y, ambientUp.z);
 
 		// Render the model.
-		m_AnimalVAO.SelectGL();
-		m_AnimalVAO.DrawGL();
-		m_AnimalVAO.DeselectGL();
+		AuGLVAO& skinVAO = (m_HeadHidden && m_AnimalNoNeckVAO.VAO()) ? m_AnimalNoNeckVAO : m_AnimalVAO;
+		skinVAO.SelectGL();
+		skinVAO.DrawGL();
+		skinVAO.DeselectGL();
 
 		re.GLSL().AnimalShader().Deselect();
 	}
@@ -435,9 +444,10 @@ void AuAnimalia::RenderAnimalGlobeFog(const AuMatrix4x4& projection, const AuMat
 		re.GLSL().AnimalGlobeFogShader().SetGlobeLocation(globeP.x, globeP.y, globeP.z);
 
 		// Render the model.
-		m_AnimalVAO.SelectGL();
-		m_AnimalVAO.DrawGL();
-		m_AnimalVAO.DeselectGL();
+		AuGLVAO& skinVAO = (m_HeadHidden && m_AnimalNoNeckVAO.VAO()) ? m_AnimalNoNeckVAO : m_AnimalVAO;
+		skinVAO.SelectGL();
+		skinVAO.DrawGL();
+		skinVAO.DeselectGL();
 
 		re.GLSL().AnimalGlobeFogShader().Deselect();
 	}
@@ -518,9 +528,10 @@ void AuAnimalia::RenderAnimalRingworldFog(const AuMatrix4x4& projection, const A
 			re.GLSL().AnimalRingworldFogShader().SetSunShadowAngle(sunIndex, shadowPanelSunAngles[sunIndex]);
 
 		// Render the model.
-		m_AnimalVAO.SelectGL();
-		m_AnimalVAO.DrawGL();
-		m_AnimalVAO.DeselectGL();
+		AuGLVAO& skinVAO = (m_HeadHidden && m_AnimalNoNeckVAO.VAO()) ? m_AnimalNoNeckVAO : m_AnimalVAO;
+		skinVAO.SelectGL();
+		skinVAO.DrawGL();
+		skinVAO.DeselectGL();
 
 		re.GLSL().AnimalRingworldFogShader().Deselect();
 	}
@@ -803,9 +814,10 @@ void AuAnimalia::RenderAnimalClothing(const AuMatrix4x4& projection, const AuMat
 	{
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 	}
@@ -872,9 +884,10 @@ void AuAnimalia::RenderAnimalClothingGlobeFog(const AuMatrix4x4& projection, con
 	{
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 	}
@@ -944,9 +957,10 @@ void AuAnimalia::RenderAnimalClothingRingworldFog(const AuMatrix4x4& projection,
 	{
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 	}
@@ -1013,9 +1027,10 @@ void AuAnimalia::RenderAnimalHelmetVisor(const AuMatrix4x4& projection, const Au
 		/*
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 		*/
@@ -1084,9 +1099,10 @@ void AuAnimalia::RenderAnimalHelmetVisorGlobeFog(const AuMatrix4x4& projection, 
 		/*
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 		*/
@@ -1158,9 +1174,10 @@ void AuAnimalia::RenderAnimalHelmetVisorRingworldFog(const AuMatrix4x4& projecti
 		/*
 		re.glDisable(GL_CULL_FACE);
 
-		m_AnimalClothingVAO.SelectGL();
-		m_AnimalClothingVAO.DrawGL();
-		m_AnimalClothingVAO.DeselectGL();
+		AuGLVAO& clothingVAO = (m_HeadHidden && m_AnimalNoNeckClothingVAO.VAO()) ? m_AnimalNoNeckClothingVAO : m_AnimalClothingVAO;
+		clothingVAO.SelectGL();
+		clothingVAO.DrawGL();
+		clothingVAO.DeselectGL();
 
 		re.glEnable(GL_CULL_FACE);
 		*/
@@ -2099,12 +2116,16 @@ void AuAnimalia::CreateVAOs(AuOpenGLFunctions& re, const AuMeatMesh& skinMesh, c
 	// Delete my old VAOs.
 	if(m_AnimalVAO.VAO())
 		m_AnimalVAO.DeleteGL();
+	if(m_AnimalNoNeckVAO.VAO())
+		m_AnimalNoNeckVAO.DeleteGL();
 	if(m_AnimalHairBottomVAO.VAO())
 		m_AnimalHairBottomVAO.DeleteGL();
 	if(m_AnimalHairTopVAO.VAO())
 		m_AnimalHairTopVAO.DeleteGL();
 	if(m_AnimalClothingVAO.VAO())
 		m_AnimalClothingVAO.DeleteGL();
+	if(m_AnimalNoNeckClothingVAO.VAO())
+		m_AnimalNoNeckClothingVAO.DeleteGL();
 	if(m_AnimalClothingBlendVAO.VAO())
 		m_AnimalClothingBlendVAO.DeleteGL();
 	if(m_AnimalHelmetBlendVAO.VAO())
@@ -2120,6 +2141,7 @@ void AuAnimalia::CreateVAOs(AuOpenGLFunctions& re, const AuMeatMesh& skinMesh, c
 	if(!skinMesh.isEmpty())
 	{
 		m_AnimalVAO = skinMesh.CreateAnimalVAO(re);
+		m_AnimalNoNeckVAO = skinMesh.CreateAnimalVAO(re, true);
 		m_AnimalHairBottomVAO = skinMesh.CreateAnimalHairVAO(re, false);
 		m_AnimalHairTopVAO = skinMesh.CreateAnimalHairVAO(re, true);
 
@@ -2131,6 +2153,7 @@ void AuAnimalia::CreateVAOs(AuOpenGLFunctions& re, const AuMeatMesh& skinMesh, c
 	if(!clothingMesh.isEmpty())
 	{
 		m_AnimalClothingVAO = clothingMesh.CreateAnimalClothingVAO(re);
+		m_AnimalNoNeckClothingVAO = clothingMesh.CreateAnimalClothingVAO(re, true);
 		//DHH so far the only blended clothing part is a helmet visor
 		m_AnimalHelmetBlendVAO = clothingMesh.CreateAnimalClothingBlendVAO(re);
 
@@ -2152,8 +2175,12 @@ void AuAnimalia::DeleteGL()
 {
 	if(m_AnimalVAO.VAO())
 		m_AnimalVAO.DeleteGL();
+	if(m_AnimalNoNeckVAO.VAO())
+		m_AnimalNoNeckVAO.DeleteGL();
 	if(m_AnimalClothingVAO.VAO())
 		m_AnimalClothingVAO.DeleteGL();
+	if(m_AnimalNoNeckClothingVAO.VAO())
+		m_AnimalNoNeckClothingVAO.DeleteGL();
 	if(m_AnimalClothingBlendVAO.VAO())
 		m_AnimalClothingBlendVAO.DeleteGL();
 	if(m_AnimalHelmetBlendVAO.VAO())
@@ -2861,6 +2888,45 @@ AuPoint AuAnimalia::HeadLocation() const
 
 	// No head found?
 	return AuPoint(0,0);
+}
+
+void AuAnimalia::HideHead(QList<AuAnimalBone>& saved)
+{
+	m_HeadHidden = true;
+	for(const_iterator mpi = cbegin(); mpi != cend(); mpi++)
+	{
+		AuAnimalHead* mp = dynamic_cast<AuAnimalHead*>(*mpi);
+		if(mp)
+		{
+			saved = mp->Bones();
+			if(saved.isEmpty())
+				return;
+			AuMatrix4x4 m;
+			m.Translate(saved[0].PosedLoc());
+			m.Scale(0,0,0);
+			QList<AuAnimalBone> collapsed(saved);
+			for(int b=0; b<collapsed.size(); b++)
+				collapsed[b].SetMatrix(m);
+			mp->ReplaceBones(collapsed);
+			return;
+		}
+	}
+}
+
+void AuAnimalia::RestoreHead(const QList<AuAnimalBone>& saved)
+{
+	m_HeadHidden = false;
+	if(saved.isEmpty())
+		return;
+	for(const_iterator mpi = cbegin(); mpi != cend(); mpi++)
+	{
+		AuAnimalHead* mp = dynamic_cast<AuAnimalHead*>(*mpi);
+		if(mp)
+		{
+			mp->ReplaceBones(saved);
+			return;
+		}
+	}
 }
 
 AuPoint AuAnimalia::CameraLocation() const
