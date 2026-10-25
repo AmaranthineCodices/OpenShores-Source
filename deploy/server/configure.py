@@ -188,7 +188,7 @@ def main() -> None:
         if public_host.endswith("example.com"):
             raise SystemExit("replace the example PUBLIC_HOST before production deployment")
 
-    debug_enabled = environment == "local" and config == "debug"
+    debug_enabled = environment == "local" and (config == "debug" or config == "relwithdebinfo")
     settings.update(
         {
             "DEPLOY_ENVIRONMENT": environment,
