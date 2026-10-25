@@ -219,6 +219,8 @@ services:
       - -m16762
       - -lu1s0
       - -w${SERVER_LOGIN_PASSWORD}
+    # allows the server to find shutdown.conf
+    working_dir: /opt/openshores/bin
     depends_on:
       postgres:
         condition: service_healthy
